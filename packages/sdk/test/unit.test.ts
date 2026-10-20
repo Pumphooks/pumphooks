@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { ROOT } from "./harness.js";
 import {
   ammPda,
   Callback,
   callbackMask,
+  callbacksOf,
+  capabilitiesOf,
   compilePolicy,
   cp,
   decodeConfig,
@@ -142,5 +147,28 @@ describe("signals", () => {
 
   it("callback masks", () => {
     expect(callbackMask(Callback.BeforeSwap, Callback.AfterSwap)).toBe(0b110000);
+  });
+
+  it("hooks/*/hook.json manifests match the module table", () => {
+    const dir = join(ROOT, "hooks");
+    const slugs = readdirSync(dir).filter((d) => existsSync(join(dir, d, "hook.json")));
+    expect(slugs.sort()).toEqual(MODULES.map((m) => m.slug).sort());
+    for (const m of MODULES) {
+      const h = JSON.parse(readFileSync(join(dir, m.slug, "hook.json"), "utf8"));
+      const names = (mask: number) => callbacksOf(mask).map((c) => Callback[c]);
+      expect(h).toMatchObject({
+        moduleId: m.id,
+        name: m.name,
+        version: m.version,
+        callbacks: names(m.callbacks),
+        defaultCallbacks: names(m.defaultCallbacks),
+        capabilities: capabilitiesOf(m.capabilities),
+        priority: { min: m.priorityMin, max: m.priorityMax, default: m.defaultPriority },
+        runtime: m.runtime,
+        available: m.available,
+        audit: "unaudited",
+      });
+      expect(existsSync(join(ROOT, h.source)), h.source).toBe(true);
+    }
   });
 });

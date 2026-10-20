@@ -1,0 +1,28 @@
+{
+  "slug": "treasury-router",
+  "moduleId": 5,
+  "name": "Treasury Router",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["TREASURY"],
+  "summary": "Declares how explicitly deposited treasury funds are split between reserve, strategy, rewards and operations.",
+  "behavior": [
+    "Configuration-only: the four shares must sum to 10,000 bps.",
+    "Enforced by the strategy vault when deposited funds are allocated."
+  ],
+  "callbacks": [],
+  "defaultCallbacks": [],
+  "capabilities": ["READ_MARKET", "TREASURY_SIGNAL"],
+  "priority": { "min": 2000, "max": 2999, "default": 2500 },
+  "runtime": false,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/treasury_router.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "Never touches Pump creator fees or protocol fees; it only describes funds a creator deposits explicitly.",
+    "The strategy-vault program that enforces the split is not yet deployed."
+  ]
+}

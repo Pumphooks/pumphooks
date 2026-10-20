@@ -1,0 +1,30 @@
+{
+  "slug": "holder-xp",
+  "moduleId": 4,
+  "name": "Holder XP",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["REWARDS"],
+  "summary": "An on-chain loyalty ledger earned through routed buys and holding, with anti-wash rules.",
+  "behavior": [
+    "XP is earned on routed buys only, never on sells.",
+    "Buy XP vests after a hold period; selling before vesting forfeits the unvested XP, so buy/sell loops earn nothing.",
+    "Per-trade cap, minimum trade size and a daily cap per wallet.",
+    "Optional holding XP on min(balance at last checkpoint, balance now) × elapsed time."
+  ],
+  "callbacks": ["AfterBuy", "AfterSell"],
+  "defaultCallbacks": ["AfterBuy", "AfterSell"],
+  "capabilities": ["READ_MARKET", "WRITE_HOOK_STATE", "WRITE_USER_STATE", "AWARD_POINTS"],
+  "priority": { "min": 2000, "max": 2999, "default": 2100 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/holder_xp.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "XP is a ledger entry, not a token and not a claim on fees.",
+    "Two wallets that each hold at both of their own checkpoints can overlap holding intervals; caps bound the effect (threat model T20)."
+  ]
+}

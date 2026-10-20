@@ -1,0 +1,26 @@
+{
+  "slug": "policy",
+  "moduleId": 9,
+  "name": "Custom Policy",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["EXPERIMENTAL", "ACCESS", "REWARDS"],
+  "summary": "WHEN / IF / THEN rules compiled by the Composer into the bounded Policy VM.",
+  "behavior": [
+    "Up to 4 policies per market, each with up to 8 conditions and 4 actions.",
+    "Conditions read trade, wallet and market fields; actions deny, record, award points (≤ 10,000 per action), update registers or emit signals.",
+    "No loops, no arbitrary CPI, fixed per-policy evaluation cost."
+  ],
+  "callbacks": ["BeforeBuy", "AfterBuy", "BeforeSell", "AfterSell", "BeforeSwap", "AfterSwap"],
+  "defaultCallbacks": [],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP", "WRITE_HOOK_STATE", "WRITE_USER_STATE", "AWARD_POINTS", "TREASURY_SIGNAL", "EMIT_SIGNAL"],
+  "priority": { "min": 0, "max": 4999, "default": 4000 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/policy-vm/src/lib.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": ["Policies govern routed trades only."]
+}

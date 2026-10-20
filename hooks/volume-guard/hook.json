@@ -1,0 +1,26 @@
+{
+  "slug": "volume-guard",
+  "moduleId": 2,
+  "name": "Volume Guard",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["RISK", "EXECUTION"],
+  "summary": "Bounds on routed trade size and on rolling routed volume, per market and per wallet.",
+  "behavior": [
+    "Before-callbacks deny trades whose deterministic estimate exceeds the configured size.",
+    "After-callbacks re-check the amount Pump actually executed and fail the whole transaction if it exceeds the guard.",
+    "Rolling window (up to 7 days) for market-wide and per-wallet routed volume."
+  ],
+  "callbacks": ["BeforeBuy", "AfterBuy", "BeforeSell", "AfterSell", "BeforeSwap", "AfterSwap"],
+  "defaultCallbacks": ["BeforeSwap", "AfterSwap"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP", "WRITE_HOOK_STATE", "WRITE_USER_STATE"],
+  "priority": { "min": 1000, "max": 1999, "default": 1100 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/volume_guard.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": ["Counts routed volume only; trades made directly on Pump are invisible to the guard."]
+}

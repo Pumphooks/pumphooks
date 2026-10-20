@@ -1,0 +1,29 @@
+{
+  "slug": "sentient",
+  "moduleId": 8,
+  "name": "SENTIENT",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["AUTONOMOUS", "RISK"],
+  "summary": "The on-chain half of an autonomous risk engine: signed, bounded regime signals that can only restrict routed flow.",
+  "behavior": [
+    "An off-chain engine submits an Ed25519-signed StrategySignal; the program checks signer, nonce, freshness and the market-set TTL ceiling.",
+    "Regimes: NORMAL, CAUTIOUS, DEFENSIVE (routed trades above the configured cap are denied) and CIRCUIT_BREAKER (routed trades are denied until the regime expires).",
+    "Records routed buy and sell flow that the engine reads back."
+  ],
+  "callbacks": ["BeforeBuy", "AfterBuy", "BeforeSell", "AfterSell", "BeforeSwap", "AfterSwap"],
+  "defaultCallbacks": ["BeforeSwap", "AfterSwap"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP", "WRITE_HOOK_STATE", "STRATEGY_EXECUTION", "EMIT_SIGNAL"],
+  "priority": { "min": 3000, "max": 3999, "default": 3500 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/sentient.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "The engine never signs for users, never trades and never moves funds; signals can only restrict routed trades.",
+    "Every signal expires; a regime lasts at most the market-set TTL (≤ 24 h)."
+  ]
+}

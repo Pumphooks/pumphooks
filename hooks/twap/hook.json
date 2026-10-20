@@ -1,0 +1,25 @@
+{
+  "slug": "twap",
+  "moduleId": 6,
+  "name": "TWAP",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["EXECUTION", "ORDERS"],
+  "summary": "Market-set ceilings for time-sliced execution of vault funds; every slice routes through the hook stack.",
+  "behavior": [
+    "Caps total and per-slice size, minimum interval (≥ 10 s), maximum duration and per-slice slippage (≤ 20%).",
+    "Slices are ordinary routed trades, so guards and rewards apply to them."
+  ],
+  "callbacks": [],
+  "defaultCallbacks": [],
+  "capabilities": ["READ_MARKET", "STRATEGY_EXECUTION"],
+  "priority": { "min": 3000, "max": 3999, "default": 3100 },
+  "runtime": false,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/twap.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": ["Configuration is enforceable today; the strategy vault that schedules slices is not yet deployed."]
+}

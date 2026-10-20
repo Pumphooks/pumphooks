@@ -1,0 +1,22 @@
+{
+  "slug": "conditional-orders",
+  "moduleId": 7,
+  "name": "Conditional Orders",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["ORDERS"],
+  "summary": "Reserved: price- and time-conditioned vault orders executed through the router.",
+  "behavior": ["Module ID and priority range are reserved in the ABI. Not installable in this release."],
+  "callbacks": [],
+  "defaultCallbacks": [],
+  "capabilities": ["READ_MARKET", "STRATEGY_EXECUTION"],
+  "priority": { "min": 3000, "max": 3999, "default": 3200 },
+  "runtime": false,
+  "available": false,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-types/src/module.rs",
+  "audit": "unaudited",
+  "verification": "not implemented",
+  "limitations": ["Not implemented."]
+}

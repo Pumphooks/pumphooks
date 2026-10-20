@@ -8,7 +8,11 @@ import nacl from "tweetnacl";
 import {
   associatedToken,
   Callback,
+  CONFIG_PRESETS,
   decodeSentientState,
+  type ModuleConfig,
+  moduleInfo,
+  validateConfig,
   decodeTokenAccount,
   encodeSignal,
   ModuleId,
@@ -153,6 +157,28 @@ describe.skipIf(!fixturesAvailable())("existing PumpSwap token via SDK", () => {
     expect(denied.denied, `${JSON.stringify(denied.rawError)} ${denied.logs.join("\n")}`).toMatchObject({ moduleId: ModuleId.Sentient, reasonCode: 8001 });
     const small = env.exec(await env.client.buy({ market, user: user.publicKey, quoteIn: SOL / 20n }), [user]);
     expect(small.ok, small.logs.join("\n")).toBe(true);
+  });
+
+  it("config presets and client-side validation agree with the program", async () => {
+    const cases: [ModuleId, ModuleConfig][] = [];
+    for (const [id, preset] of Object.entries(CONFIG_PRESETS)) {
+      const module = Number(id) as ModuleId;
+      const good = module === ModuleId.Sentient ? { ...preset, signer: engine.publicKey } : preset!;
+      expect(validateConfig(module, good)).toEqual([]);
+      cases.push([module, good]);
+    }
+    cases.push([ModuleId.Twap, { ...CONFIG_PRESETS[ModuleId.Twap]!, minIntervalSecs: 5 }]);
+    cases.push([ModuleId.TreasuryRouter, { reserveBps: 5_000, strategyBps: 4_000 }]);
+    cases.push([ModuleId.VolumeGuard, { windowSecs: 60 }]);
+    cases.push([ModuleId.Sentient, { maxSignalTtl: 3600 }]);
+    for (const [module, config] of cases) {
+      const who = env.wallet(2n * SOL);
+      const { market, ix } = await env.client.createMarket(env.mint, who.publicKey);
+      const r = env.ixs([ix, env.client.installHook({ market, authority: who.publicKey, module, config })], [who]);
+      const valid = validateConfig(module, config).length === 0;
+      expect(r.ok, `${moduleInfo(module).slug} ${JSON.stringify(validateConfig(module, config))}`).toBe(valid);
+      if (!valid) expect(r.error?.name).toBe("BadHookConfig");
+    }
   });
 
   it("Composer policy compiled by the SDK is enforced on-chain", async () => {

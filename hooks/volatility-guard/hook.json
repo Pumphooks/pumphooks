@@ -1,0 +1,26 @@
+{
+  "slug": "volatility-guard",
+  "moduleId": 3,
+  "name": "Volatility Guard",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["RISK"],
+  "summary": "Denies routed trades when the venue's on-chain spot price deviates too far from an EMA of routed observations.",
+  "behavior": [
+    "Spot price is read from on-chain reserves of the bonding curve or PumpSwap pool; no oracle.",
+    "The EMA updates after each routed trade; enforcement starts after a minimum number of observations.",
+    "Small trades below a threshold are not checked."
+  ],
+  "callbacks": ["BeforeBuy", "AfterBuy", "BeforeSell", "AfterSell", "BeforeSwap", "AfterSwap"],
+  "defaultCallbacks": ["BeforeSwap", "AfterSwap"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP", "WRITE_HOOK_STATE"],
+  "priority": { "min": 1000, "max": 1999, "default": 1200 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/volatility_guard.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": ["Observations are sparse: they happen on routed trades, so the EMA reflects routed history rather than every Pump trade."]
+}

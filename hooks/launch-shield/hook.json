@@ -1,0 +1,27 @@
+{
+  "slug": "launch-shield",
+  "moduleId": 1,
+  "name": "Launch Shield",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["RISK", "ACCESS"],
+  "summary": "Time-boxed limits on routed execution while a market is being activated.",
+  "behavior": [
+    "Per-wallet cooldown between routed buys (optionally sells).",
+    "Maximum routed buy and sell size during the protected window.",
+    "Maximum routed buys per slot; optional denial of same-slot buy→sell round trips.",
+    "Window starts at market activation or a fixed timestamp and lasts at most 30 days."
+  ],
+  "callbacks": ["BeforeBuy", "BeforeSell", "BeforeSwap"],
+  "defaultCallbacks": ["BeforeBuy", "BeforeSell"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP", "WRITE_HOOK_STATE"],
+  "priority": { "min": 0, "max": 999, "default": 100 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/launch_shield.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": ["Applies to trades routed through Pump Hooks only. A transaction that trades on Pump directly is not affected."]
+}
