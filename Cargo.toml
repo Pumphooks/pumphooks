@@ -13,6 +13,7 @@ members = [
     "programs/test-hook",
     "programs/hook-registry",
     "programs/smart-accounts",
+    "programs/hook-router",
     "tests/integration",
     "tests/core",
     "tests/hooks",

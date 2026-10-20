@@ -23,3 +23,7 @@ hook-standard = { workspace = true }
 hook-kernel = { workspace = true }
 hook-registry = { path = "../../programs/hook-registry", features = ["no-entrypoint"] }
 smart-accounts = { path = "../../programs/smart-accounts", features = ["no-entrypoint"] }
+hook-router = { path = "../../programs/hook-router", features = ["no-entrypoint"] }
+pump-adapter = { path = "../../crates/pump-adapter" }
+serde_json = "1"
+base64 = "0.22"

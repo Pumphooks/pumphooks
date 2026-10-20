@@ -19,6 +19,7 @@ use solana_keypair::Keypair;
 use solana_signer::Signer;
 use solana_transaction::Transaction;
 
+pub mod pump;
 pub mod tokens;
 
 pub type Pk = anchor_lang::prelude::Pubkey;

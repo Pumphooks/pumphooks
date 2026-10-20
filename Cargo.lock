@@ -1943,6 +1943,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hook-router"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "bytemuck",
+ "hook-kernel",
+ "hook-registry",
+ "hook-standard",
+]
+
+[[package]]
 name = "hook-runtime"
 version = "0.1.0"
 dependencies = [
@@ -2793,11 +2804,15 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang 0.31.2",
  "anchor-spl 0.31.2",
+ "base64 0.22.1",
  "bytemuck",
  "hook-kernel",
  "hook-registry",
+ "hook-router",
  "hook-standard",
  "litesvm",
+ "pump-adapter",
+ "serde_json",
  "smart-accounts",
  "solana-account 4.3.2",
  "solana-address 2.6.1",

@@ -1,0 +1,31 @@
+[package]
+name = "hook-router"
+version = "0.1.0"
+edition = "2021"
+description = "PUMP HOOKS ROUTER engine: venue-allowlisted swaps with hook stacks, deadline, measured slippage and receipts. Router-enforced (bypassable)."
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "hook_router"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+anchor-lang = "0.31.1"
+bytemuck = { workspace = true, features = ["extern_crate_alloc"] }
+hook-standard = { workspace = true }
+hook-kernel = { workspace = true }
+hook-registry = { path = "../hook-registry", features = ["cpi"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }

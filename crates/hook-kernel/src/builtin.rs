@@ -56,7 +56,8 @@ pub fn supported_callbacks(id: u8, env: Environment) -> u16 {
         (ALLOWLIST, Router) => 0b0101,
         (ALLOWLIST, Token) => 0b1100,
         (SPENDING_LIMIT, Account) => (1 << 2) | (1 << 5),
-        (SPENDING_LIMIT, Router) => 0b0101,
+        // Stateful: one callback per swap so a route is counted once.
+        (SPENDING_LIMIT, Router) => 1 << 2,
         (TIMELOCK, Account) => (1 << 2) | (1 << 4) | (1 << 6),
         (TIMELOCK, Token) => 0b1000,
         (MULTISIG, Account) => (1 << 2) | (1 << 4) | (1 << 6),
