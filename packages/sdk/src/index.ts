@@ -11,3 +11,4 @@ export * from "./signal.js";
 export * from "./spl.js";
 export * from "./client.js";
 export { PROGRAM_ERRORS } from "./generated/errors.js";
+export * as v1 from "./v1/index.js";
