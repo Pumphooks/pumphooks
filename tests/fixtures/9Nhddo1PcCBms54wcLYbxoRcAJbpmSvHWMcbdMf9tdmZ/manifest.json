@@ -1,0 +1,19 @@
+{
+ "pool": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+ "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+ "buyback_fee_recipient": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD",
+ "source_rpc": "https://api.devnet.solana.com",
+ "accounts": {
+  "pool": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+  "base_mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+  "quote_mint": "So11111111111111111111111111111111111111112",
+  "pool_base_token_account": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+  "pool_quote_token_account": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+  "amm_global_config": "ADyA8hdefvWN2dbGGWFotbzWxrAvLW83WG6QCVXvJKqw",
+  "amm_fee_config": "5PHirr8joyTMp9JMm6nW7hNDVyEYdkzDqazxPD7RaTjx",
+  "bonding_curve": "F1otPXBVAQRxAhhtTspjPkYnNuxqQDNAnDfTcTPDTBzS",
+  "pump_global": "4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf",
+  "pump_fee_config": "8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt",
+  "buyback_fee_recipient_wsol_ata": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i"
+ }
+}

@@ -17,3 +17,6 @@ id.json
 .env
 .env.*
 !.env.example
+
+# third-party program binaries (scripts/dump_programs.sh)
+tests/fixtures/programs/*.so
