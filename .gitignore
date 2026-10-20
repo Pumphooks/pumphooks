@@ -1,0 +1,19 @@
+# research clones, local toolchains, build output
+.ref/
+.tools/
+target/
+node_modules/
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+test-ledger/
+.anchor/
+
+# secrets: never commit keys, seeds, RPC or API secrets
+.keys/
+*.keypair.json
+id.json
+.env
+.env.*
+!.env.example
