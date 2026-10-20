@@ -149,8 +149,10 @@ pub mod hook_router {
         require!((venue.min_accounts..=venue.max_accounts).contains(&n), RouterError::AccountMismatch);
         let user = ctx.accounts.user.key();
         require_keys_eq!(*venue_infos[venue.signer].key, user, RouterError::AccountMismatch);
-        require_keys_eq!(*venue_infos[swap.input].key, ctx.accounts.user_input.key(), RouterError::AccountMismatch);
-        require_keys_eq!(*venue_infos[swap.output].key, ctx.accounts.user_output.key(), RouterError::AccountMismatch);
+        let (input, output) = swap.io(&p.data).ok_or(error!(RouterError::InvalidParams))?;
+        require_keys_eq!(*venue_infos[input].key, ctx.accounts.user_input.key(), RouterError::AccountMismatch);
+        require_keys_eq!(*venue_infos[output].key, ctx.accounts.user_output.key(), RouterError::AccountMismatch);
+        require_keys_eq!(*venue_infos[venue.pool].owner, venue.program, RouterError::AccountMismatch);
         let policy_key = ctx.accounts.policy.as_ref().map(|p| p.key());
         for i in venue_infos {
             require!(Some(*i.key) != policy_key && *i.key != ctx.accounts.receipt.key(), RouterError::ProtectedAccount);

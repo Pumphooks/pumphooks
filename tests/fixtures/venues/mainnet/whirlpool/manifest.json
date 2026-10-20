@@ -1,0 +1,44 @@
+{
+ "program": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+ "pool": "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE",
+ "source_rpc": "https://api.mainnet-beta.solana.com",
+ "mint_a": "So11111111111111111111111111111111111111112",
+ "vault_a": "EUuUbDcafPrmVTD5M6qoJAoyyNbihBhugADAxRMn5he9",
+ "mint_b": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+ "vault_b": "2WLWEuKDgkDUccTpbwYp1GToYktiSB1cXvreHUwiSUVP",
+ "tick_spacing": 4,
+ "tick_current": -22357,
+ "oracle": "FoKYKtRpD25TKzBMndysKpgPqbj8AdLXjfpYHXn9PGTX",
+ "whirlpools_config": "2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ",
+ "tick_arrays": [
+  [
+   -23584,
+   "Dsb9ogdvNLTtefz48ZBb6XUewrsHGmwQ82W8RMiQc5E1"
+  ],
+  [
+   -23232,
+   "7ayWKntkc7zDBSUHQPjBKexQRzGf9XUgCiSZN1xj6Bey"
+  ],
+  [
+   -22880,
+   "7T6JQngtMoLfPoxT6ZpbzY1uGiWkGPgwLC2vR1sTjPsn"
+  ],
+  [
+   -22528,
+   "32wMhfqGgeaftnPacPR6pqBPL3agbd7to1oUsqo6y14F"
+  ],
+  [
+   -22176,
+   "8NPFeBD52yqJWnsmBNma9qXXGEjXa6WatYcLMXjzSeyK"
+  ],
+  [
+   -21824,
+   "D3461zSTVPNdBFPRk2b6zpqQ93g2LW5Kw2potgMdxNJP"
+  ],
+  [
+   -21472,
+   "6hA1LN1fzCiXqymDiQXeBFn5da1b7STP1L7JmDc6hR3M"
+  ]
+ ],
+ "oracle_exists": false
+}

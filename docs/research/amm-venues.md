@@ -65,6 +65,16 @@ Surprises, in order of impact:
      which shows the suite detects a wrong adapter entry.
    - Not covered: swaps inside a DAMM v2 rate-limiter window. Both cloned pools are past it. Item 1
      still applies to those swaps.
+   - Concentrated liquidity (mainnet binaries, SOL/USDC pools cloned with the neighbouring tick or
+     bin arrays by `fetch_venue_fixtures.py concentrated`):
+     - Raydium CLMM `swap_v2` both ways (bitmap extension first in the remaining accounts, then tick
+       arrays from the current one in the price direction).
+     - Orca Whirlpools `swap_v2` both ways. The adapter reads `a_to_b` (data byte 41) to decide which
+       owner account is the input; claiming the other one is refused with `AccountMismatch`. Orca's
+       code is under the Orca License; nothing was copied, only the public instruction interface.
+     - Meteora DLMM `swap2` both ways **via CPI from the router**: `CpiDisabled` (6100) was not raised
+       for this pair. The bitmap extension must be passed writable.
+   - The router also checks that the venue's pool account is owned by the venue program.
 
 ---
 
@@ -764,7 +774,7 @@ sysvar except DAMM v2 and DBC (optional remaining account).
 
 | Item | How to verify |
 | --- | --- |
-| DLMM `CpiDisabled` is not raised on `swap2` via CPI | LiteSVM: load `.ref/bins/devnet/meteora_dlmm.so`, clone a devnet pair, CPI `swap2` from a test program |
+| DLMM `CpiDisabled` on other pairs | Verified not raised for mainnet SOL/USDC (`meteora_dlmm_mainnet_binary_routes_both_ways`); the trigger is still unknown, so other pairs may differ |
 | LaunchLab accepts CPI `buy_exact_in` and the remaining-tail order | LiteSVM with `.ref/bins/devnet/raydium_launchlab.so` and a cloned devnet pool |
 | DAMM v2 / DBC rate-limiter behaviour at height 2 vs 3 | LiteSVM: create a rate-limited pool (both repos have test fixtures), call from top-level router and from a wrapper program |
 | ALT-loaded accounts usable in Jupiter CPI | LiteSVM or devnet transaction with a v0 message whose CPI accounts come from a lookup table |

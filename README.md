@@ -92,7 +92,7 @@ Stated plainly, everywhere:
   in account vault PDAs. No hook ever gets a signer for either.
 - **No arbitrary CPI from config.** Builtins are fixed code. Program hooks are pinned to a registry
   version, its upgrade authority and its deploy slot.
-- **Router hooks are bypassable.** PumpSwap, Raydium and Meteora don't call external hooks. The router
+- **Router hooks are bypassable.** PumpSwap, Raydium, Orca and Meteora don't call external hooks. The router
   runs hooks around its own CPI, and it measures real balance changes instead of trusting the venue.
 - **Pool hooks govern only pools in this program.**
 - **"Audited" only means audited.** The registry distinguishes *community*, *tested* and *audited*,
@@ -106,10 +106,14 @@ Stated plainly, everywhere:
 | Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | **verified**: mainnet binary, pool made by its own `initialize` on the live AmmConfig, both swap instructions |
 | Raydium CPMM (devnet) | `DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb` | **verified**: devnet binary, same coverage |
 | Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` | **verified**: devnet and mainnet binaries with cloned funded pools, `swap2` (exact in and exact out) and `swap`, outside the rate-limiter window |
+| Raydium CLMM | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` | **verified**: mainnet binary, cloned SOL/USDC pool with tick arrays and bitmap extension, `swap_v2` both ways |
+| Raydium CLMM (devnet) | `DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH` | listed, **not verified** (no devnet pool exercised yet) |
+| Orca Whirlpools | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` | **verified**: mainnet binary, cloned SOL/USDC whirlpool, `swap_v2` both directions; input/output follow `a_to_b` |
+| Meteora DLMM | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` | **verified**: mainnet binary, cloned SOL/USDC pair with bin arrays, `swap2` both ways via CPI |
 
 Every venue starts disabled; the router admin enables each one. Verification lives in
 `tests/hooks/tests/venues.rs`: receipts must equal measured balance deltas, and the router's own
-min-out, max-in and SOL caps must bind independently of the venue. Fixtures come from
+min-out, max-in and SOL caps must bind independently of the venue, and the pool account must be owned by the venue program. Fixtures come from
 `scripts/dump_programs.sh` and `scripts/fetch_venue_fixtures.py`, using public RPCs only.
 
 ## 05 &nbsp;/&nbsp; Repository

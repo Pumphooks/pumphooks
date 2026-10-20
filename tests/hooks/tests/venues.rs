@@ -25,6 +25,7 @@ use solana_keypair::Keypair;
 const ID: Pk = hook_router::ID;
 const SYS: Pk = anchor_lang::system_program::ID;
 const ATA: Pk = pump_adapter::ATA_PROGRAM_ID;
+const TOKEN_2022: Pk = anchor_spl::token_2022::ID;
 
 #[derive(Clone, Copy, PartialEq)]
 enum Net {
@@ -135,7 +136,7 @@ fn route_and_check(s: &mut Svm, user: &Keypair, sw: &Swap, venue: u8, nonce: u64
     let r: Receipt = s.get(&receipt);
     let (in1, out1) = (s.token_balance(&sw.input), s.token_balance(&sw.output));
     assert_eq!(r.venue, venue);
-    assert!(r.venue_verified);
+    assert!(r.venue_verified, "only venues exercised here may be marked verified");
     assert_eq!(r.spent, in0 - in1, "receipt spent = measured input delta");
     assert_eq!(r.received, out1 - out0, "receipt received = measured output delta");
     assert!(r.spent > 0 && r.received > 0);
@@ -152,17 +153,219 @@ fn router_limits_bind(s: &mut Svm, user: &Keypair, sw: &Swap, nonce: u64) {
     assert!(s.send_err(&[i], &[user]).contains("MaxInExceeded"));
 }
 
+const NATIVE_MINT: Pk = pump_adapter::NATIVE_MINT;
+
 /// A token account with `amount`, written directly (the cloned mints' authorities are not ours).
+/// Wrapped-SOL accounts are written as native accounts (lamports = rent reserve + amount).
 fn forge_token_account(s: &mut Svm, mint: &Pk, owner: &Pk, amount: u64) -> Pk {
     let k = Pk::new_unique();
+    let rent = s.svm.minimum_balance_for_rent_exemption(165);
     let mut d = vec![0u8; 165];
     d[..32].copy_from_slice(mint.as_ref());
     d[32..64].copy_from_slice(owner.as_ref());
     d[64..72].copy_from_slice(&amount.to_le_bytes());
     d[108] = 1; // initialized
-    let lamports = s.svm.minimum_balance_for_rent_exemption(165);
+    let mut lamports = rent;
+    if *mint == NATIVE_MINT {
+        d[109] = 1; // is_native: Some(rent reserve)
+        d[113..121].copy_from_slice(&rent.to_le_bytes());
+        lamports += amount;
+    }
     s.svm.set_account(addr(&k), Account { lamports, data: d, owner: addr(&SPL), executable: false, rent_epoch: 0 }).unwrap();
     k
+}
+
+const MEMO: Pk = anchor_lang::solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+
+/// Clones every account saved for a mainnet concentrated-liquidity venue.
+fn clone_dir(s: &mut Svm, dir: &PathBuf) {
+    for f in std::fs::read_dir(dir).unwrap() {
+        let name = f.unwrap().file_name().into_string().unwrap();
+        if let Some(key) = name.strip_suffix(".json").filter(|k| *k != "manifest") {
+            clone_account(s, dir, key);
+        }
+    }
+}
+
+fn arrays(m: &serde_json::Value, field: &str) -> Vec<(i64, Pk)> {
+    m[field].as_array().unwrap().iter().map(|a| (a[0].as_i64().unwrap(), Pk::from_str(a[1].as_str().unwrap()).unwrap())).collect()
+}
+
+/// Funded user accounts for (mint_a, mint_b), 1% of each vault.
+fn concentrated_user(s: &mut Svm, mints: [Pk; 2], vaults: [Pk; 2]) -> (Keypair, [Pk; 2]) {
+    let user = s.funded(10);
+    let u = kp(&user);
+    let ua = [0, 1].map(|i| {
+        let v = s.token_balance(&vaults[i]);
+        forge_token_account(s, &mints[i], &u, v / 100)
+    });
+    (user, ua)
+}
+
+// ---------------------------------------------------------------- Raydium CLMM (mainnet)
+
+#[test]
+fn raydium_clmm_mainnet_binary_routes_both_ways() {
+    let (mut s, _) = router(venues::RAYDIUM_CLMM);
+    let (dir, m) = manifest(Net::Mainnet, "raydium-clmm");
+    let program = key(&m, "program");
+    load_program(&mut s, &program, "raydium_clmm_mainnet.so");
+    load_program(&mut s, &MEMO, "spl_memo.so");
+    clone_dir(&mut s, &dir);
+    let (pool, config, obs, ext) = (key(&m, "pool"), key(&m, "amm_config"), key(&m, "observation"), key(&m, "bitmap_extension"));
+    let mint = [key(&m, "mint_0"), key(&m, "mint_1")];
+    let vault = [key(&m, "vault_0"), key(&m, "vault_1")];
+    let ticks = arrays(&m, "tick_arrays");
+    let tick = m["tick_current"].as_i64().unwrap();
+    let size = 60 * m["tick_spacing"].as_i64().unwrap();
+    let current = tick.div_euclid(size) * size;
+    let (user, ua) = concentrated_user(&mut s, mint, vault);
+    let u = kp(&user);
+
+    let swap = |from: usize, amount: u64| -> Swap {
+        let to = 1 - from;
+        let mut metas = vec![
+            Meta::new_readonly(u, true),
+            Meta::new_readonly(config, false),
+            Meta::new(pool, false),
+            Meta::new(ua[from], false),
+            Meta::new(ua[to], false),
+            Meta::new(vault[from], false),
+            Meta::new(vault[to], false),
+            Meta::new(obs, false),
+            Meta::new_readonly(SPL, false),
+            Meta::new_readonly(TOKEN_2022, false),
+            Meta::new_readonly(MEMO, false),
+            Meta::new_readonly(mint[from], false),
+            Meta::new_readonly(mint[to], false),
+            Meta::new_readonly(ext, false),
+        ];
+        // Tick arrays from the current one in the price direction (0 → 1 moves the tick down).
+        let mut path: Vec<&(i64, Pk)> = ticks.iter().filter(|(st, _)| if from == 0 { *st <= current } else { *st >= current }).collect();
+        path.sort_by_key(|(st, _)| if from == 0 { -st } else { *st });
+        metas.extend(path.iter().take(3).map(|(_, k)| Meta::new(*k, false)));
+        let mut data = disc("swap_v2").to_vec();
+        data.extend_from_slice(&amount.to_le_bytes());
+        data.extend_from_slice(&1u64.to_le_bytes());
+        data.extend_from_slice(&0u128.to_le_bytes());
+        data.push(1); // is_base_input
+        Swap { program, metas, data, input: ua[from], output: ua[to] }
+    };
+    let (_, usdc) = route_and_check(&mut s, &user, &swap(0, 1_000_000_000), venues::RAYDIUM_CLMM, 1);
+    route_and_check(&mut s, &user, &swap(1, usdc / 2), venues::RAYDIUM_CLMM, 2);
+    router_limits_bind(&mut s, &user, &swap(0, 100_000_000), 3);
+}
+
+// ---------------------------------------------------------------- Orca Whirlpools (mainnet)
+
+#[test]
+fn orca_whirlpool_mainnet_binary_routes_both_ways() {
+    let (mut s, _) = router(venues::ORCA_WHIRLPOOL);
+    let (dir, m) = manifest(Net::Mainnet, "whirlpool");
+    let program = key(&m, "program");
+    load_program(&mut s, &program, "orca_whirlpool_mainnet.so");
+    load_program(&mut s, &MEMO, "spl_memo.so");
+    clone_dir(&mut s, &dir);
+    let pool = key(&m, "pool");
+    let mint = [key(&m, "mint_a"), key(&m, "mint_b")];
+    let vault = [key(&m, "vault_a"), key(&m, "vault_b")];
+    let oracle = key(&m, "oracle");
+    let tick = m["tick_current"].as_i64().unwrap();
+    let size = 88 * m["tick_spacing"].as_i64().unwrap();
+    let current = tick.div_euclid(size) * size;
+    let pda = |st: i64| Pk::find_program_address(&[b"tick_array", pool.as_ref(), st.to_string().as_bytes()], &program).0;
+    let (user, ua) = concentrated_user(&mut s, mint, vault);
+    let u = kp(&user);
+
+    let swap = |a_to_b: bool, amount: u64| -> Swap {
+        let step = if a_to_b { -size } else { size };
+        let mut metas = vec![
+            Meta::new_readonly(SPL, false),
+            Meta::new_readonly(SPL, false),
+            Meta::new_readonly(MEMO, false),
+            Meta::new_readonly(u, true),
+            Meta::new(pool, false),
+            Meta::new_readonly(mint[0], false),
+            Meta::new_readonly(mint[1], false),
+            Meta::new(ua[0], false),
+            Meta::new(vault[0], false),
+            Meta::new(ua[1], false),
+            Meta::new(vault[1], false),
+        ];
+        metas.extend((0..3).map(|i| Meta::new(pda(current + i * step), false)));
+        metas.push(Meta::new(oracle, false));
+        let mut data = disc("swap_v2").to_vec();
+        data.extend_from_slice(&amount.to_le_bytes());
+        data.extend_from_slice(&1u64.to_le_bytes());
+        data.extend_from_slice(&0u128.to_le_bytes());
+        data.push(1); // amount_specified_is_input
+        data.push(a_to_b as u8);
+        data.push(0); // remaining_accounts_info: None
+        let (input, output) = if a_to_b { (ua[0], ua[1]) } else { (ua[1], ua[0]) };
+        Swap { program, metas, data, input, output }
+    };
+    let (_, got) = route_and_check(&mut s, &user, &swap(true, 1_000_000_000), venues::ORCA_WHIRLPOOL, 1);
+    route_and_check(&mut s, &user, &swap(false, got / 2), venues::ORCA_WHIRLPOOL, 2);
+    router_limits_bind(&mut s, &user, &swap(true, 100_000_000), 3);
+    // The direction flag decides which account is the input: claiming the other one is refused.
+    let mut wrong = swap(true, 100_000_000);
+    std::mem::swap(&mut wrong.input, &mut wrong.output);
+    let (i, _) = route_ix(&s, &u, &wrong, u64::MAX, 1, 0, 9);
+    assert!(s.send_err(&[i], &[&user]).contains("AccountMismatch"));
+}
+
+// ---------------------------------------------------------------- Meteora DLMM (mainnet)
+
+#[test]
+fn meteora_dlmm_mainnet_binary_routes_both_ways() {
+    let (mut s, _) = router(venues::METEORA_DLMM);
+    let (dir, m) = manifest(Net::Mainnet, "dlmm");
+    let program = key(&m, "program");
+    load_program(&mut s, &program, "meteora_dlmm_mainnet.so");
+    load_program(&mut s, &MEMO, "spl_memo.so");
+    clone_dir(&mut s, &dir);
+    let pool = key(&m, "pool");
+    let mint = [key(&m, "mint_x"), key(&m, "mint_y")];
+    let vault = [key(&m, "reserve_x"), key(&m, "reserve_y")];
+    let (oracle, ext, events) = (key(&m, "oracle"), key(&m, "bitmap_extension"), key(&m, "event_authority"));
+    let bins = arrays(&m, "bin_arrays");
+    let current = m["active_id"].as_i64().unwrap().div_euclid(70);
+    let (user, ua) = concentrated_user(&mut s, mint, vault);
+    let u = kp(&user);
+
+    let swap = |from: usize, amount: u64| -> Swap {
+        let to = 1 - from;
+        let mut metas = vec![
+            Meta::new(pool, false),
+            Meta::new(ext, false),
+            Meta::new(vault[0], false),
+            Meta::new(vault[1], false),
+            Meta::new(ua[from], false),
+            Meta::new(ua[to], false),
+            Meta::new_readonly(mint[0], false),
+            Meta::new_readonly(mint[1], false),
+            Meta::new(oracle, false),
+            Meta::new_readonly(program, false), // host_fee_in: none
+            Meta::new_readonly(u, true),
+            Meta::new_readonly(SPL, false),
+            Meta::new_readonly(SPL, false),
+            Meta::new_readonly(MEMO, false),
+            Meta::new_readonly(events, false),
+            Meta::new_readonly(program, false),
+        ];
+        // Selling X moves the active bin down.
+        let mut path: Vec<&(i64, Pk)> = bins.iter().filter(|(i, _)| if from == 0 { *i <= current } else { *i >= current }).collect();
+        path.sort_by_key(|(i, _)| if from == 0 { -i } else { *i });
+        metas.extend(path.iter().take(3).map(|(_, k)| Meta::new(*k, false)));
+        let mut data = disc("swap2").to_vec();
+        data.extend_from_slice(&amount.to_le_bytes());
+        data.extend_from_slice(&1u64.to_le_bytes());
+        data.extend_from_slice(&0u32.to_le_bytes()); // remaining_accounts_info: no slices
+        Swap { program, metas, data, input: ua[from], output: ua[to] }
+    };
+    let (_, got) = route_and_check(&mut s, &user, &swap(0, 1_000_000_000), venues::METEORA_DLMM, 1);
+    route_and_check(&mut s, &user, &swap(1, got / 2), venues::METEORA_DLMM, 2);
+    router_limits_bind(&mut s, &user, &swap(0, 100_000_000), 3);
 }
 
 // ---------------------------------------------------------------- Raydium CPMM

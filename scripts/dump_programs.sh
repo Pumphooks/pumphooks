@@ -14,4 +14,8 @@ dump DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb raydium_cpmm_devnet "$DEVNET"
 dump CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C raydium_cpmm_mainnet "$MAINNET"
 dump cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG meteora_damm_v2_devnet "$DEVNET"
 dump cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG meteora_damm_v2_mainnet "$MAINNET"
+dump CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK raydium_clmm_mainnet "$MAINNET"
+dump whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc orca_whirlpool_mainnet "$MAINNET"
+dump LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo meteora_dlmm_mainnet "$MAINNET"
+dump MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr spl_memo "$MAINNET"
 shasum -a 256 "$OUT"/*.so

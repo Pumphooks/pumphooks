@@ -1,0 +1,45 @@
+{
+ "program": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+ "pool": "3ucNos4NbumPLZNWztqGHNFFgkHeRMBQAVemeeomsUxv",
+ "source_rpc": "https://api.mainnet-beta.solana.com",
+ "amm_config": "3h2e43PunVA5K34vwKCLHWhZF4aZpyaC9RmxvshGAQpL",
+ "mint_0": "So11111111111111111111111111111111111111112",
+ "mint_1": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+ "vault_0": "4ct7br2vTPzfdmY3S5HLtTxcGSBfn6pnw98hsS6v359A",
+ "vault_1": "5it83u57VRrVgc51oNV19TTmAJuffPx5GtGwQr7gQNUo",
+ "observation": "3Y695CuQ8AP4anbwAqiEBeQF9KxqHFr8piEwvw3UePnQ",
+ "tick_spacing": 1,
+ "tick_current": -22357,
+ "bitmap_extension": "4NFvUKqknMpoe6CWTzK758B8ojVLzURL5pC6MtiaJ8TQ",
+ "tick_arrays": [
+  [
+   -22560,
+   "6T5abQNSXjTZKRsa9B3aMKNkDmqcew6DermJxzn2CvHK"
+  ],
+  [
+   -22500,
+   "3LFcLp3PhjKfRRjawAESr3Gm69Y11f2L4e7NvZAvwacD"
+  ],
+  [
+   -22440,
+   "CimMRswnbZ2FbUhFGown1xQab98Taom4tncKxkTURzrm"
+  ],
+  [
+   -22380,
+   "BN1uxz9ySXSL2wFhthAEZtfLDcZGnUZtiWZHQ1evWZod"
+  ],
+  [
+   -22320,
+   "8ZtyVo1jL3oVgTGLrQ9rFtzzXSxVqqAyKA5kQc3pitBc"
+  ],
+  [
+   -22260,
+   "2kJxf6tYJBEBhCCm6KqQdjWeKwQanURLbJEUs1ZqeZ4H"
+  ],
+  [
+   -22200,
+   "5NrxehMKLpeTv6TPgNtVrn8wzAJMBm6oZNNNPGpCuXV8"
+  ]
+ ],
+ "bitmap_extension_exists": true
+}
