@@ -19,6 +19,7 @@ members = [
     "tests/integration",
     "tests/core",
     "tests/hooks",
+    "bench",
 ]
 
 [workspace.package]

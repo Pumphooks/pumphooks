@@ -80,6 +80,7 @@ pub mod token_hooks {
         p.authority = ctx.accounts.authority.key();
         p.delay = delay;
         p.bump = ctx.bumps.policy;
+        p.metas_bump = ctx.bumps.extra_account_metas;
         p.stack = *s;
         emit!(PolicyUpdated { mint, staged: false });
         Ok(())
@@ -345,7 +346,9 @@ pub struct TokenPolicy {
     pub delay: i64,
     pub pending_at: i64,
     pub bump: u8,
-    pub _pad: [u8; 7],
+    /// Canonical bump of this mint's extra-account-metas PDA, so `execute` verifies it at a fixed cost.
+    pub metas_bump: u8,
+    pub _pad: [u8; 6],
     pub stack: HookStack,
 }
 
@@ -392,7 +395,7 @@ pub struct Execute<'info> {
     /// CHECK: the transfer authority (owner or delegate); Token-2022 has verified it.
     pub owner: UncheckedAccount<'info>,
     /// CHECK: the interface's validation account for this mint.
-    #[account(seeds = [EXTRA_METAS_SEED, mint.key().as_ref()], bump)]
+    #[account(seeds = [EXTRA_METAS_SEED, mint.key().as_ref()], bump = policy.load()?.metas_bump)]
     pub extra_account_metas: UncheckedAccount<'info>,
     #[account(mut, seeds = [POLICY_SEED, mint.key().as_ref()], bump = policy.load()?.bump)]
     pub policy: AccountLoader<'info, TokenPolicy>,

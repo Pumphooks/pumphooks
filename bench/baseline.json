@@ -1,0 +1,91 @@
+{
+  "runtime": "mollusk-svm 0.15.1 (unit), litesvm 0.16.0 with bundled Token-2022 11.0 (transaction)",
+  "programs": [
+    [
+      "token_hooks",
+      "969dd56de202ba3e740f6b6aa6875d43406aee7679c4b2522266b49d196b7e36"
+    ]
+  ],
+  "unit": [
+    {
+      "name": "execute: empty stack",
+      "compute_units": 6798,
+      "ok": true,
+      "kernel_estimate": null
+    },
+    {
+      "name": "execute: allowlist",
+      "compute_units": 6937,
+      "ok": true,
+      "kernel_estimate": 2500
+    },
+    {
+      "name": "execute: denylist",
+      "compute_units": 6943,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: max-size",
+      "compute_units": 6915,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: spending-limit",
+      "compute_units": 6948,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: time-window",
+      "compute_units": 6916,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: timelock",
+      "compute_units": 6906,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: accounting",
+      "compute_units": 6930,
+      "ok": true,
+      "kernel_estimate": 300
+    },
+    {
+      "name": "execute: credential",
+      "compute_units": 8252,
+      "ok": true,
+      "kernel_estimate": 1500
+    },
+    {
+      "name": "execute: all 8 token builtins",
+      "compute_units": 9077,
+      "ok": true,
+      "kernel_estimate": 5800
+    }
+  ],
+  "transaction": [
+    {
+      "name": "transfer_checked: Token-2022, no hook",
+      "compute_units": 1790,
+      "ok": true,
+      "kernel_estimate": null
+    },
+    {
+      "name": "transfer_checked: token-hooks, empty policy",
+      "compute_units": 19349,
+      "ok": true,
+      "kernel_estimate": null
+    },
+    {
+      "name": "transfer_checked: token-hooks, 7 builtins",
+      "compute_units": 20186,
+      "ok": true,
+      "kernel_estimate": 4300
+    }
+  ]
+}

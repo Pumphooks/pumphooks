@@ -69,6 +69,7 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm --filter @pump-hooks/execution-lab test
+          pnpm --filter @pump-hooks/hook-bench test
         env:
           PUMPHOOKS_SBF: "1"
 
