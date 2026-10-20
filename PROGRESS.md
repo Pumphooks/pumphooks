@@ -1,6 +1,61 @@
 # PROGRESS
 
-## STATUS
+## STATUS: generic core (codename HOOKS)
+
+The protocol is being rebuilt as a generic programmable-market core, with the Pump router as an
+optional adapter. Phase 1 is done and builds and tests locally:
+
+- research ([docs/research.md](docs/research.md));
+- architecture and the frozen hook interface
+  ([docs/architecture.md](docs/architecture.md), [docs/hook-interface.md](docs/hook-interface.md));
+- the core program and its tests.
+
+What is built:
+
+- `crates/hooks-interface`: v1 wire layouts, namespaced discriminators, permission rules,
+  `verify_core_call`, and shared rounding-safe math. 9 tests.
+- `programs/hooks-core` (Anchor 0.31.1; local program id `8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw`;
+  not deployed):
+  - **Pools and settlement:** sorted-mint pools keyed by hook and salt, PDA vaults and an LP mint;
+    constant-product swaps (exact-in and exact-out) with deltas; proportional liquidity with
+    locked minimum liquidity; donate.
+  - **Hook powers:** before/after callbacks for initialize, liquidity, swap and donate; swap and
+    liquidity return deltas; per-swap dynamic fees; a custom-curve `quote`.
+  - **Hook credit:** deposit, withdraw, credit swap (no callbacks) and credit donate, signed by
+    the hook-authority PDA; `set_fee`.
+  - **Registry:** only the upgrade authority can register an upgradeable hook; anyone can
+    register an immutable one. Attestations are signed by named attesters.
+  - **Protocol:** initialization requires the core's upgrade authority. Protocol fee share is
+    capped at 25% of the LP fee and is 0 at launch. Pause never blocks withdrawals.
+  - **Safety:** optional hook pinning to a deploy slot; Token-2022 allowlist that fails closed;
+    vault solvency checked after every operation.
+  - **Engine:** a pure settlement engine with 11 unit and property tests (token conservation
+    under arbitrary hook results).
+- `programs/test-hook`: TEST ONLY. A scriptable hook with hostile modes.
+- `tests/core`: 21 LiteSVM tests. Besides normal operation, they show that a hook cannot:
+  - spend trader tokens (privilege escalation);
+  - re-enter the core;
+  - pass silence off as approval;
+  - accept forged callbacks;
+  - overdraw its credit;
+  - flip the swap type;
+  - exceed the trader's limit;
+  - exceed the fee cap;
+  - keep working after a redeploy when pinned.
+- **Compute:** a plain swap costs 17.9k CU. A swap through a before- plus after-swap hook costs
+  34.0k CU, which is constant because hooks verify the caller using the bump passed in the context.
+
+Next:
+
+- reference hooks: volatility dynamic fee, oracle-priced quote curve, JIT / LP-vesting guard, and
+  a limit-order / TWAMM hook using credit swaps;
+- hook dev kit and `create-hook` scaffolder;
+- TypeScript SDK and simulator for the core;
+- indexer extension;
+- centralized branding config, and web repositioning (pools, registry, explorer, docs);
+- devnet deploy once the deployer has devnet SOL.
+
+## STATUS: Pump router (now the optional adapter)
 
 The build order is done locally through the SDK, CLI, indexer and web app:
 
