@@ -533,5 +533,5 @@ fn compute_budget_report() {
     let hooked = env.send_ok(&[ix], &[&signer(&t)]).compute_units_consumed;
     println!("swap CU: plain {plain}, with before+after hook {hooked}");
     assert!(plain < 30_000, "plain swap {plain} CU");
-    assert!(hooked < 50_000, "hooked swap {hooked} CU");
+    assert!(hooked < 40_000, "hooked swap {hooked} CU");
 }

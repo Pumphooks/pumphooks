@@ -48,8 +48,10 @@ accounts = [0] callback authority  PDA ["callback", hook_program_id] under the c
 
 A hook **must** verify, before anything else:
 
-- account 0 is a signer, and its key equals `find_program_address(["callback", own_program_id],
-  CORE_PROGRAM_ID)`;
+- account 0 is a signer, and its key equals `create_program_address(["callback", own_program_id,
+  [context.authority_bump]], CORE_PROGRAM_ID)`. Taking the bump from the context is safe because
+  only the core can sign for its PDAs. It costs a fixed ~1.5k CU, whereas `find_program_address`
+  costs vary by program id;
 - account 1's key equals `context.pool`, and it is owned by `CORE_PROGRAM_ID`.
 
 `hooks_interface::verify_core_call` does both. Skipping this check is how the Cork hook lost about
@@ -67,7 +69,7 @@ shows the state before the operation. Read reserves, supply and fee from the con
 | 0 | 1 | `version` = 1 |
 | 1 | 1 | `callback` id |
 | 2 | 1 | `swap_flags`: bit0 `zero_for_one` (token 0 in), bit1 `exact_in` |
-| 3 | 1 | reserved (0) |
+| 3 | 1 | `authority_bump`: canonical bump of the callback-authority PDA |
 | 4 | 4 | `permissions` (pool mask) |
 | 8 | 32 | `pool` |
 | 40 | 32 | `caller`: the signer that initiated the operation |

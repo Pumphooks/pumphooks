@@ -179,7 +179,9 @@ pub struct HookContext {
     pub version: u8,
     pub callback: u8,
     pub swap_flags: u8,
-    pub _reserved: u8,
+    /// Canonical bump of the callback-authority PDA, so hooks verify with one
+    /// `create_program_address` instead of a variable-cost `find_program_address`.
+    pub authority_bump: u8,
     pub permissions: u32,
     pub pool: [u8; 32],
     pub caller: [u8; 32],
@@ -359,7 +361,14 @@ pub fn verify_core_call(
     if !authority.is_signer {
         return Err(ProgramError::MissingRequiredSignature);
     }
-    if *authority.key != callback_authority(program_id).0 {
+    // Any bump is safe here: only the core can sign for its own PDAs, and it signs with the
+    // canonical one.
+    let expected = Pubkey::create_program_address(
+        &[CALLBACK_SEED, program_id.as_ref(), &[ctx.authority_bump]],
+        &CORE_PROGRAM_ID,
+    )
+    .map_err(|_| ProgramError::InvalidArgument)?;
+    if *authority.key != expected {
         return Err(ProgramError::InvalidArgument);
     }
     if pool.key.to_bytes() != ctx.pool || *pool.owner != CORE_PROGRAM_ID {

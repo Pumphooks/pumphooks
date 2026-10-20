@@ -105,7 +105,7 @@ pub fn cpi_hooks<'a, 'info>(
         version: INTERFACE_VERSION,
         callback: 0,
         swap_flags: 0,
-        _reserved: 0,
+        authority_bump: pool.callback_bump,
         permissions: pool.permissions,
         pool: pool_info.key.to_bytes(),
         caller: caller.to_bytes(),
