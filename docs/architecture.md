@@ -38,7 +38,7 @@ What the router gives users that direct trading does not:
                               ▼  on-chain
   ┌──────────────────────── programs/pump-hooks ────────────────────────┐
   │ registry: GlobalConfig, HookDefinition, MarketConfig, Policy          │
-  │ router:   route_buy_amm / route_sell_amm / route_buy_curve / route_sell_curve │
+  │ router:   route_amm / route_curve (mode: buy or sell)                 │
   │ runtime:  crates/hook-runtime (first-party modules, compiled in)      │
   │ policy:   crates/policy-vm (bounded evaluator)                        │
   │ adapter:  crates/pump-adapter (only place that knows Pump accounts)   │
@@ -118,7 +118,7 @@ This is an architectural decision that could be revisited; it is documented, not
 
 ## 5. Routed trade lifecycle
 
-`route_buy_amm(mode, amount, limit)` (others are symmetric):
+`route_amm(mode, amount, limit)`; `route_curve` is symmetric, and `mode` selects buy or sell:
 
 1. **Validate protocol**: `GlobalConfig` not paused for routing.
 2. **Validate market**: `MarketConfig` PDA matches seeds, `ENABLED`, venue = PumpSwap,
@@ -189,7 +189,7 @@ ComputeBudget::SetComputeUnitPrice           (optional)
 ATA::CreateIdempotent (user base ATA)
 ATA::CreateIdempotent (user WSOL ATA)
 System::Transfer + Token::SyncNative          (wrap)
-pump_hooks::route_buy_amm                     (5 + 17 + policy/strategy accounts)
+pump_hooks::route_amm                         (5 + 17 + policy/strategy accounts)
 Token::CloseAccount (WSOL)                    (unwrap)
 ```
 

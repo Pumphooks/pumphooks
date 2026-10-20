@@ -2,11 +2,19 @@
 
 ## STATUS
 
-Phases 0–5 of the build order are done locally: the Hook ABI, runtime, registry, Pump adapter
-and router exist, and routed trades on an existing Pump token work end to end. They are tested
-against the real devnet `pump_amm` binary and the cloned state of an existing devnet pool.
+The build order is done locally through the SDK, CLI, indexer and web app:
 
-The devnet deployment is blocked because the deployer has no devnet SOL.
+- Hook ABI, runtime, registry, Pump adapter and router;
+- existing-token integration (curve and PumpSwap) and the first-party hooks;
+- Policy VM, SDK, CLI and indexer;
+- the marketplace, Composer, simulator, market page and transaction explorer.
+
+Routed trades on existing Pump tokens work end to end against the real devnet Pump binaries
+in LiteSVM.
+
+The devnet deployment is blocked because the deployer has no devnet SOL. The web app reads live
+devnet state, such as Pump token detection, and shows "not deployed" wherever it needs the
+program.
 
 ## COMPLETED
 
@@ -47,11 +55,50 @@ The devnet deployment is blocked because the deployer has no devnet SOL.
 - Scripts:
   - `find_devnet_pool.py` lists existing pools;
   - `fetch_fixtures.sh` snapshots the accounts;
-  - `dump_programs.sh` dumps the Pump binaries.
+  - `dump_programs.sh` dumps the Pump binaries;
+  - `build_program.sh` builds the program;
+  - `shot.mjs` takes visual-check screenshots.
+- `packages/sdk` (`PumpHooksClient`):
+  - `detect` for existing tokens;
+  - `createMarket`, `installHook` and `createPolicy`;
+  - `buy` / `sell` routing with the Pump ALT;
+  - `previewStack`: create + install + routed buy in one simulated transaction (≤ 1232 bytes
+    with the ALT);
+  - `simulate` and `getExecutionTrace`;
+  - config schemas, `CONFIG_PRESETS` and `validateConfig` (on-chain parity test);
+  - the Composer compiler (`compilePolicy` / `describePolicy`).
+- `packages/cli` (`pump-hooks`): status, inspect, hooks, market, install/uninstall, policy, quote,
+  simulate, trade and tx. It never reads the Solana CLI config.
+- `services/indexer`:
+  - resumable and idempotent: an append-only JSONL store whose cursor is the last record, so a
+    torn write is dropped and fetched again;
+  - finalized commitment by default;
+  - per-market and per-module stats;
+  - a read-only HTTP API.
+- `hooks/*/hook.json`: marketplace manifests. A test checks them against the SDK module table.
+- `apps/web` (Next.js 16):
+  - dithered WebGL stage with the hook-shaped colour lens.
+  - Pages:
+    - `/` home;
+    - `/hook`, the primary flow: paste CA, detect, categories, stack, configure, simulate,
+      activate;
+    - `/hooks` marketplace and `/hooks/[slug]`, with callbacks, capabilities, config schema, the
+      on-chain registry and limitations;
+    - `/build` Composer;
+    - `/market/[address]`: stack, policies, recent transactions from chain, and a routed buy
+      with simulation;
+    - `/tx/[signature]`: an execution trace decoded from logs, which flags unrouted transactions
+      as bypassing the router;
+    - `/simulate`;
+    - `/docs`.
+  - Executions are shown only when an indexer is configured.
+  - Every audit field reads "unaudited".
+- `README.md`, `SECURITY.md`, `LICENSE` (Apache-2.0).
 
 ## TESTS
 
-`cargo test --workspace`: 73 passing.
+107 passing: `cargo test --workspace` (77) + `pnpm -r test` (30). `next build` passes for all
+18 routes.
 
 | Suite | Tests |
 | --- | ---: |
@@ -59,7 +106,12 @@ The devnet deployment is blocked because the deployer has no devnet SOL.
 | policy-vm | 20 |
 | hook-runtime | 22 |
 | pump-adapter (unit + equivalence vs pump-rust-client) | 6 |
-| integration (LiteSVM, real Pump AMM) | 11 |
+| program unit | 1 |
+| integration: PumpSwap route (LiteSVM, real `pump_amm`) | 11 |
+| integration: curve route (LiteSVM, real `pump`) | 4 |
+| sdk (unit, PumpSwap e2e, curve e2e, previewStack, presets) | 22 |
+| cli (parsing, e2e on a cloned devnet token) | 3 |
+| indexer (real executions: decode, pagination/gaps, torn write, HTTP, backfill) | 5 |
 
 Integration coverage:
 
@@ -79,7 +131,6 @@ Integration coverage:
 
 - Devnet deployment and the milestone transaction on existing devnet pool
   `9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ`.
-- Next phases: SDK, CLI, indexer and the web app.
 
 ## BLOCKERS
 
@@ -92,11 +143,11 @@ Integration coverage:
 
 1. Fund the deployer, then deploy to devnet. Initialize, register modules, and create a market on
    the existing devnet token `44yV5xk8…`. Install Volume Guard, TWAP, Holder XP and SENTIENT, and
-   send a routed `buy_v2`. Decode the transaction with the indexer.
-2. LiteSVM curve-route test on an existing un-migrated devnet curve.
-3. `packages/sdk` (PumpHooksClient), `packages/cli`, `services/indexer`.
-4. `apps/web`: `/hook` primary flow, `/hooks`, `/build`, `/market/[mint]`, `/tx/[sig]`.
-5. Strategy vault (TWAP execution, treasury intents), simulator, marketplace manifests.
+   send a routed `buy_v2` from the web app. Decode the transaction in `/tx` and in the indexer.
+2. Strategy vault program (TWAP execution, treasury intents), behind explicit deposits.
+3. CU optimisations listed in `docs/benchmarks.md`.
+4. SENTIENT reference engine (off-chain signer service with bounded signals).
+5. Pump token creation as an alternate entrance (last; links to Pump today).
 
 ## KNOWN RISKS
 
@@ -107,4 +158,12 @@ Integration coverage:
 - Pre-trade sizes are constant-product estimates. After-hooks use observed deltas, and Volume
   Guard re-checks after the trade.
 - Holder XP is anti-wash rather than sybil-proof. Many wallets can each earn capped XP.
+- A synthetic migration test fills the whole curve. Partial-fill behaviour on the final buy is
+  covered only by Pump's own logic.
+- SENTIENT flags default to both restrictions. Markets must set the engine signer, and there is no
+  default signer.
+- Pump picks the buyback fee recipient at random from its configured set, and the SDK picks
+  uniformly. That recipient must already hold an ATA for the quote mint, or the trade fails
+  closed.
+- The indexer trusts its RPC. Run it against a provider you control for anything beyond display.
 - Unaudited. Nothing here claims an audit.

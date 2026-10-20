@@ -96,7 +96,7 @@ export default function DocsPage() {
             <h2>01 Routing boundary</h2>
             <p>
               Pump and PumpSwap do not call external programs before or after a swap. There is no Uniswap-v4-style callback inside the venue. Pump Hooks
-              therefore runs hooks at <b>its own router boundary</b>: a trader calls <code>route_buy</code> or <code>route_sell</code>, the router runs
+              therefore runs hooks at <b>its own router boundary</b>: a trader calls <code>route_curve</code> or <code>route_amm</code> to buy or sell, the router runs
               before-callbacks, performs the trade by CPI into Pump (bonding curve) or PumpSwap (after migration), observes the executed amounts and runs
               after-callbacks — all in one atomic transaction.
             </p>
