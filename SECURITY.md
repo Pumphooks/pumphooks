@@ -2,7 +2,7 @@
 
 Pump Hooks is **unaudited** and is **not deployed on mainnet**. Do not use it with funds you
 cannot afford to lose. The full threat model (T1–T29) is in
-[docs/threat-model.md](docs/threat-model.md).
+[docs/threat-model-pump-router.md](docs/threat-model-pump-router.md).
 
 ## Reporting
 

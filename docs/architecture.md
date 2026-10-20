@@ -1,214 +1,267 @@
-# Pump Hooks — Architecture
+# Architecture: programmable markets (internal codename HOOKS)
 
-> A programmable execution layer for Pump markets.
+**Shared market infrastructure + a developer hook program = a programmable market.**
 
-Pump.fun made markets permissionless. Pump Hooks makes those markets programmable. The primary
-object in this protocol is a **hooked Pump market**: an existing Pump coin (bonding curve or
-PumpSwap pool) plus a `MarketConfig` and a Hook Stack. Token creation is one convenience entrance
-that ends in the same `create_market` flow; it is not a launchpad and has no curve of its own.
+The core program (`hooks-core`) provides pools, vaults, accounting, settlement, LP shares, hook
+invocation and permissions, and the hook and market registries. A hook is any Solana program that
+implements the hook interface ([hook-interface.md](hook-interface.md)). It supplies market behavior
+the core never anticipated, without changes to the core.
 
-## 1. The honest boundary
+The core has no dependency on Pump. Pump tokens are ordinary SPL / Token-2022 mints. The earlier
+Pump router is an optional adapter documented in
+[architecture-pump-router.md](architecture-pump-router.md).
 
-PumpSwap and the Pump bonding curve do not call external programs during a trade. Pump Hooks
-therefore runs hooks **at its own router boundary**:
+The design follows [research.md](research.md). The numbered implications there (R1–R11) are cited
+as `[R#]`.
 
-```
-Wallet ─▶ pump_hooks::route_* ─▶ BEFORE hooks ─▶ CPI Pump / PumpSwap ─▶ AFTER hooks ─▶ events
-```
+---
 
-Anyone can trade the same coin directly on Pump or PumpSwap and no Pump Hooks rule applies to that
-trade. Every rule in this system is described as applying to **routed execution**. The UI, SDK,
-README and docs repeat this. Pump's own features (fees, holder rewards, migration) are enforced by
-Pump, not by us.
-
-What the router gives users that direct trading does not:
-- protections and limits they (or the market's community) chose, enforced atomically;
-- loyalty accounting (Holder XP) only earned through routed flow;
-- programmable execution (TWAP, conditional orders, bounded strategies) built on the same path;
-- a fully decoded execution trace for every routed trade.
-
-## 2. Components
+## 1. Components
 
 ```
-                          ┌───────────────────── off-chain ─────────────────────┐
-  apps/web  ─┐            │  apps/indexer  ──▶ Postgres/SQLite ──▶ apps/web API │
-  packages/cli ─▶ packages/sdk ──▶ RPC         │  SENTIENT engine ──▶ signed StrategySignal │
-  hook devs ─▶ packages/hook-sdk               └──────────────────────────────────────────┘
-                              │
-                              ▼  on-chain
-  ┌──────────────────────── programs/pump-hooks ────────────────────────┐
-  │ registry: GlobalConfig, HookDefinition, MarketConfig, Policy          │
-  │ router:   route_amm / route_curve (mode: buy or sell)                 │
-  │ runtime:  crates/hook-runtime (first-party modules, compiled in)      │
-  │ policy:   crates/policy-vm (bounded evaluator)                        │
-  │ adapter:  crates/pump-adapter (only place that knows Pump accounts)   │
-  └─────────────────────────────────────────────────────────────────────┘
-                 │ CPI (user signs)               ▲ CPI (vault PDA signs)
-                 ▼                                │
-         Pump (v3) / PumpSwap (v2)        programs/strategy-vault
-                                          StrategyVault, TwapOrder, signal verification
+                 ┌───────────────────────── hooks-core (one program) ─────────────────────────┐
+ trader / LP ──▶ │ Protocol · HookRegistration · Attestation · Pool (+ vaults, LP mint)        │
+ aggregator      │ swap · add/remove liquidity · donate · initialize                          │
+                 │ hook credits · credit swaps · fee accounting · invariants · events          │
+                 └───────────────┬─────────────────────────────────────────────────────────────┘
+                                 │ CPI: callback-authority PDA signs; no user signature forwarded
+                                 ▼
+                 ┌──────────── hook program (anyone) ─────────────┐
+                 │ before/after initialize, liquidity, swap,      │
+                 │ donate; quote (custom curve)                   │
+                 │ → HookResult via return data                   │
+                 └────────────────────────────────────────────────┘
 ```
 
-| Path | Responsibility |
+| Piece | Path |
 | --- | --- |
-| `crates/hook-types` | Stable ABI: `HookCallback`, `HookContext`, `HookDecision`, capabilities, module IDs, reason codes, Pod layouts. `no_std`-friendly, no Solana dependency. |
-| `crates/hook-runtime` | `PumpHook` trait, the first-party modules, stack execution (ordering, veto short-circuit, capability enforcement). Host-testable; the program and the simulator call the same code. |
-| `crates/policy-vm` | Policy encoding, validation, and evaluation. No loops, bounded size. |
-| `crates/pump-adapter` | Pump/PumpSwap program IDs, account ordering, discriminators, account readers, quote math, CPI builders. Verified against `pump-rust-client`. |
-| `programs/pump-hooks` | Registry + router (one program, see §3). |
-| `programs/strategy-vault` | Explicitly authorized funds, SENTIENT signal verification, TWAP orders. |
-| `hooks/*` | Hook manifests (`hook.json`), docs and per-module tests. Module code lives in `hook-runtime` for V1. |
-| `packages/sdk` | `PumpHooksClient`: market discovery, quotes, tx building, simulation, traces. |
-| `packages/hook-sdk` | Manifest schema, ABI types for TS, `create-pump-hook` scaffolder. |
-| `packages/cli` | `pump-hooks` CLI over the SDK. |
-| `apps/indexer` | Resumable, idempotent indexer for routed swaps, hook executions, policies, signals. |
-| `apps/web` | Marketing, `/hook`, `/hooks`, `/build`, `/market/[mint]`, `/tx/[sig]`, `/simulate`. |
+| Interface crate (types, layouts, discriminators, caller verification) | `crates/hooks-interface` |
+| Core program | `programs/hooks-core` |
+| Reference hooks | `hooks-programs/*` |
+| Hook developer kit (scaffolder, test harness) | `packages/create-hook`, `crates/hooks-test` |
+| TypeScript SDK | `packages/sdk` |
+| Indexer, CLI, web | `services/indexer`, `packages/cli`, `apps/web` |
+| Branding (name, logo, domain) | `branding.json`, the single source |
 
-## 3. Why registry and router are one program
+## 2. Accounts
 
-The brief proposed four programs. Research changed that:
+All PDAs are under `hooks-core`.
 
-1. **State ownership.** After-hooks write hook state (Holder XP, rolling volume, EMA). Only the
-   owning program may write an account. If the registry owned `MarketConfig` and the router ran the
-   hooks, every after-hook write would need a CPI back into the registry.
-2. **Compute.** A CPI costs ~1,000 CU base plus account serialisation. With four hooks that is
-   avoidable overhead on the hottest path in the protocol.
-3. **CPI depth.** Solana allows instruction stack height 5. Strategy execution is
-   `strategy_vault → pump_hooks → PumpSwap → Token`, which already uses four levels. A separate
-   registry or policy program would leave no headroom.
-4. **Policy engine** is a library evaluated in-process; it does not need its own program.
+| Account | Seeds | Purpose |
+| --- | --- | --- |
+| `Protocol` | `["protocol"]` | Admin, pause flags, protocol fee share (≤ 25% of LP fee; **0 at launch**), fee authority |
+| `HookRegistration` | `["hook", hook_program]` | Declared permission mask, interface version, metadata URI, upgrade authority and deploy slot observed at registration, registrant, pool count |
+| `Attestation` | `["attest", hook_program, attester]` | Named attester's statement (kind, URI, content hash). There is no protocol-level "audited" flag [R11]. |
+| `Pool` | `["pool", mint_0, mint_1, hook_program, salt_le_u64]` | Identity includes the hook [§1.1 of research]. Mints are sorted (`mint_0 < mint_1`). |
+| Vaults | `["vault", pool, mint]` | Token accounts owned by the pool PDA |
+| LP mint | `["lp", pool]` | SPL Token mint, authority = pool PDA |
+| Callback authority | `["callback", hook_program]` | Signs every core→hook CPI. Holds no other authority [R5]. |
 
-`strategy-vault` stays separate because it custodies explicitly deposited funds and should have a
-small, independently reviewable surface and separate upgrade authority.
+`hook_program = Pubkey::default()` means a plain pool with no hook.
 
-## 4. Accounts (PDAs)
+### Pool state (key fields)
 
-All PDAs use fixed seeds; no variable-length strings. Hot-path accounts are `zero_copy` (Pod) to
-avoid Borsh cost.
+- `mint_0`, `mint_1`, `vault_0`, `vault_1`, `token_program_0/1`, `lp_mint`, `hook_program`,
+  `permissions: u32`.
+- `fee_ppm: u32` (current LP fee, parts per million), `max_fee_ppm: u32` (cap a dynamic-fee hook
+  cannot exceed; ≤ 500 000).
+- `reserve_0`, `reserve_1`: the LP-owned amounts priced by the curve.
+- `credit_0`, `credit_1`: **the hook's balance in this pool** [R4].
+- `protocol_fee_0`, `protocol_fee_1`.
+- `lp_supply`, `locked_lp` (minimum liquidity), `sequence` (incremented per state-changing op),
+  `flags` (`HOOK_PINNED`, `PAUSED`), `pinned_deploy_slot`, `created_at`.
 
-| Account | Seeds | Owner | Purpose |
-| --- | --- | --- | --- |
-| `GlobalConfig` | `["global"]` | pump-hooks | admin, pause flags, `disabled_modules` bitmask (kill switch), fee-free protocol |
-| `HookDefinition` | `["hook", module_id u16 LE]` | pump-hooks | metadata: version, callbacks, capabilities, `source_hash`, `verified`, `audit_status`, `security_status`, counters |
-| `MarketConfig` | `["market", mint, authority]` | pump-hooks | the hooked market: venue, pool, flags, stats, sequence, up to 6 inline hook slots |
-| `UserMarketState` | `["user", market, user]` | pump-hooks | per-wallet state shared by modules: XP, vesting, cooldowns, routed volume, holding checkpoints |
-| `Policy` | `["policy", market, index u8]` | pump-hooks | one compiled Composer policy |
-| `StrategyVault` | `["vault", market]` | strategy-vault | allocation buckets, SENTIENT signer and bounds, nonce, regime |
-| `VaultAuthority` | `["vault-authority", vault]` | system (no data) | holds lamports, signs CPIs; must be data-less so it can pay rent inside Pump CPIs |
-| `TwapOrder` | `["twap", vault, id u32]` | strategy-vault | bounded scheduled execution of vault funds |
+**Vault invariant**, checked at the end of every state-changing instruction:
 
-`HookInstallation` from the brief is represented by **inline slots** in `MarketConfig` (one account
-read for the whole stack instead of one per hook). External hooks, when enabled, will get a
-separate `HookInstallation` PDA because they own their own state.
+```
+vault_i.amount == reserve_i + credit_i + protocol_fee_i      (i = 0, 1)
+```
 
-### 4.1 Market authority (who may hook a token they did not create)
+Token-2022 transfer fees are handled by measuring vault balance deltas, never by trusting inputs.
 
-Hooks only affect routed flow, so hooking a market is not a privilege over other people's tokens.
-Still, a community needs to know whose rules they are trading under. Model:
+## 3. Hook permissions
 
-- `MarketConfig` is namespaced by `authority`: anyone can create a config for any Pump mint.
-- At creation the program reads Pump's `BondingCurve.creator` (it survives migration). If the
-  signer equals it, the market is flagged `CREATOR_VERIFIED`.
-- The SDK and UI resolve **the creator-verified market first**; otherwise they list community
-  markets with their authority shown. Holder-rewards coins record a pump.fun-controlled creator, so
-  they can only have community markets.
-- This avoids squatting (no first-come canonical PDA) and avoids takeover logic.
+A `u32` mask. Wire values are frozen and listed in [hook-interface.md](hook-interface.md).
 
-This is an architectural decision that could be revisited; it is documented, not hidden.
+- Callbacks: `BEFORE_INITIALIZE`, `AFTER_INITIALIZE`, `BEFORE_ADD_LIQUIDITY`, `AFTER_ADD_LIQUIDITY`,
+  `BEFORE_REMOVE_LIQUIDITY`, `AFTER_REMOVE_LIQUIDITY`, `BEFORE_SWAP`, `AFTER_SWAP`, `BEFORE_DONATE`,
+  `AFTER_DONATE`.
+- Powers:
+  - `BEFORE_SWAP_RETURNS_DELTA`, `AFTER_SWAP_RETURNS_DELTA`;
+  - `AFTER_ADD_LIQUIDITY_RETURNS_DELTA`, `AFTER_REMOVE_LIQUIDITY_RETURNS_DELTA`;
+  - `DYNAMIC_FEE`: may override the fee per swap, within `max_fee_ppm`;
+  - `CUSTOM_CURVE`: the `quote` callback replaces the constant-product price over the pool's reserves.
 
-## 5. Routed trade lifecycle
+Rules [R3]:
 
-`route_amm(mode, amount, limit)`; `route_curve` is symmetric, and `mode` selects buy or sell:
+- The hook declares a mask when registering. A pool's mask is chosen at creation, must be a subset
+  of the declared mask, and **never changes**.
+- Each returns-delta power requires its base callback.
+- `DYNAMIC_FEE` alone allows `set_fee`. A per-swap fee override additionally requires `BEFORE_SWAP`.
+  `CUSTOM_CURVE` enables the `quote` callback and needs nothing else.
+- The core invokes only permitted callbacks and ignores result fields a pool is not permitted to use.
+  For example, a fee override without `DYNAMIC_FEE` is an error, not silently applied.
 
-1. **Validate protocol**: `GlobalConfig` not paused for routing.
-2. **Validate market**: `MarketConfig` PDA matches seeds, `ENABLED`, venue = PumpSwap,
-   `market.pool == pool`, `market.mint == base_mint`, quote mint matches.
-3. **Validate venue accounts** (adapter): PumpSwap program ID, `pool` owned by PumpSwap with the
-   `Pool` discriminator, `pool.base_mint/quote_mint/vaults` equal the passed accounts, user token
-   accounts owned by `user` with the right mints, token programs are SPL Token or Token-2022,
-   not a cashback pool. Pump validates its own PDAs; we validate everything that binds the trade to
-   *this* market.
-4. **Load user state**: `UserMarketState` (`init_if_needed`, payer = user, ~0.0017 SOL once).
-5. **Build `HookContext`** from account data only: reserves (effective quote reserves with signed
-   virtual reserves), estimated quote size for the trade, clock, market sequence.
-6. **Before hooks**: run `BeforeBuy` then `BeforeSwap` subscribers in priority order. First denial
-   aborts with `HookDenied` (transaction reverts, no swap). Each execution produces a trace entry.
-7. **Snapshot** user base/quote token balances.
-8. **CPI** into PumpSwap `buy_v2`/`buy_exact_quote_in_v2` with the user as signer. The router never
-   takes custody; tokens move user ↔ pool directly.
-9. **Observe**: re-read balances, compute actual `base_delta` / `quote_delta`; sanity-check against
-   the user's limit (fail closed if Pump's result is inconsistent).
-10. **After hooks**: `AfterBuy`, `AfterSwap` subscribers. Any error reverts the whole transaction.
-11. **Commit**: increment `market.sequence`, stats; emit `HookExecutionEvent` per hook and one
-    `RoutedSwapEvent` with the packed trace.
+## 4. Operations
 
-### Atomicity
+Every operation runs in one instruction: callbacks, accounting, token movement and invariant
+checks. If anything fails, everything reverts [R6]. Multi-hop routes compose several swap
+instructions in one transaction. Each settles independently and the transaction is atomic.
 
-Solana transactions are atomic: any error after the CPI rolls back the swap and all hook state.
-The router therefore needs no compensation logic. Fail-closed rules for V1:
+### 4.1 Initialize pool
 
-| Failure | Result |
+- **Who:** anyone.
+- **Inputs:** mints, hook program (registered, or none), `permissions ⊆ declared`, `fee_ppm`,
+  `max_fee_ppm`, `salt`, `pin_hook`.
+- **Token policy:** mints must pass [R9].
+- **Steps:**
+  1. Run `before_initialize`. A rejection reverts.
+  2. Create the pool, vaults and LP mint.
+  3. Run `after_initialize`.
+- Liquidity is added separately.
+
+### 4.2 Swap
+
+- **Inputs:** `zero_for_one`, `exact_in`, `amount`, `limit` (min out / max in), `hook_data`.
+- Remaining accounts are the hook's accounts.
+
+Exact-in (input token `I`, output `O`):
+
+1. Transfer `amount` from the trader to `vault_I` and measure the received amount `a`.
+2. `before_swap`. Returns may include:
+   - a fee override (needs `DYNAMIC_FEE`);
+   - `delta_specified` (s, token `I`) and `delta_unspecified` (u₁, token `O`), which need
+     `BEFORE_SWAP_RETURNS_DELTA`.
+   - Positive deltas mean **the hook takes**; negative mean **the hook pays from its credit**.
+3. `curve_in = a − s`. It must be ≥ 0. `curve_in = 0` is a full takeover (NoOp).
+4. `fee = ceil(curve_in · fee_ppm / 1e6)`; the protocol share comes out of `fee`.
+5. `curve_out` is either:
+   - the constant product `(curve_in − fee) · R_O / (R_I + curve_in − fee)`; or
+   - the hook's `quote` (needs `CUSTOM_CURVE`), checked `< R_O`.
+6. `after_swap` may return u₂ (token `O`), which needs `AFTER_SWAP_RETURNS_DELTA`.
+7. `out = curve_out − u₁ − u₂`. It must satisfy `0 ≤ out` and `out ≥ limit`.
+8. Accounting:
+   - `R_I += curve_in − protocol_fee`;
+   - `R_O −= curve_out`;
+   - `credit_I += s`;
+   - `credit_O += u₁ + u₂`;
+   - every credit must stay ≥ 0.
+9. Transfer `out` from `vault_O` to the trader, then check the invariants.
+
+Exact-out mirrors this:
+
+- The specified token is `O`, and `curve_out = amount + s`.
+- `curve_in` is the inverse constant product rounded up (or the hook quote), grossed up for the fee.
+- The trader pays `curve_in + u₁ + u₂ ≤ limit`.
+- If the input mint charges a transfer fee, exact-out is rejected in V1.
+
+In both directions the **trader's slippage limit, enforced by the core after every delta, is the
+trader's protection** against any hook [R4].
+
+### 4.3 Add / remove liquidity
+
+The core provides fungible, proportional LP shares.
+
+- **First deposit:** shares = `isqrt(a₀·a₁)`. `MIN_LIQUIDITY = 1000` shares are locked forever.
+- **Later deposits:**
+  - shares = `min(a₀·S/R₀, a₁·S/R₁)`;
+  - the amounts are recomputed so they are exactly proportional, rounded in the pool's favour.
+- **Remove:** amounts = `shares·R/S`, rounded down.
+- Hooks:
+  - `before_*` may reject;
+  - `after_*` may return `(d₀, d₁)` when permitted. Positive means the hook takes from the LP: an
+    extra deposit charge, or a withdrawal fee into the hook's credit. Negative means the hook pays
+    the LP a rebate from its credit.
+- The LP's `max_0/max_1` (add) or `min_0/min_1` (remove) bound the result.
+
+Specialised LP accounting, such as vesting, JIT defense or per-position rewards, is built by hooks
+on these callbacks plus the hook's own accounts.
+
+### 4.4 Donate
+
+Adds tokens to the reserves without minting shares (for example, to pay LPs). `before/after_donate`
+apply.
+
+### 4.5 Hook-initiated operations (v4's `noSelfCall`)
+
+A hook acts through its **hook-authority PDA** `["hook-authority"]`, derived under the *hook
+program*. The hook signs with `invoke_signed` from its own instruction; the hook is the top-level
+caller, so this is not re-entrancy. Operations:
+
+- `credit_deposit`: anyone funds the hook's credit (tokens in, measured).
+- `credit_withdraw`: the hook authority moves credit out to any token account.
+- `credit_swap`: the hook authority swaps credit against the pool's curve at the current fee. **No
+  callbacks run**, which is how TWAMM, limit orders, batch clearing and rebalancing execute on a
+  crank [R10].
+- `set_fee`: needs `DYNAMIC_FEE`, within `max_fee_ppm`.
+
+### 4.6 Protocol
+
+- `initialize_protocol`, `set_admin` (two-step), `set_pause` (pauses new pools, swaps and adds;
+  **never removes**), `set_protocol_fee_share` (≤ 2500 bps of the LP fee),
+  `withdraw_protocol_fees`.
+- The admin cannot touch reserves, credits or hooks.
+
+## 5. Calling a hook
+
+See [hook-interface.md](hook-interface.md) for exact bytes.
+
+- **Instruction data:** an 8-byte namespaced discriminator, a fixed 248-byte `HookContext`, then
+  `hook_data` (≤ 512 bytes, opaque, untrusted).
+- **Accounts:**
+  - `[callback_authority (signer), pool (read-only)]`, then the hook's accounts from the remaining
+    accounts in caller order.
+  - `is_signer` is cleared on every forwarded account, so the user's signature never reaches a
+    hook [R1].
+  - `is_writable` is preserved. A hook can only write accounts it owns.
+- **Result:**
+  - a 40-byte `HookResult` from `get_return_data`;
+  - the program id must equal the hook, and the length and version must match. Anything else is
+    `HookResultInvalid`.
+  - A missing result is invalid. There is no fallthrough-allow [§3 of research].
+- **Pinning:** with `HOOK_PINNED`, the hook's `ProgramData` account must be supplied and its
+  last-deploy slot must equal `pinned_deploy_slot`. LPs then get a hook that cannot silently
+  upgrade under them [research §6].
+- **Depth:** core→hook is one CPI. Hooks get 2 more levels when called from a top-level instruction
+  and 1 more through an aggregator, until SIMD-0268 activates [R8].
+
+## 6. Events
+
+Anchor events are emitted via `emit!` (program log data):
+
+- `PoolInitialized`, `Swap` (amounts, curve amounts, fee, deltas, reserves after, sequence),
+  `LiquidityAdded`, `LiquidityRemoved`, `Donated`;
+- `HookCalled` (callback, decision, reason, compute used is not observable on-chain so is not
+  claimed);
+- `CreditMoved`, `FeeChanged`, `HookRegistered`, `Attested`, `ProtocolUpdated`.
+
+The indexer decodes these. Explorers render a swap as the ordered callback trace.
+
+## 7. Token policy [R9]
+
+| Accepted | Rejected in V1 |
 | --- | --- |
-| Required before-hook denies or errors | No swap, tx reverts |
-| Pump CPI fails (slippage, paused, complete curve…) | tx reverts, no hook state persists |
-| After-hook errors | tx reverts, swap undone |
-| Disabled module in `disabled_modules` | routed trades on markets using it revert with `ModuleDisabled` until the market removes it (fail closed) |
+| SPL Token | Token-2022 `TransferHook`, `PermanentDelegate`, `NonTransferable`, `DefaultAccountState(Frozen)`, `ConfidentialTransferMint`, `Pausable`, and any extension not in the accepted list |
+| Token-2022 with `TransferFeeConfig`, `MetadataPointer`, `TokenMetadata`, `InterestBearingConfig`, `ScaledUiAmount`, `MintCloseAuthority`, `GroupPointer`, `GroupMemberPointer`, `TokenGroupMember` | |
 
-Optional telemetry-only modules (non-reverting) are a later feature.
+## 8. Security properties
 
-## 6. Venues and graduation
+| Property | Mechanism |
+| --- | --- |
+| Hooks cannot move vault tokens | Vault authority is the pool PDA. Hooks have no signer for it, and a hook cannot re-enter the core. |
+| Hooks cannot spend user tokens | The user signature is never forwarded (`is_signer` cleared). |
+| Hooks cannot impersonate the core to other hooks | The callback authority is per hook program. |
+| Hook results are authentic | Return-data program id and length checks. |
+| Hook value extraction is bounded | Deltas only move value between the trader or LP and *this* pool's hook credit. Credits stay ≥ 0, the trader's limit is enforced last, and swap type cannot flip. |
+| Accounting is conserved | The vault invariant is checked after every instruction. |
+| LPs can always exit the core's pause | Pause never blocks `remove_liquidity`. A hook with `BEFORE_REMOVE_LIQUIDITY` can, and the UI labels that power "can block withdrawals". |
+| No silent upgrades (opt-in) | `HOOK_PINNED`. |
+| No fake trust signals | Registry facts are observed on-chain, and attestations are signed by named attesters. |
 
-`MarketConfig.venue` is `BondingCurve` or `PumpSwap`. When a curve completes and migrates, anyone
-can call `sync_market`, which verifies the canonical pool (PumpSwap PDA
-`["pool", 0u16, pool_authority(mint), mint, quote_mint]`) exists with matching mints and switches the
-venue. Between completion and migration, routed trades deny with `MarketMigrating`.
+What it does **not** protect against:
 
-## 7. Strategy execution path (TWAP, SENTIENT, conditional orders)
+- A hook the trader or LP chose that is designed to extract value, up to the user's limits.
+- An upgradeable, unpinned hook changing behavior.
+- A hook that blocks withdrawals.
 
-```
-DATA ─▶ MODEL (off-chain) ─▶ StrategySignal (ed25519) ─▶ strategy-vault verifies bounds
-     ─▶ TwapOrder / state change ─▶ keeper crank ─▶ vault PDA signs ─▶ pump_hooks::route_* ─▶ Pump
-```
-
-Strategy trades go through the same hook stack, so a market's own guards apply to its own
-treasury. The vault can only spend its `strategy` bucket, only through the router, only within
-per-slice size, slippage, cooldown and epoch budget limits.
-
-Policies created in the Composer cannot CPI. Policy actions that affect a vault (`QUEUE_TWAP`,
-`ALLOCATE_AUTHORIZED_TREASURY`, `PAUSE_STRATEGY`, …) write a pending **intent** into the `Policy`
-account; the vault program's permissionless `apply_policy_intent` validates the intent against the
-vault's own bounds before acting.
-
-## 8. Transactions built by the SDK
-
-A routed SOL buy on PumpSwap:
-
-```
-ComputeBudget::SetComputeUnitLimit
-ComputeBudget::SetComputeUnitPrice           (optional)
-ATA::CreateIdempotent (user base ATA)
-ATA::CreateIdempotent (user WSOL ATA)
-System::Transfer + Token::SyncNative          (wrap)
-pump_hooks::route_amm                         (5 + 17 + policy/strategy accounts)
-Token::CloseAccount (WSOL)                    (unwrap)
-```
-
-v0 transactions with Pump's published lookup table plus our own (global config, programs).
-Bonding-curve SOL trades use native SOL (no wrap).
-
-## 9. Off-chain
-
-- **Indexer**: subscribes to `pump_hooks` logs and polls signatures; decodes Anchor events;
-  stores last processed slot + signature; upserts by `(signature, ix_index, event_index)` so
-  replays are idempotent. Pump trade events for hooked markets are stored for simulation input.
-- **Simulator**: replays historical Pump trades (from the indexer or RPC) through
-  `hook-runtime` compiled to WASM/Node (same code as on-chain), reporting allowed/denied/reason
-  codes and estimated CU. It says "routed-equivalent" because historical trades were not routed.
-- **SENTIENT engine**: computes signals from indexed data and signs `StrategySignal`s with a key
-  that the vault bounds. It never holds funds.
-
-## 10. Upgradeability
-
-- Programs are upgradeable during devnet; mainnet upgrade authority goes to a multisig with a
-  documented timelock before any mainnet deployment (not done without explicit approval).
-- Account layouts carry `version` and `reserved` bytes; ABI discriminants are append-only.
+These are disclosed in the SDK quote, the registry and the UI.

@@ -219,7 +219,7 @@ export default function DocsPage() {
               <li>Fees Pump Hooks does not control are never redirected. Treasury Router only describes how explicitly deposited funds would be split; the vault that would enforce it is not deployed.</li>
               <li>A global kill switch can pause routing or disable individual modules; it cannot move funds.</li>
               <li>
-                Status: <b>not audited</b>. Not deployed on mainnet. Read <code>docs/threat-model.md</code> before using real funds.
+                Status: <b>not audited</b>. Not deployed on mainnet. Read <code>docs/threat-model-pump-router.md</code> before using real funds.
               </li>
             </ul>
           </section>

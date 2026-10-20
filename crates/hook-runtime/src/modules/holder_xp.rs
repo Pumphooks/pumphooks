@@ -8,7 +8,7 @@
 //! - holding XP accrues on `min(balance at last checkpoint, balance now) × elapsed`, so tokens
 //!   moved out between checkpoints earn nothing for that interval.
 //!
-//! Residual risk (documented in `docs/threat-model.md` T20): two wallets that each hold at both of
+//! Residual risk (documented in `docs/threat-model-pump-router.md` T20): two wallets that each hold at both of
 //! their own checkpoints can overlap holding intervals. Caps bound the effect.
 
 use hook_types::slot::le;

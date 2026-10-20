@@ -22,7 +22,7 @@ pub struct HookEnv<'a> {
 }
 
 /// First-party module interface. External hooks implement the same contract over CPI
-/// (`docs/hooks-spec.md` §9).
+/// (`docs/hooks-spec-pump-router.md` §9).
 pub trait PumpHook {
     const MODULE_ID: u16;
     fn validate_config(config: &[u8; 48]) -> Result<(), HookError>;

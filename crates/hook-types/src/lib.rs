@@ -2,7 +2,7 @@
 //!
 //! Everything in this crate is part of the stable wire format between the router, first-party
 //! modules, future external hooks, the SDK and the indexer. Discriminants and layouts are
-//! append-only. See `docs/hooks-spec.md`.
+//! append-only. See `docs/hooks-spec-pump-router.md`.
 
 #![no_std]
 

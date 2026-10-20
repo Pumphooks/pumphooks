@@ -13,7 +13,7 @@ pub mod context_flags {
 }
 
 /// Everything a hook may know about a routed trade. Built by the router from account data only.
-/// 272 bytes, 8-byte aligned. Offsets are frozen (see `docs/hooks-spec.md`).
+/// 272 bytes, 8-byte aligned. Offsets are frozen (see `docs/hooks-spec-pump-router.md`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Pod, Zeroable)]
 #[repr(C)]
 pub struct HookContext {
