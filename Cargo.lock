@@ -1923,12 +1923,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "hook-kernel"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "hook-standard",
+ "proptest",
+ "solana-program 2.3.0",
+]
+
+[[package]]
 name = "hook-runtime"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
  "hook-types",
  "policy-vm",
+]
+
+[[package]]
+name = "hook-standard"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "sha2 0.10.9",
+ "solana-program 2.3.0",
 ]
 
 [[package]]

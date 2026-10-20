@@ -1,0 +1,13 @@
+[package]
+name = "hook-standard"
+version = "0.1.0"
+edition = "2021"
+description = "PUMP HOOKS ABI v1: environments, callbacks, enforcement classes, capabilities, hook stacks, policy calls and cross-environment state records."
+license = "Apache-2.0"
+
+[dependencies]
+bytemuck = { workspace = true }
+solana-program = "2"
+
+[dev-dependencies]
+sha2 = "0.10"

@@ -6,6 +6,8 @@ members = [
     "crates/policy-vm",
     "crates/pump-adapter",
     "crates/hooks-interface",
+    "crates/hook-standard",
+    "crates/hook-kernel",
     "programs/pump-hooks",
     "programs/hooks-core",
     "programs/test-hook",
@@ -25,6 +27,8 @@ hook-types = { path = "crates/hook-types" }
 hook-runtime = { path = "crates/hook-runtime" }
 policy-vm = { path = "crates/policy-vm" }
 hooks-interface = { path = "crates/hooks-interface" }
+hook-standard = { path = "crates/hook-standard" }
+hook-kernel = { path = "crates/hook-kernel" }
 
 [profile.release]
 overflow-checks = true
