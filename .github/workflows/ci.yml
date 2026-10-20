@@ -58,6 +58,20 @@ jobs:
       - name: Test
         run: cargo test --workspace
 
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: TypeScript tests that load the built programs
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @pump-hooks/execution-lab test
+        env:
+          PUMPHOOKS_SBF: "1"
+
   packages:
     name: packages (vitest)
     runs-on: ubuntu-latest
