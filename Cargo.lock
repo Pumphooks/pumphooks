@@ -2798,6 +2798,7 @@ dependencies = [
  "hook-registry",
  "hook-standard",
  "litesvm",
+ "smart-accounts",
  "solana-account 4.3.2",
  "solana-address 2.6.1",
  "solana-clock 3.1.1",
@@ -3317,6 +3318,18 @@ name = "smallvec"
 version = "1.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b3dc8af474f516a851ff4bd12db780f948b9250ad37211e4eec0bccea54e01b"
+
+[[package]]
+name = "smart-accounts"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "anchor-spl 0.31.2",
+ "bytemuck",
+ "hook-kernel",
+ "hook-registry",
+ "hook-standard",
+]
 
 [[package]]
 name = "solana-account"

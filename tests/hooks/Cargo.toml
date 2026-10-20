@@ -22,3 +22,4 @@ bytemuck = { workspace = true }
 hook-standard = { workspace = true }
 hook-kernel = { workspace = true }
 hook-registry = { path = "../../programs/hook-registry", features = ["no-entrypoint"] }
+smart-accounts = { path = "../../programs/smart-accounts", features = ["no-entrypoint"] }
