@@ -1,0 +1,11 @@
+[package]
+name = "hook-runtime"
+description = "Pump Hooks runtime: hook stack execution and first-party modules"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bytemuck = { workspace = true }
+hook-types = { workspace = true }
+policy-vm = { workspace = true }
