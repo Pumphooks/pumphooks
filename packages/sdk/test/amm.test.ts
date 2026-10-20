@@ -159,6 +159,32 @@ describe.skipIf(!fixturesAvailable())("existing PumpSwap token via SDK", () => {
     expect(small.ok, small.logs.join("\n")).toBe(true);
   });
 
+  it("previews create + install + routed buy in one simulated transaction", async () => {
+    const c = env.client;
+    const hooks = [
+      { module: "launch-shield", config: CONFIG_PRESETS[ModuleId.LaunchShield] },
+      { module: "volume-guard", config: { maxBuyQuote: SOL / 2n } },
+      { module: "holder-xp", config: CONFIG_PRESETS[ModuleId.HolderXp] },
+      { module: "sentient", config: { ...CONFIG_PRESETS[ModuleId.Sentient], signer: engine.publicKey } },
+      { module: "twap", config: CONFIG_PRESETS[ModuleId.Twap] },
+    ];
+    const ok = await c.previewStack({ mint: env.mint, authority: owner.publicKey, hooks, quoteIn: SOL / 4n });
+    const tx = await c.transaction(ok);
+    expect(tx.serialize().length).toBeLessThanOrEqual(1232);
+    const r = await c.simulate(ok);
+    expect(r.ok, r.logs.join("\n")).toBe(true);
+    expect(r.events.filter((e) => e.name === "HookInstalled")).toHaveLength(4);
+    expect(new Set(r.trace!.entries.map((e) => e.moduleId))).toEqual(
+      new Set([ModuleId.LaunchShield, ModuleId.VolumeGuard, ModuleId.HolderXp, ModuleId.Sentient]),
+    );
+    expect(r.swap?.quoteAmount).toBe(SOL / 4n);
+    expect(await c.getMarketFor(env.mint, owner.publicKey)).toBeUndefined();
+
+    const denied = await c.simulate(await c.previewStack({ mint: env.mint, authority: owner.publicKey, hooks, quoteIn: SOL }));
+    expect(denied.ok).toBe(false);
+    expect(denied.denied?.moduleId).toBe(ModuleId.VolumeGuard);
+  });
+
   it("config presets and client-side validation agree with the program", async () => {
     const cases: [ModuleId, ModuleConfig][] = [];
     for (const [id, preset] of Object.entries(CONFIG_PRESETS)) {

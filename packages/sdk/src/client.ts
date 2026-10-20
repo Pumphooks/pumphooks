@@ -96,6 +96,13 @@ export interface PumpTokenInfo {
   notRoutableReason?: string;
 }
 
+export interface StackHook {
+  module: ModuleId | string;
+  config?: ModuleConfig;
+  priority?: number;
+  callbacks?: number;
+}
+
 export interface HookedMarket {
   address: PublicKey;
   config: MarketConfig;
@@ -432,6 +439,30 @@ export class PumpHooksClient {
     return this.buildTrade({ market: p.market, user: p.user, mode: TradeMode.ExactBaseIn, amount: p.baseIn, limit: p.minQuoteOut ?? 0n });
   }
 
+  /**
+   * One transaction that creates the market, installs `hooks` and routes a buy of `quoteIn`, so a
+   * stack can be simulated before anything exists on-chain. Nothing is persisted by `simulate`.
+   * Config-only modules are left out: they do not run during trades. The compute-budget
+   * instruction is omitted so four runtime hooks fit in one 1232-byte v0 transaction with the
+   * Pump lookup table; default per-instruction limits cover the measured cost.
+   */
+  async previewStack(p: { mint: PublicKey; authority: PublicKey; hooks: StackHook[]; quoteIn: bigint }): Promise<BuiltTransaction> {
+    const { market, ix, token } = await this.createMarket(p.mint, p.authority);
+    const runtime = p.hooks.filter((h) => moduleInfo(h.module).runtime);
+    const installs = runtime.map((h) => this.installHook({ ...h, market, authority: p.authority }));
+    const z = PublicKey.default;
+    const config: MarketConfig = {
+      namespace: p.authority, authority: p.authority, pendingAuthority: z, mint: p.mint, bondingCurve: token.bondingCurve,
+      pool: token.venue === Venue.PumpSwap ? token.pool : SYSTEM_PROGRAM_ID, quoteMint: token.quoteMint,
+      baseTokenProgram: token.baseTokenProgram, quoteTokenProgram: token.quoteTokenProgram, strategyVault: z,
+      createdAt: 0n, activatedAt: 0n, routedBuyQuote: 0n, routedSellQuote: 0n, tradeCount: 0n, sequence: 0n,
+      flags: 0, venue: must(token.venue, "market has no venue"), policyMask: 0, slots: [],
+    };
+    const trade = await this.buildTrade({ market: { address: market, config }, user: p.authority, mode: TradeMode.ExactQuoteIn, amount: p.quoteIn, limit: 1n });
+    const rest = trade.instructions.filter((i) => !i.programId.equals(ComputeBudgetProgram.programId));
+    return this.built([ix, ...installs, ...rest], p.authority);
+  }
+
   /** Relay a SENTIENT signal signed off-chain by the market's configured engine key. */
   submitSignal(p: { market: PublicKey; signer: PublicKey; signal: Uint8Array; signature: Uint8Array; payer: PublicKey }): BuiltTransaction {
     return this.built([signalVerifyIx(p.signer, p.signal, p.signature), submitSignalIx({ market: p.market, signal: p.signal, programId: this.programId })], p.payer);
@@ -452,7 +483,10 @@ export class PumpHooksClient {
   }
 
   private built(instructions: TransactionInstruction[], payer: PublicKey): BuiltTransaction {
-    return bundle(instructions, payer, this.alts ?? []);
+    return {
+      instructions,
+      toTransaction: (recentBlockhash, feePayer) => bundle(instructions, payer, this.alts ?? []).toTransaction(recentBlockhash, feePayer),
+    };
   }
 
   async transaction(b: BuiltTransaction, payer?: PublicKey): Promise<VersionedTransaction> {

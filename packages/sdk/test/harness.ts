@@ -5,7 +5,7 @@
  */
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { AccountInfo, Keypair, PublicKey, SimulatedTransactionResponse, TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
+import { AccountInfo, AddressLookupTableAccount, Keypair, PublicKey, SimulatedTransactionResponse, TransactionInstruction, VersionedTransaction } from "@solana/web3.js";
 import { Clock, FailedTransactionMetadata, LiteSVM, TransactionMetadata } from "litesvm";
 import {
   bundle,
@@ -14,6 +14,7 @@ import {
   ExecutionResult,
   initializeIx,
   MODULES,
+  PUMP_ALT,
   PUMP_AMM_PROGRAM_ID,
   PUMP_FEES_PROGRAM_ID,
   PUMP_HOOKS_PROGRAM_ID,
@@ -52,17 +53,23 @@ export class Env {
     this.svm = new LiteSVM().withPrecompiles().withLogBytesLimit(undefined);
     const now = BigInt(Math.floor(Date.now() / 1000));
     const c = this.svm.getClock();
-    this.svm.setClock(new Clock(400_000_000n, c.epochStartTimestamp, c.epoch, c.leaderScheduleEpoch, now));
+    // After the devnet ALT's last extension slot, so all its addresses resolve.
+    this.svm.setClock(new Clock(500_000_000n, c.epochStartTimestamp, c.epoch, c.leaderScheduleEpoch, now));
     this.svm.addProgramFromFile(PUMP_AMM_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump_amm.so"));
     this.svm.addProgramFromFile(PUMP_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump.so"));
     this.svm.addProgramFromFile(PUMP_FEES_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump_fees.so"));
     this.svm.addProgramFromFile(PUMP_HOOKS_PROGRAM_ID, join(ROOT, "target/deploy/pump_hooks.so"));
 
     const dir = join(ROOT, "tests/fixtures", fixture);
+    const altDir = join(ROOT, "tests/fixtures/alt");
     this.manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8"));
-    for (const f of readdirSync(dir)) {
-      if (f === "manifest.json" || !f.endsWith(".json")) continue;
-      const j = JSON.parse(readFileSync(join(dir, f), "utf8"));
+    const files = [
+      ...readdirSync(dir).map((f) => join(dir, f)),
+      ...(existsSync(altDir) ? readdirSync(altDir).map((f) => join(altDir, f)) : []),
+    ];
+    for (const path of files) {
+      if (path.endsWith("manifest.json") || !path.endsWith(".json")) continue;
+      const j = JSON.parse(readFileSync(path, "utf8"));
       const key = new PublicKey(j.pubkey);
       if (key.toBase58() === "So11111111111111111111111111111111111111112" && this.svm.getAccount(key)) continue;
       this.svm.setAccount(key, {
@@ -85,6 +92,11 @@ export class Env {
       getAccountInfo: async (k: PublicKey) => toInfo(k),
       getMultipleAccountsInfo: async (ks: PublicKey[]) => ks.map(toInfo),
       getLatestBlockhash: async () => ({ blockhash: svm.latestBlockhash(), lastValidBlockHeight: 0 }),
+      getAddressLookupTable: async (key: PublicKey) => {
+        const a = svm.getAccount(key);
+        const value = a ? new AddressLookupTableAccount({ key, state: AddressLookupTableAccount.deserialize(a.data) }) : null;
+        return { context: { slot: 0 }, value };
+      },
       simulateTransaction: (async (tx: VersionedTransaction) => {
         // Simulations are unsigned (like RPC `sigVerify: false`).
         svm.withSigverify(false);
@@ -100,7 +112,7 @@ export class Env {
         return { context: { slot: 0 }, value };
       }) as unknown as RpcLike["simulateTransaction"],
     } as RpcLike;
-    this.client = new PumpHooksClient(this.rpc, { pickBuybackRecipient: () => recipient });
+    this.client = new PumpHooksClient(this.rpc, { lookupTables: [PUMP_ALT.devnet], pickBuybackRecipient: () => recipient });
   }
 
   get mint() {
