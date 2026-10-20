@@ -1,0 +1,10 @@
+[package]
+name = "policy-vm"
+description = "Pump Hooks bounded, deterministic policy engine (Composer policies)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bytemuck = { workspace = true }
+hook-types = { workspace = true }
