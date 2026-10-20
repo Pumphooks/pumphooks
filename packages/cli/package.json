@@ -1,0 +1,28 @@
+{
+  "name": "@pump-hooks/cli",
+  "version": "0.1.0",
+  "description": "pump-hooks: inspect existing Pump markets, manage hook stacks, simulate and decode routed trades.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "pump-hooks": "./dist/bin.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "tsx src/bin.ts"
+  },
+  "dependencies": {
+    "@pump-hooks/sdk": "workspace:*",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "litesvm": "0.3.3",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
