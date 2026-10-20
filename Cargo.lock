@@ -2829,6 +2829,8 @@ dependencies = [
  "solana-keypair",
  "solana-signer 3.0.1",
  "solana-transaction",
+ "token-hooks",
+ "token-wrapper",
 ]
 
 [[package]]
@@ -6651,6 +6653,29 @@ name = "tinyvec"
 version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee"
+
+[[package]]
+name = "token-hooks"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "anchor-spl 0.31.2",
+ "bytemuck",
+ "hook-kernel",
+ "hook-registry",
+ "hook-standard",
+ "spl-tlv-account-resolution",
+ "spl-transfer-hook-interface",
+]
+
+[[package]]
+name = "token-wrapper"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "anchor-spl 0.31.2",
+ "token-hooks",
+]
 
 [[package]]
 name = "toml"

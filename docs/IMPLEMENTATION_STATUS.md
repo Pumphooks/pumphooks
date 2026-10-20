@@ -20,4 +20,8 @@ verified** (against mainnet binaries/state, not deployed). Nothing is deployed t
 | DEX adapters | Meteora DLMM `swap2` via CPI | done | localnet, mainnet binary + cloned pair | `meteora_dlmm_mainnet_binary_routes_both_ways` |
 | DEX adapters | Raydium CLMM (devnet) | listed, unverified | — | no devnet pool exercised |
 | DEX adapters | Pool account must be owned by the venue program | done | localnet | all venue tests |
+| Token engine | `token-hooks`: Token-2022 `Execute`, policies, metas rebuilt from the stack, mid-transfer check | done | localnet (bundled Token-2022 11.0) | `tests/hooks/tests/tokens.rs` |
+| Token engine | Credential via gateway-token PDA resolved by Token-2022 | done | localnet | `credential_policy_resolves_gateway_tokens_from_extra_metas`. A mutation of the PDA seed fails it. |
+| Token engine | `token-wrapper`: vault, measured mint, burn-then-release, reserve check, extension screen, transfer-fee assets | done | localnet | `wrapper_*` tests |
+| Token engine | Devnet deployment of token-hooks / token-wrapper | not done | — | needs funded devnet deployer; no mainnet without audit |
 | Hook library | Manifest `hooks/library/builtins.json` checked against the kernel | done | unit | `library_manifest_matches_the_kernel` |

@@ -19,6 +19,12 @@ Include:
   - Users sign each routed trade with their own wallet.
   - The router never holds user tokens between transactions.
   - There is no token delegate or standing approval.
+- **Wrapper custody is explicit.**
+  - `token-wrapper` is the one program that holds user assets between transactions: the underlying
+    of wrapped tokens, in a vault PDA.
+  - It releases them only on `unwrap`, after burning the same amount of the wrapped token.
+  - It has no admin or withdraw path, and it checks vault >= supply after every operation.
+  - It is unaudited, and it must not be enabled for mainnet assets before an audit.
 - **Hooks cannot move user assets.**
   - First-party modules can only allow or deny a trade, update their own 48-byte slot state,
     update the trader's per-market ledger (XP, points), and emit events.

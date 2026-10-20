@@ -1,0 +1,29 @@
+[package]
+name = "token-wrapper"
+version = "0.1.0"
+edition = "2021"
+description = "PUMP HOOKS token wrapper: issues a Token-2022 mint with the token-hooks transfer hook, backed 1:1 by an existing SPL or Token-2022 asset held in a program vault. Custody: the vault only releases on unwrap."
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "token_wrapper"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+anchor-lang = "0.31.1"
+anchor-spl = { version = "0.31.1", default-features = false, features = ["token", "token_2022"] }
+token-hooks = { path = "../token-hooks", features = ["cpi"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }

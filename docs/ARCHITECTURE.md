@@ -38,7 +38,7 @@
 | ROUTER engine | `programs/hook-router` (registry + kernel) | built, 19 LiteSVM tests against the real PumpSwap, Raydium CPMM, Raydium CLMM, Orca Whirlpools, Meteora DAMM v2 and Meteora DLMM binaries |
 | POOL engine (PoolManager) | `programs/hooks-core` (registry + kernel) | built, 25 LiteSVM tests + 11 engine unit and property tests |
 | ACCOUNT engine | `programs/smart-accounts` (registry + kernel) | built, 13 LiteSVM tests |
-| TOKEN engine | `programs/token-wrapper`, `programs/token-hooks` | **not built** |
+| TOKEN engine | `programs/token-hooks`, `programs/token-wrapper` | built, 4 LiteSVM tests against the bundled Token-2022 program (`tests/hooks/tests/tokens.rs`) |
 | POOL example hooks | `programs/example-hooks/pool-*` | planned; `programs/test-hook` is a scripted test hook |
 | Legacy Pump router (v0) | `programs/pump-hooks` (own policy VM, not ABI v1) | built, LiteSVM-tested against the real Pump binaries |
 | Policy VM (bounded WHEN/IF/THEN) | `crates/policy-vm` | built |
@@ -98,11 +98,37 @@
 
 ### TOKEN
 
-- `token-wrapper` holds an existing SPL or Token-2022 asset in a reserve and mints a 1:1
-  Token-2022 wrapped asset with a `TransferHook` extension.
-- `token-hooks` implements `spl-transfer-hook-interface` with allowlist, timelock and accounting
-  modes. The accounting mode writes typed state records.
-- The original token is never modified.
+- `token-hooks` implements the `spl-transfer-hook-interface` `Execute` instruction. A mint that names
+  it gets a `TokenPolicy` PDA (`["token-policy", mint]`) holding a token-environment `HookStack`, and
+  the interface's validation account (`["extra-account-metas", mint]`).
+  - Only the mint's transfer-hook authority can create the policy. Changing mandatory entries goes
+    through the policy delay, as on route policies.
+  - The metas list is rebuilt from the stack on every update. It always declares the policy
+    (writable, for builtin state). Each credential entry adds the gatekeeper network and the
+    holder's gateway-token PDA (`[wallet, "gateway", [0;8], network]`), with the wallet read from the
+    token account's owner field. Token-2022 derives the PDA, so a pass for another wallet cannot be
+    substituted.
+  - `Execute` fails unless the source account is mid-transfer, so direct calls cannot consume
+    spending windows.
+  - Token stacks hold builtins only, and allowlists must be inline. Token-2022 can pass only the
+    accounts the metas list declares, and a program hook would add a CPI level inside every transfer.
+  - A mint naming the program but without a policy cannot transfer at all (fail closed).
+- `token-wrapper` issues a new Token-2022 mint (`["wrapped-mint", underlying]`) with the transfer
+  hook and no freeze authority. It holds the underlying in a vault (`["vault", underlying]`) owned by
+  the wrapper PDA, which is also the only mint authority.
+  - `wrap` runs `before_wrap`, then transfers in and mints exactly the vault's measured increase.
+  - `unwrap` runs `before_unwrap`, then burns and releases the same amount, bounded by a
+    measured `min_out`.
+  - Every operation, and the public `verify_reserves`, requires vault balance >= wrapped supply.
+  - There is no admin withdrawal. Direct deposits to the vault stay as unclaimable surplus.
+  - Underlying Token-2022 mints are screened against an extension allowlist (transfer fee,
+    metadata, groups, interest-bearing, close authority). Permanent delegates, transfer hooks,
+    non-transferable, confidential, default-frozen and pausable mints are refused. The underlying's
+    freeze authority is recorded, because it can still freeze the vault.
+  - The wrap and unwrap callbacks reach the same stack through `token_hooks::check_operation`,
+    which only the mint's mint authority (the wrapper PDA) can sign.
+- The original token is never modified, and the wrapped token is a separate asset with its own
+  liquidity.
 
 ### ROUTER
 

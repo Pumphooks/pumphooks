@@ -21,9 +21,8 @@
 <br>
 
 Uniswap v4 made a single AMM programmable. **Pump Hooks makes Solana execution programmable**
-with one hook standard, one on-chain registry and one execution kernel. Three environments run on
-them today: transactions, liquidity pools and smart accounts. The fourth, tokens, is defined in the
-standard and supported by the kernel, but its engine is not built yet.
+with one hook standard, one on-chain registry and one execution kernel. Four environments run on
+them: tokens, transactions, liquidity pools and smart accounts.
 
 A hook is a small, versioned policy. It is published to an on-chain registry, installed into a
 stack, and run before or after an operation. Each hook can **veto** that operation, and none can
@@ -43,7 +42,7 @@ It is printed in the registry, in the SDK and in the UI.
 
 | | Environment | Where hooks run | Can it be bypassed? | Status |
 | --- | --- | --- | --- | --- |
-| `0x00` | **Tokens** | Token-2022 transfer hook on a wrapped asset (SPL in, Token-2022 out) | Every transfer of the wrapped mint would run it. The original SPL token is unaffected. | **not built** |
+| `0x00` | **Tokens** | `token-hooks`: Token-2022 transfer hook for new mints and for wrapped assets from `token-wrapper` (SPL in, Token-2022 out) | No, for that mint: every `transfer_checked` runs it. The original SPL token is unaffected, and the wrapped token does not inherit its liquidity. | 4 tests (real Token-2022) |
 | `0x01` | **Transactions** | `hook-router`: a route policy's stack around an allowlisted venue CPI | **Yes.** Anyone can call the venue directly. Router hooks are opt-in guardrails. | 15 tests (4 against Raydium and Meteora binaries) |
 | `0x02` | **Liquidity pools** | `hooks-core` PoolManager: one registry-pinned program hook (fees, deltas, quotes) plus an optional builtin stack | No, for pools created in this program. Other AMMs are out of scope. | 25 tests |
 | `0x03` | **Smart accounts** | `smart-accounts` vault PDA, on deposit, withdraw, execute and governance | No. Funds only leave the vault through the hook stack. | 13 tests |
@@ -75,8 +74,9 @@ their granted capabilities allow.
 | 7 | `TIME_WINDOW` | Absolute bounds and a daily UTC window | router, pool, account |
 | 8 | `ACCOUNTING` | Records measured count and volume; never blocks | router, pool, account |
 
-The kernel also defines token-environment support for allowlist, timelock, max-size, time-window
-and accounting, for when the token engine exists. In pools, builtins may gate deposits, swaps and
+Token stacks run allowlist, denylist, credential, spending-limit, timelock, max-size, time-window
+and accounting on transfers, and on wrap and unwrap for wrapped assets. They hold builtins only,
+because a program hook would add a CPI level inside every transfer. In pools, builtins may gate deposits, swaps and
 donations. None can run before a withdrawal, so a pool policy can never trap LP funds.
 
 Hook stacks compose **monotonically**: adding a hook can only make the stack stricter. Changing or
@@ -126,6 +126,8 @@ min-out, max-in and SOL caps must bind independently of the venue, and the pool 
 | `programs/hook-router` | ROUTER engine: venue adapters, deadline, measured slippage, receipts, route policies |
 | `programs/hooks-core` | POOL engine: PoolManager with registry-installed hooks, dynamic fees, deltas and builtin policy stacks |
 | `programs/smart-accounts` | ACCOUNT engine: vault, proposals, sessions, recovery, lock |
+| `programs/token-hooks` | TOKEN engine: Token-2022 transfer hook, token policies, extra-account-metas built from the stack |
+| `programs/token-wrapper` | 1:1 backed wrapped mints: vault, measured deposits, burn-then-release, reserve check |
 | `programs/pump-hooks` | The original Pump-only router (v0). It predates ABI v1 and has its own policy VM. |
 | `tests/` | LiteSVM suites, plus devnet fixtures for the real Pump binaries |
 | `apps/web` | The website |
@@ -151,9 +153,10 @@ Tooling never reads your Solana CLI config. Pass `--url` and keys explicitly.
 
 - **Not audited.** Don't use it with funds you can't lose.
 - Not deployed on mainnet, and it won't be without an audit.
-- Built and tested on localnet: standard, kernel, registry, router, pool manager and smart accounts.
-- Not built yet: the token wrapper and token hooks, the ABI v1 SDK and CLI (the current SDK and CLI
-  target the v0 router), the visual composer, and example pool hooks.
+- Built and tested on localnet: standard, kernel, registry, router, pool manager, smart accounts,
+  token hooks and token wrapper. Progress is tracked in [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
+- Not built yet: the ABI v1 SDK and CLI (the current SDK and CLI target the v0 router), the visual
+  composer, and example pool hooks.
 
 <br>
 

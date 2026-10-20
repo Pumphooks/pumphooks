@@ -24,6 +24,8 @@ hook-kernel = { workspace = true }
 hook-registry = { path = "../../programs/hook-registry", features = ["no-entrypoint"] }
 smart-accounts = { path = "../../programs/smart-accounts", features = ["no-entrypoint"] }
 hook-router = { path = "../../programs/hook-router", features = ["no-entrypoint"] }
+token-hooks = { path = "../../programs/token-hooks", features = ["no-entrypoint"] }
+token-wrapper = { path = "../../programs/token-wrapper", features = ["no-entrypoint"] }
 pump-adapter = { path = "../../crates/pump-adapter" }
 serde_json = "1"
 base64 = "0.22"
