@@ -41,7 +41,7 @@ export interface Analysis {
   enforcement: { callback: string; class: Enforcement; entries: number[] }[];
 }
 
-const hex = (b: Uint8Array) => Buffer.from(b).toString("hex");
+const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 const zero = (b: Uint8Array) => b.every((x) => x === 0);
 
 function keys(cfg: Uint8Array, from: number): string[] {

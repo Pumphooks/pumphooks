@@ -1,0 +1,434 @@
+{
+  "commit": "9327d8e271036fc77644ea3de7ac19c569e3e5ab",
+  "generatedAt": "2026-10-20T18:16:26.335Z",
+  "runtime": "LiteSVM (node, litesvm 1.6.1) with the compiled .so files",
+  "programs": {
+    "token_hooks.so": "969dd56de202ba3e740f6b6aa6875d43406aee7679c4b2522266b49d196b7e36",
+    "token_wrapper.so": "d37cdbe6acab5c349bbc42ece5b86fe37219cb73fd69d8ec2a2bfde7f401c067",
+    "anti_jit_hook.so": "ee6c37e94d71f2b8ebe153607ee1b0b2ee5b914e1d982b585184db56236b506d"
+  },
+  "command": "pnpm --filter @pump-hooks/web export-data (fuzz seed 1, 8 runs × 40 steps)",
+  "disclaimer": "This report lists automated tests and their results. It is not an audit, and passing it does not mean the programs are free of vulnerabilities.",
+  "fuzz": {
+    "target": "token-wrapper + token-hooks",
+    "seed": 1,
+    "runs": 8,
+    "steps": 40,
+    "executed": 320,
+    "coverage": {
+      "wrap": 97,
+      "attack:direct-mint": 9,
+      "unwrap": 84,
+      "transfer": 63,
+      "attack:wrap-from-victim": 10,
+      "attack:unwrap-victim": 12,
+      "attack:foreign-policy": 9,
+      "attack:direct-execute": 11,
+      "attack:transfer-no-hook": 8,
+      "verify_reserves": 12,
+      "attack:fake-vault": 5
+    },
+    "outcomes": {
+      "ok": 161,
+      "failed": 159
+    }
+  },
+  "invariants": [
+    "reserves-cover-supply",
+    "fee-free-underlying-is-exactly-backed",
+    "wrapped-balances-sum-to-supply",
+    "underlying-conserved",
+    "wrapper-totals-match-supply",
+    "failed-operations-change-nothing",
+    "attacks-fail",
+    "honest-operations-behave-as-specified"
+  ],
+  "attacks": {
+    "wrap-from-victim": "wrap signed by the attacker, debiting the victim's underlying account",
+    "unwrap-victim": "unwrap signed by the attacker, burning the victim's wrapped tokens",
+    "fake-vault": "wrap that names the attacker's own token account as the vault",
+    "direct-mint": "Token-2022 mint_to on the wrapped mint signed by the attacker",
+    "direct-execute": "token-hooks execute called directly, outside a Token-2022 transfer",
+    "foreign-policy": "unwrap that passes another mint's policy account to the hook check",
+    "transfer-no-hook": "wrapped transfer_checked without the hook's extra accounts"
+  },
+  "categories": [
+    {
+      "id": "missing-signer",
+      "title": "Missing or forged signer",
+      "threat": "An instruction acts for an account whose owner did not sign.",
+      "evidence": [
+        {
+          "test": "initialize_requires_the_upgrade_authority",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "credit_operations_require_hook_authority",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "wrap-from-victim",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        },
+        {
+          "test": "unwrap-victim",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "authority-confusion",
+      "title": "Wrong authority",
+      "threat": "A signer that is not the configured authority changes state it does not control.",
+      "evidence": [
+        {
+          "test": "status_only_moves_forward_and_only_by_authority",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "builtins_only_from_admin_with_exact_claims",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "private_policies_only_apply_to_their_authority",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "direct-mint",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "account-substitution",
+      "title": "Account substitution",
+      "threat": "A caller passes a look-alike account (vault, pool, policy, token account) in place of the bound one.",
+      "evidence": [
+        {
+          "test": "execute_rejects_protected_accounts_self_cpi_and_substitution",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "adapter_rejects_disabled_venues_unknown_instructions_and_substituted_accounts",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "wrong_hook_accounts_are_rejected",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "fake-vault",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        },
+        {
+          "test": "foreign-policy",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "forged-callback",
+      "title": "Forged hook invocation",
+      "threat": "A hook is called outside the operation it guards, to consume limits or fake approvals.",
+      "evidence": [
+        {
+          "test": "forged_callbacks_are_refused_by_the_hook",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "direct-execute",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "reentrancy",
+      "title": "Reentrancy and self-CPI",
+      "threat": "A hook or executed instruction calls back into the engine mid-operation.",
+      "evidence": [
+        {
+          "test": "hook_cannot_reenter_core",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "execute_rejects_protected_accounts_self_cpi_and_substitution",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "asset-access",
+      "title": "Hook access to user assets",
+      "threat": "A hook moves tokens or lamports that belong to the user.",
+      "evidence": [
+        {
+          "test": "hook_cannot_spend_trader_tokens",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "sol_taken_from_the_wallet_is_measured_and_capped",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "execute_blocks_token_side_channels_and_limits_tokens",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "unbacked-mint",
+      "title": "Unbacked minting",
+      "threat": "Wrapped or receipt tokens are created without the matching deposit.",
+      "evidence": [
+        {
+          "test": "wrapper_backs_every_wrapped_token_and_runs_the_hooks",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "direct-mint",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        },
+        {
+          "test": "reserves-cover-supply",
+          "kind": "fuzz-invariant",
+          "level": "localnet"
+        },
+        {
+          "test": "fee-free-underlying-is-exactly-backed",
+          "kind": "fuzz-invariant",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "custody-withdrawal",
+      "title": "Unauthorized withdrawal / trapped funds",
+      "threat": "Custodied funds leave without the owner, or policies trap them.",
+      "evidence": [
+        {
+          "test": "pool_policies_cannot_gate_withdrawals",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "pause_never_blocks_withdrawals",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "timelocked_withdrawals_need_aged_proposals_and_cannot_be_replayed",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "underlying-conserved",
+          "kind": "fuzz-invariant",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "policy-bypass",
+      "title": "Mandatory policy removal or reset",
+      "threat": "An authority removes or weakens a mandatory entry, or resets its state, without the delay.",
+      "evidence": [
+        {
+          "test": "mandatory_policy_cannot_be_removed_without_an_aged_proposal",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "mandatory_policy_entries_change_only_after_the_delay",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "resubmitting_the_stack_does_not_reset_spending",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "code-substitution",
+      "title": "Hook binary substitution",
+      "threat": "A hook program is upgraded after install and keeps running with new code.",
+      "evidence": [
+        {
+          "test": "pinned_hook_stops_on_redeploy",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "pinning_requires_the_binary_the_version_describes",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "program_versions_record_loader_facts",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ],
+      "gaps": "Upgradeable hooks that are not pinned run whatever is deployed; the registry records the upgrade authority so clients can show it."
+    },
+    {
+      "id": "replay",
+      "title": "Replay and stale state",
+      "threat": "A signed intent, proposal or session is reused after it should expire.",
+      "evidence": [
+        {
+          "test": "deadline_and_receipt_nonce_replay",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "proposals_go_stale_on_governance_changes",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "sessions_are_scoped_expire_and_die_with_the_epoch",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "price-manipulation",
+      "title": "Slippage, sandwich and price manipulation",
+      "threat": "A trade settles at a manipulated price or worse than the user's bound.",
+      "evidence": [
+        {
+          "test": "measured_min_out_and_max_in_are_enforced_by_the_router",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "slot_limit_refuses_same_slot_round_trips",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "price_impact_policy_reads_live_reserves",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "price_range_policy_reverts_swaps_that_leave_the_range",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ],
+      "gaps": "Router hooks are bypassable: the same pool remains callable directly (see max_size_caps_buys_and_venue_stays_directly_callable)."
+    },
+    {
+      "id": "fee-accounting",
+      "title": "Fee and transfer-fee accounting",
+      "threat": "Fees are charged above bounds, or nominal amounts are trusted instead of measured deltas.",
+      "evidence": [
+        {
+          "test": "wrapper_refuses_unsafe_underlyings_and_measures_transfer_fees",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "after_swap_fee_is_bounded_by_trader_limit",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "protocol_fee_share_is_capped_and_paid_out",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "registry-poisoning",
+      "title": "Initialization front-running and registry poisoning",
+      "threat": "Someone initializes a program first, squats a slug, or installs a version that does not match its claims.",
+      "evidence": [
+        {
+          "test": "initialization_cannot_be_front_run",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "slugs_are_validated_and_unique",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "installs_must_match_the_version",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "audits_require_named_reviewers",
+          "kind": "rust",
+          "level": "localnet"
+        }
+      ]
+    },
+    {
+      "id": "fail-open",
+      "title": "Fail-open, partial execution and compute exhaustion",
+      "threat": "An error path allows the operation, a failed transaction leaves partial state, or a stack exceeds compute.",
+      "evidence": [
+        {
+          "test": "silent_hook_is_an_error_not_an_allow",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "compact_policy_fits_in_a_transaction",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "each_measured_builtin_actually_evaluates",
+          "kind": "rust",
+          "level": "localnet"
+        },
+        {
+          "test": "failed-operations-change-nothing",
+          "kind": "fuzz-invariant",
+          "level": "localnet"
+        },
+        {
+          "test": "honest-operations-behave-as-specified",
+          "kind": "fuzz-invariant",
+          "level": "localnet"
+        },
+        {
+          "test": "transfer-no-hook",
+          "kind": "fuzz-attack",
+          "level": "localnet"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1687 @@
+{
+  "commit": "9327d8e271036fc77644ea3de7ac19c569e3e5ab",
+  "generatedAt": "2026-10-20T18:16:25.019Z",
+  "runtime": "LiteSVM (node, litesvm 1.6.1) with the compiled .so files",
+  "programs": {
+    "token_hooks.so": "969dd56de202ba3e740f6b6aa6875d43406aee7679c4b2522266b49d196b7e36",
+    "token_wrapper.so": "d37cdbe6acab5c349bbc42ece5b86fe37219cb73fd69d8ec2a2bfde7f401c067",
+    "anti_jit_hook.so": "ee6c37e94d71f2b8ebe153607ee1b0b2ee5b914e1d982b585184db56236b506d"
+  },
+  "command": "pnpm --filter @pump-hooks/web export-data",
+  "traces": [
+    {
+      "label": "wrap",
+      "status": "success",
+      "feePayer": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+      "instructions": [
+        {
+          "index": 0,
+          "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "program": "token-wrapper",
+          "accounts": [
+            {
+              "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+              "signer": true,
+              "writable": false
+            },
+            {
+              "address": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "BTpP71RSkowSN3y94g8QEan4ipT36UgCCZeCZgzTvEDu",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+              "signer": false,
+              "writable": false
+            }
+          ],
+          "data": "sigKveSBuozoAwAAAAAAAOgDAAAAAAAA"
+        }
+      ],
+      "cpiTree": [
+        [
+          {
+            "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+            "program": "token-hooks",
+            "stackHeight": 2,
+            "accounts": [
+              "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+              "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4"
+            ],
+            "data": "AKw1aTHyL10C05TFYz3XfG7Yhlj0NoqwXLxvGc3VGqVUBSMYFb0OW6nTlMVjPdd8btiGWPQ2irBcvG8ZzdUapVQFIxgVvQ5bqegDAAAAAAAA",
+            "children": []
+          },
+          {
+            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "program": "spl-token",
+            "stackHeight": 2,
+            "accounts": [
+              "BTpP71RSkowSN3y94g8QEan4ipT36UgCCZeCZgzTvEDu",
+              "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+              "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+              "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi"
+            ],
+            "data": "DOgDAAAAAAAABg==",
+            "children": []
+          },
+          {
+            "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+            "program": "token-2022",
+            "stackHeight": 2,
+            "accounts": [
+              "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+              "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1"
+            ],
+            "data": "B+gDAAAAAAAA",
+            "children": []
+          }
+        ]
+      ],
+      "invocations": [
+        {
+          "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "program": "token-wrapper",
+          "depth": 1,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: Wrap",
+            "Program data: C3+RH86GSYJhxNB37ifOantnP5vb16gbrYDcyaRpQUFm6rgnp7cjptOUxWM913xu2IZY9DaKsFy8bxnN1RqlVAUjGBW9Dlup6AMAAAAAAADoAwAAAAAAAOgDAAAAAAAA6AMAAAAAAAA="
+          ],
+          "consumed": 19594,
+          "budget": 200000
+        },
+        {
+          "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "program": "token-hooks",
+          "depth": 2,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: CheckOperation"
+          ],
+          "consumed": 3924,
+          "budget": 192093
+        },
+        {
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "program": "spl-token",
+          "depth": 2,
+          "result": "success",
+          "logs": [],
+          "consumed": 105,
+          "budget": 185911
+        },
+        {
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "depth": 2,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: MintTo"
+          ],
+          "consumed": 1534,
+          "budget": 183443
+        }
+      ],
+      "computeUnits": {
+        "total": "19594",
+        "perInstruction": [
+          19594
+        ]
+      },
+      "accountDiffs": [
+        {
+          "address": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+          "label": "fee payer",
+          "signer": true,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "99976886640",
+          "lamportsAfter": "99976876640",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "label": "alice",
+          "signer": true,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "1000000000",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1595120",
+          "lamportsAfter": "1595120",
+          "ownerBefore": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "ownerAfter": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "dataLenBefore": 186,
+          "dataLenAfter": 186,
+          "changedRanges": [
+            [
+              168,
+              170
+            ]
+          ]
+        },
+        {
+          "address": "BTpP71RSkowSN3y94g8QEan4ipT36UgCCZeCZgzTvEDu",
+          "label": "alice underlying",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1488440",
+          "lamportsAfter": "1488440",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 165,
+          "dataLenAfter": 165,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+          "label": "vault",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1488440",
+          "lamportsAfter": "1488440",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 165,
+          "dataLenAfter": 165,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "label": "alice wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+          "label": "token-policy",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "10160000",
+          "lamportsAfter": "10160000",
+          "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "dataLenBefore": 1872,
+          "dataLenAfter": 1872,
+          "changedRanges": [
+            [
+              104,
+              105
+            ]
+          ]
+        },
+        {
+          "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1838960",
+          "lamportsAfter": "1838960",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 234,
+          "dataLenAfter": 234,
+          "changedRanges": [
+            [
+              36,
+              38
+            ]
+          ]
+        },
+        {
+          "address": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "label": "token-wrapper",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1066800",
+          "lamportsAfter": "1066800",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 82,
+          "dataLenAfter": 82,
+          "changedRanges": []
+        },
+        {
+          "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "label": "token-hooks",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        }
+      ],
+      "tokenBalances": [
+        {
+          "account": "BTpP71RSkowSN3y94g8QEan4ipT36UgCCZeCZgzTvEDu",
+          "mint": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "owner": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "before": "1000000",
+          "after": "999000",
+          "delta": "-1000"
+        },
+        {
+          "account": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+          "mint": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "owner": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+          "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "before": "0",
+          "after": "1000",
+          "delta": "1000"
+        },
+        {
+          "account": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "0",
+          "after": "1000",
+          "delta": "1000"
+        }
+      ],
+      "hookSteps": [],
+      "logs": [
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh invoke [1]",
+        "Program log: Instruction: Wrap",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+        "Program log: Instruction: CheckOperation",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 3924 of 192093 compute units",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 185911 compute units",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]",
+        "Program log: Instruction: MintTo",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 1534 of 183443 compute units",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+        "Program data: C3+RH86GSYJhxNB37ifOantnP5vb16gbrYDcyaRpQUFm6rgnp7cjptOUxWM913xu2IZY9DaKsFy8bxnN1RqlVAUjGBW9Dlup6AMAAAAAAADoAwAAAAAAAOgDAAAAAAAA6AMAAAAAAAA=",
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh consumed 19594 of 200000 compute units",
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh success"
+      ],
+      "provenance": {
+        "status": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction result"
+        },
+        "error": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction error"
+        },
+        "instructions": {
+          "provenance": "observed",
+          "source": "compiled transaction message"
+        },
+        "cpiTree": {
+          "provenance": "observed",
+          "source": "LiteSVM inner instructions with stack heights"
+        },
+        "invocations": {
+          "provenance": "observed",
+          "source": "runtime program logs (invoke / consumed / success / failed)"
+        },
+        "computeUnits": {
+          "provenance": "observed",
+          "source": "LiteSVM computeUnitsConsumed"
+        },
+        "accountDiffs": {
+          "provenance": "observed",
+          "source": "account state read before and after execution"
+        },
+        "tokenBalances": {
+          "provenance": "observed",
+          "source": "SPL Token / Token-2022 account data before and after"
+        },
+        "logs": {
+          "provenance": "observed",
+          "source": "runtime logs"
+        },
+        "returnData": {
+          "provenance": "observed",
+          "source": "LiteSVM return data"
+        },
+        "hookSteps": {
+          "provenance": "reconstructed",
+          "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+        }
+      },
+      "note": "Wrap 1000 underlying SPL tokens into the hooked Token-2022 mint: measured deposit, then mint."
+    },
+    {
+      "label": "transfer",
+      "status": "success",
+      "feePayer": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+      "instructions": [
+        {
+          "index": 0,
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "accounts": [
+            {
+              "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+              "signer": true,
+              "writable": false
+            },
+            {
+              "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "2f6rPdB1oQbN9xeQHjoPkzxdBNmrafqdT8kghvjPXkMp",
+              "signer": false,
+              "writable": false
+            }
+          ],
+          "data": "DPoAAAAAAAAABg=="
+        }
+      ],
+      "cpiTree": [
+        [
+          {
+            "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+            "program": "token-hooks",
+            "stackHeight": 2,
+            "accounts": [
+              "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+              "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+              "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+              "2f6rPdB1oQbN9xeQHjoPkzxdBNmrafqdT8kghvjPXkMp",
+              "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4"
+            ],
+            "data": "aSVlxUv7Zhr6AAAAAAAAAA==",
+            "children": []
+          }
+        ]
+      ],
+      "invocations": [
+        {
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "depth": 1,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: TransferChecked"
+          ],
+          "consumed": 20850,
+          "budget": 200000
+        },
+        {
+          "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "program": "token-hooks",
+          "depth": 2,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: Execute"
+          ],
+          "consumed": 6796,
+          "budget": 186576
+        }
+      ],
+      "computeUnits": {
+        "total": "20850",
+        "perInstruction": [
+          20850
+        ]
+      },
+      "accountDiffs": [
+        {
+          "address": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+          "label": "fee payer",
+          "signer": true,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "99976876640",
+          "lamportsAfter": "99976866640",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "label": "alice",
+          "signer": true,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "1000000000",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "label": "bob wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": [
+            [
+              64,
+              65
+            ]
+          ]
+        },
+        {
+          "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "label": "alice wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+          "label": "token-policy",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "10160000",
+          "lamportsAfter": "10160000",
+          "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "dataLenBefore": 1872,
+          "dataLenAfter": 1872,
+          "changedRanges": [
+            [
+              104,
+              105
+            ]
+          ]
+        },
+        {
+          "address": "2f6rPdB1oQbN9xeQHjoPkzxdBNmrafqdT8kghvjPXkMp",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "909320",
+          "lamportsAfter": "909320",
+          "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "dataLenBefore": 51,
+          "dataLenAfter": 51,
+          "changedRanges": []
+        },
+        {
+          "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "label": "token-hooks",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1838960",
+          "lamportsAfter": "1838960",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 234,
+          "dataLenAfter": 234,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        }
+      ],
+      "tokenBalances": [
+        {
+          "account": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "0",
+          "after": "250",
+          "delta": "250"
+        },
+        {
+          "account": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "1000",
+          "after": "750",
+          "delta": "-250"
+        }
+      ],
+      "hookSteps": [],
+      "logs": [
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
+        "Program log: Instruction: TransferChecked",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+        "Program log: Instruction: Execute",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 6796 of 186576 compute units",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 20850 of 200000 compute units",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success"
+      ],
+      "provenance": {
+        "status": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction result"
+        },
+        "error": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction error"
+        },
+        "instructions": {
+          "provenance": "observed",
+          "source": "compiled transaction message"
+        },
+        "cpiTree": {
+          "provenance": "observed",
+          "source": "LiteSVM inner instructions with stack heights"
+        },
+        "invocations": {
+          "provenance": "observed",
+          "source": "runtime program logs (invoke / consumed / success / failed)"
+        },
+        "computeUnits": {
+          "provenance": "observed",
+          "source": "LiteSVM computeUnitsConsumed"
+        },
+        "accountDiffs": {
+          "provenance": "observed",
+          "source": "account state read before and after execution"
+        },
+        "tokenBalances": {
+          "provenance": "observed",
+          "source": "SPL Token / Token-2022 account data before and after"
+        },
+        "logs": {
+          "provenance": "observed",
+          "source": "runtime logs"
+        },
+        "returnData": {
+          "provenance": "observed",
+          "source": "LiteSVM return data"
+        },
+        "hookSteps": {
+          "provenance": "reconstructed",
+          "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+        }
+      },
+      "note": "Wrapped transfer: Token-2022 calls token-hooks Execute mid-transfer (empty policy stack)."
+    },
+    {
+      "label": "transfer-no-hook",
+      "status": "failed",
+      "error": "InstructionError(0, 31)",
+      "feePayer": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+      "instructions": [
+        {
+          "index": 0,
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "accounts": [
+            {
+              "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+              "signer": true,
+              "writable": false
+            }
+          ],
+          "data": "DAoAAAAAAAAABg=="
+        }
+      ],
+      "cpiTree": [
+        []
+      ],
+      "invocations": [
+        {
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "depth": 1,
+          "result": "failed",
+          "logs": [
+            "Program log: Instruction: TransferChecked",
+            "Unknown program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54"
+          ],
+          "consumed": 7576,
+          "budget": 200000,
+          "error": "An account required by the instruction is missing"
+        }
+      ],
+      "computeUnits": {
+        "total": "7576",
+        "perInstruction": [
+          7576
+        ]
+      },
+      "accountDiffs": [
+        {
+          "address": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+          "label": "fee payer",
+          "signer": true,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "99976866640",
+          "lamportsAfter": "99976856640",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "label": "alice",
+          "signer": true,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "1000000000",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "label": "bob wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": []
+        },
+        {
+          "address": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "label": "alice wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": []
+        },
+        {
+          "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1838960",
+          "lamportsAfter": "1838960",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 234,
+          "dataLenAfter": 234,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        }
+      ],
+      "tokenBalances": [
+        {
+          "account": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "250",
+          "after": "250",
+          "delta": "0"
+        },
+        {
+          "account": "Eak2A1VRkcXx5oRm2HDbF5sBV5x1dkGyBSSjjwScbNDG",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "FEvbgzQuYhoxvFWB6zcJw3N9zpahnDtQHQFa3hwpnWbi",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "750",
+          "after": "750",
+          "delta": "0"
+        }
+      ],
+      "hookSteps": [],
+      "logs": [
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
+        "Program log: Instruction: TransferChecked",
+        "Unknown program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 7576 of 200000 compute units",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: An account required by the instruction is missing"
+      ],
+      "provenance": {
+        "status": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction result"
+        },
+        "error": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction error"
+        },
+        "instructions": {
+          "provenance": "observed",
+          "source": "compiled transaction message"
+        },
+        "cpiTree": {
+          "provenance": "observed",
+          "source": "LiteSVM inner instructions with stack heights"
+        },
+        "invocations": {
+          "provenance": "observed",
+          "source": "runtime program logs (invoke / consumed / success / failed)"
+        },
+        "computeUnits": {
+          "provenance": "observed",
+          "source": "LiteSVM computeUnitsConsumed"
+        },
+        "accountDiffs": {
+          "provenance": "observed",
+          "source": "account state read before and after execution"
+        },
+        "tokenBalances": {
+          "provenance": "observed",
+          "source": "SPL Token / Token-2022 account data before and after"
+        },
+        "logs": {
+          "provenance": "observed",
+          "source": "runtime logs"
+        },
+        "returnData": {
+          "provenance": "observed",
+          "source": "LiteSVM return data"
+        },
+        "hookSteps": {
+          "provenance": "reconstructed",
+          "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+        }
+      },
+      "note": "Attack \"wrapped transfer_checked without the hook's extra accounts\": refused, nothing moves."
+    },
+    {
+      "label": "unwrap",
+      "status": "success",
+      "feePayer": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+      "instructions": [
+        {
+          "index": 0,
+          "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "program": "token-wrapper",
+          "accounts": [
+            {
+              "address": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+              "signer": true,
+              "writable": false
+            },
+            {
+              "address": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "58gdmrtjDv4RyT2RTUnjVHY3dfgWQSqy355Zqi8pQYFT",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+              "signer": false,
+              "writable": true
+            },
+            {
+              "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+              "signer": false,
+              "writable": false
+            },
+            {
+              "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+              "signer": false,
+              "writable": false
+            }
+          ],
+          "data": "fq/GDtRFMiz6AAAAAAAAAPoAAAAAAAAA"
+        }
+      ],
+      "cpiTree": [
+        [
+          {
+            "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+            "program": "token-hooks",
+            "stackHeight": 2,
+            "accounts": [
+              "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+              "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4"
+            ],
+            "data": "AKw1aTHyL10DLpOuN/3wwtm3Ydqn6REMylHSyFn1ki5Sf6HO76QRvMEuk643/fDC2bdh2qfpEQzKUdLIWfWSLlJ/oc7vpBG8wfoAAAAAAAAA",
+            "children": []
+          },
+          {
+            "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+            "program": "token-2022",
+            "stackHeight": 2,
+            "accounts": [
+              "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+              "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+              "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY"
+            ],
+            "data": "D/oAAAAAAAAABg==",
+            "children": []
+          },
+          {
+            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "program": "spl-token",
+            "stackHeight": 2,
+            "accounts": [
+              "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+              "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+              "58gdmrtjDv4RyT2RTUnjVHY3dfgWQSqy355Zqi8pQYFT",
+              "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1"
+            ],
+            "data": "DPoAAAAAAAAABg==",
+            "children": []
+          }
+        ]
+      ],
+      "invocations": [
+        {
+          "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "program": "token-wrapper",
+          "depth": 1,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: Unwrap",
+            "Program data: GVZdUJFxVl1hxNB37ifOantnP5vb16gbrYDcyaRpQUFm6rgnp7cjpi6Trjf98MLZt2Hap+kRDMpR0shZ9ZIuUn+hzu+kEbzB+gAAAAAAAAD6AAAAAAAAAO4CAAAAAAAA7gIAAAAAAAA="
+          ],
+          "consumed": 19530,
+          "budget": 200000
+        },
+        {
+          "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "program": "token-hooks",
+          "depth": 2,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: CheckOperation"
+          ],
+          "consumed": 3924,
+          "budget": 192087
+        },
+        {
+          "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "program": "token-2022",
+          "depth": 2,
+          "result": "success",
+          "logs": [
+            "Program log: Instruction: BurnChecked"
+          ],
+          "consumed": 1742,
+          "budget": 186088
+        },
+        {
+          "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "program": "spl-token",
+          "depth": 2,
+          "result": "success",
+          "logs": [],
+          "consumed": 105,
+          "budget": 182128
+        }
+      ],
+      "computeUnits": {
+        "total": "19530",
+        "perInstruction": [
+          19530
+        ]
+      },
+      "accountDiffs": [
+        {
+          "address": "EfLWVtW1rGzo5VkGUXSi2jJvM3yWVRHqTS4UyzCaP4r3",
+          "label": "fee payer",
+          "signer": true,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "99976856640",
+          "lamportsAfter": "99976846640",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+          "label": "bob",
+          "signer": true,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "1000000000",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "58gdmrtjDv4RyT2RTUnjVHY3dfgWQSqy355Zqi8pQYFT",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1488440",
+          "lamportsAfter": "1488440",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 165,
+          "dataLenAfter": 165,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1595120",
+          "lamportsAfter": "1595120",
+          "ownerBefore": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "ownerAfter": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "dataLenBefore": 186,
+          "dataLenAfter": 186,
+          "changedRanges": [
+            [
+              176,
+              177
+            ]
+          ]
+        },
+        {
+          "address": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "label": "bob wrapped",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1518920",
+          "lamportsAfter": "1518920",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 171,
+          "dataLenAfter": 171,
+          "changedRanges": [
+            [
+              64,
+              65
+            ]
+          ]
+        },
+        {
+          "address": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+          "label": "vault",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1488440",
+          "lamportsAfter": "1488440",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 165,
+          "dataLenAfter": 165,
+          "changedRanges": [
+            [
+              64,
+              66
+            ]
+          ]
+        },
+        {
+          "address": "HbWn9pxMosHNk2GvhjzGEJwFfWvLQnvmuqBT9Ek6vma4",
+          "label": "token-policy",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "10160000",
+          "lamportsAfter": "10160000",
+          "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "dataLenBefore": 1872,
+          "dataLenAfter": 1872,
+          "changedRanges": [
+            [
+              104,
+              105
+            ]
+          ]
+        },
+        {
+          "address": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "signer": false,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1838960",
+          "lamportsAfter": "1838960",
+          "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "dataLenBefore": 234,
+          "dataLenAfter": 234,
+          "changedRanges": [
+            [
+              36,
+              38
+            ]
+          ]
+        },
+        {
+          "address": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+          "label": "token-wrapper",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1066800",
+          "lamportsAfter": "1066800",
+          "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "dataLenBefore": 82,
+          "dataLenAfter": 82,
+          "changedRanges": []
+        },
+        {
+          "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+          "label": "token-hooks",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        }
+      ],
+      "tokenBalances": [
+        {
+          "account": "58gdmrtjDv4RyT2RTUnjVHY3dfgWQSqy355Zqi8pQYFT",
+          "mint": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "owner": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+          "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "before": "1000000",
+          "after": "1000250",
+          "delta": "250"
+        },
+        {
+          "account": "Cu6KoejfoUVmr6P8mdgAW3f2u6xN8aduLgQ8txENrwrZ",
+          "mint": "JDr61q5BRV7LWfxQfqRHW781BQ4asxGqi87GqSRu1QWR",
+          "owner": "48pN5sWVeiEbQxYBZT6qaHYUvZavFNBBsmbvjMLRZDWY",
+          "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "before": "250",
+          "after": "0",
+          "delta": "-250"
+        },
+        {
+          "account": "DZwbPpvMw4jGbzPbsq6iMqtwTgAFxKWCBzPKJYi7aXFL",
+          "mint": "CHpE98dQshMXdZHnTWXzbVsh8y46hSLcKAXa2XZ2pmFc",
+          "owner": "7aecPxnQyJ3MvMHSctoPotJsjPCMxDfVqpeujDbq81L1",
+          "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "before": "1000",
+          "after": "750",
+          "delta": "-250"
+        }
+      ],
+      "hookSteps": [],
+      "logs": [
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh invoke [1]",
+        "Program log: Instruction: Unwrap",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+        "Program log: Instruction: CheckOperation",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 3924 of 192087 compute units",
+        "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]",
+        "Program log: Instruction: BurnChecked",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 1742 of 186088 compute units",
+        "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 182128 compute units",
+        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+        "Program data: GVZdUJFxVl1hxNB37ifOantnP5vb16gbrYDcyaRpQUFm6rgnp7cjpi6Trjf98MLZt2Hap+kRDMpR0shZ9ZIuUn+hzu+kEbzB+gAAAAAAAAD6AAAAAAAAAO4CAAAAAAAA7gIAAAAAAAA=",
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh consumed 19530 of 200000 compute units",
+        "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh success"
+      ],
+      "provenance": {
+        "status": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction result"
+        },
+        "error": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction error"
+        },
+        "instructions": {
+          "provenance": "observed",
+          "source": "compiled transaction message"
+        },
+        "cpiTree": {
+          "provenance": "observed",
+          "source": "LiteSVM inner instructions with stack heights"
+        },
+        "invocations": {
+          "provenance": "observed",
+          "source": "runtime program logs (invoke / consumed / success / failed)"
+        },
+        "computeUnits": {
+          "provenance": "observed",
+          "source": "LiteSVM computeUnitsConsumed"
+        },
+        "accountDiffs": {
+          "provenance": "observed",
+          "source": "account state read before and after execution"
+        },
+        "tokenBalances": {
+          "provenance": "observed",
+          "source": "SPL Token / Token-2022 account data before and after"
+        },
+        "logs": {
+          "provenance": "observed",
+          "source": "runtime logs"
+        },
+        "returnData": {
+          "provenance": "observed",
+          "source": "LiteSVM return data"
+        },
+        "hookSteps": {
+          "provenance": "reconstructed",
+          "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+        }
+      },
+      "note": "Unwrap: burn first, then release from the vault."
+    },
+    {
+      "label": "router before_swap → anti-jit-hook",
+      "status": "success",
+      "feePayer": "29KCYeH99hi6SFYf6yXPRiVLJ8bGztr7yxtiN212zdbr",
+      "instructions": [
+        {
+          "index": 0,
+          "programId": "CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy",
+          "program": "anti-jit-hook",
+          "accounts": [
+            {
+              "address": "44DUhBHen5W1sE2Xxz5cDw88S7K6hQvsTVofe55g8259",
+              "signer": true,
+              "writable": false
+            },
+            {
+              "address": "5gpUPJh1x2m4wdf2y2LdrWpKhkc7JXecokwEQ8WNYLVB",
+              "signer": false,
+              "writable": false
+            }
+          ],
+          "data": "GbCEW72haXcBAQL9AAAAAEWiE4ENCn1RnbGfCAAHaNlL1RY7Spz5SVzEHnWrSeKWEPzpQLCjOn58M3zCbHobJ09jjsOw4+I7AWZxA3f7tq0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAAAAAAOgDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+      ],
+      "cpiTree": [
+        []
+      ],
+      "invocations": [
+        {
+          "programId": "CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy",
+          "program": "anti-jit-hook",
+          "depth": 1,
+          "result": "success",
+          "logs": [
+            "Program return: CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy AQHqAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+          ],
+          "consumed": 4371,
+          "budget": 200000
+        }
+      ],
+      "computeUnits": {
+        "total": "4371",
+        "perInstruction": [
+          4371
+        ]
+      },
+      "accountDiffs": [
+        {
+          "address": "29KCYeH99hi6SFYf6yXPRiVLJ8bGztr7yxtiN212zdbr",
+          "signer": true,
+          "writable": true,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "999990000",
+          "ownerBefore": "11111111111111111111111111111111",
+          "ownerAfter": "11111111111111111111111111111111",
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "44DUhBHen5W1sE2Xxz5cDw88S7K6hQvsTVofe55g8259",
+          "signer": true,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "0",
+          "lamportsAfter": "0",
+          "ownerBefore": null,
+          "ownerAfter": null,
+          "dataLenBefore": 0,
+          "dataLenAfter": 0,
+          "changedRanges": []
+        },
+        {
+          "address": "5gpUPJh1x2m4wdf2y2LdrWpKhkc7JXecokwEQ8WNYLVB",
+          "label": "route policy (owned by hook-router)",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "1000000000",
+          "lamportsAfter": "1000000000",
+          "ownerBefore": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+          "ownerAfter": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+          "dataLenBefore": 64,
+          "dataLenAfter": 64,
+          "changedRanges": []
+        },
+        {
+          "address": "CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy",
+          "label": "anti-jit-hook",
+          "signer": false,
+          "writable": false,
+          "created": false,
+          "closed": false,
+          "lamportsBefore": "833120",
+          "lamportsAfter": "833120",
+          "ownerBefore": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "ownerAfter": "BPFLoaderUpgradeab1e11111111111111111111111",
+          "dataLenBefore": 36,
+          "dataLenAfter": 36,
+          "changedRanges": []
+        }
+      ],
+      "tokenBalances": [],
+      "hookSteps": [],
+      "logs": [
+        "Program CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy invoke [1]",
+        "Program CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy consumed 4371 of 200000 compute units",
+        "Program return: CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy AQHqAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "Program CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy success"
+      ],
+      "returnData": {
+        "programId": "CTBnrFvszUR6udB5mWiPPz3xghzFrjtFmdCGFDQk2yuy",
+        "data": "AQHqAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      },
+      "provenance": {
+        "status": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction result"
+        },
+        "error": {
+          "provenance": "observed",
+          "source": "LiteSVM transaction error"
+        },
+        "instructions": {
+          "provenance": "observed",
+          "source": "compiled transaction message"
+        },
+        "cpiTree": {
+          "provenance": "observed",
+          "source": "LiteSVM inner instructions with stack heights"
+        },
+        "invocations": {
+          "provenance": "observed",
+          "source": "runtime program logs (invoke / consumed / success / failed)"
+        },
+        "computeUnits": {
+          "provenance": "observed",
+          "source": "LiteSVM computeUnitsConsumed"
+        },
+        "accountDiffs": {
+          "provenance": "observed",
+          "source": "account state read before and after execution"
+        },
+        "tokenBalances": {
+          "provenance": "observed",
+          "source": "SPL Token / Token-2022 account data before and after"
+        },
+        "logs": {
+          "provenance": "observed",
+          "source": "runtime logs"
+        },
+        "returnData": {
+          "provenance": "observed",
+          "source": "LiteSVM return data"
+        },
+        "hookSteps": {
+          "provenance": "reconstructed",
+          "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+        }
+      },
+      "note": "Policy call to the example program hook without its config account: it answers reject 1002 (not configured) through return data. Signature verification is off to emulate the router's invoke_signed for the callback-authority PDA."
+    }
+  ]
+}

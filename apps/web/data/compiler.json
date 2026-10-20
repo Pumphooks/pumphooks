@@ -1,0 +1,283 @@
+{
+  "commit": "9327d8e271036fc77644ea3de7ac19c569e3e5ab",
+  "generatedAt": "2026-10-20T18:16:25.064Z",
+  "runtime": "LiteSVM (node, litesvm 1.6.1) with the compiled .so files",
+  "programs": {
+    "token_hooks.so": "969dd56de202ba3e740f6b6aa6875d43406aee7679c4b2522266b49d196b7e36",
+    "token_wrapper.so": "d37cdbe6acab5c349bbc42ece5b86fe37219cb73fd69d8ec2a2bfde7f401c067",
+    "anti_jit_hook.so": "ee6c37e94d71f2b8ebe153607ee1b0b2ee5b914e1d982b585184db56236b506d"
+  },
+  "command": "pnpm --filter @pump-hooks/web export-data",
+  "plan": [
+    {
+      "id": "bob-unwraps",
+      "kind": "unwrap",
+      "after": [
+        "send"
+      ]
+    },
+    {
+      "id": "alice-wraps",
+      "kind": "wrap",
+      "after": []
+    },
+    {
+      "id": "send",
+      "kind": "hooked-transfer",
+      "after": [
+        "alice-wraps"
+      ]
+    }
+  ],
+  "compiled": {
+    "order": [
+      "alice-wraps",
+      "send",
+      "bob-unwraps"
+    ],
+    "size": 912,
+    "computeUnitLimit": 165300,
+    "computeProvenance": "static",
+    "requiredSigners": [
+      "EazAwDoXW972pHpDGaS5GyVapdpMFTEbZJA5tELjfegb",
+      "7KLdMniakNwCDrYVab2EWxCShQrvX1cmRKEif6YyrMrj",
+      "Hp6q1R9z9VboWoD9tBtBG1kf3QDLQWrajiW24J7EUBur"
+    ],
+    "warnings": [
+      "dyysQ1xDidgiXRyCU3zNd3NME4aHehT2siaibft1wZa is written by alice-wraps, bob-unwraps; later operations see earlier writes",
+      "CBdwZUip9KR9gUw9E9PWQG9JXP5Ae1YEUspLCJnvpixa is written by alice-wraps, send, bob-unwraps; later operations see earlier writes",
+      "BTBb3uJeVKpfDx7tyUiYaGwmEz5Soqy1sjQMLpRBvchP is written by alice-wraps, bob-unwraps; later operations see earlier writes",
+      "FkzKgGqgYZozBRy5kRjNVsGMrKZ1xgAtzZGhjPVFNA2H is written by alice-wraps, send; later operations see earlier writes",
+      "2rmc3F9Me1j1qviTbXyDZug9soLLQsYsBpSLE7mbZqyT is written by alice-wraps, send, bob-unwraps; later operations see earlier writes",
+      "CLZhjGg2JzStBdia99uRED1QVhELEr1DjHPryeS4dQQc is written by send, bob-unwraps; later operations see earlier writes"
+    ],
+    "lookupTablesUsed": [],
+    "accounts": [
+      {
+        "address": "EazAwDoXW972pHpDGaS5GyVapdpMFTEbZJA5tELjfegb",
+        "signer": true,
+        "writable": true,
+        "usedBy": [
+          "fee-payer"
+        ]
+      },
+      {
+        "address": "7KLdMniakNwCDrYVab2EWxCShQrvX1cmRKEif6YyrMrj",
+        "signer": true,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "send"
+        ]
+      },
+      {
+        "address": "Hp6q1R9z9VboWoD9tBtBG1kf3QDLQWrajiW24J7EUBur",
+        "signer": true,
+        "writable": false,
+        "usedBy": [
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "dyysQ1xDidgiXRyCU3zNd3NME4aHehT2siaibft1wZa",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "CBdwZUip9KR9gUw9E9PWQG9JXP5Ae1YEUspLCJnvpixa",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps",
+          "send",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "BTBb3uJeVKpfDx7tyUiYaGwmEz5Soqy1sjQMLpRBvchP",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "5zEM9F4FeTMY5GvEpChSoKwzyVe4Vd2RK5n6UVX7dfpK",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps"
+        ]
+      },
+      {
+        "address": "FkzKgGqgYZozBRy5kRjNVsGMrKZ1xgAtzZGhjPVFNA2H",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps",
+          "send"
+        ]
+      },
+      {
+        "address": "2rmc3F9Me1j1qviTbXyDZug9soLLQsYsBpSLE7mbZqyT",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "alice-wraps",
+          "send",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "CLZhjGg2JzStBdia99uRED1QVhELEr1DjHPryeS4dQQc",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "send",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "BJjLaKLF4x5cLDjCNHoDiKxzbMF5r1zEPhwGHfGGQhkv",
+        "signer": false,
+        "writable": true,
+        "usedBy": [
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "ComputeBudget111111111111111111111111111111",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "compute-budget-0"
+        ]
+      },
+      {
+        "address": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "2Hamw4Ui4oTaq6xfBcYWSUEaQs2ANRzDbR38gzRafkSU",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "send",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "alice-wraps",
+          "send",
+          "bob-unwraps"
+        ]
+      },
+      {
+        "address": "GSEbAPFac9Wr4oG1ZEmdiof7Vp7jNUnKcFfcCbugYw5C",
+        "signer": false,
+        "writable": false,
+        "usedBy": [
+          "send"
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "programId": "ComputeBudget111111111111111111111111111111",
+        "accounts": 0,
+        "dataLen": 5
+      },
+      {
+        "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+        "accounts": 11,
+        "dataLen": 24
+      },
+      {
+        "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "accounts": 7,
+        "dataLen": 10
+      },
+      {
+        "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+        "accounts": 11,
+        "dataLen": 24
+      }
+    ]
+  },
+  "executed": {
+    "status": "success",
+    "computeUnits": "58624",
+    "measuredLimit": 64787
+  },
+  "atomicFailure": {
+    "plan": [
+      {
+        "id": "wrap",
+        "kind": "wrap",
+        "after": []
+      },
+      {
+        "id": "overspend",
+        "kind": "hooked-transfer",
+        "after": [
+          "wrap"
+        ]
+      }
+    ],
+    "status": "failed",
+    "error": "InstructionError(2, Custom(1))",
+    "accountsChanged": [
+      "fee payer"
+    ]
+  },
+  "errors": [
+    {
+      "case": "dependency cycle",
+      "code": "cycle",
+      "message": "dependency cycle: a -> b -> a"
+    },
+    {
+      "case": "signer not provided",
+      "code": "missing-signer",
+      "message": "missing signatures: 8tcx56x5K84jBSTpnhWYQkN9DfmmDV5VDnqcCbFzeoCi (a)"
+    },
+    {
+      "case": "40 writable accounts, no lookup table",
+      "code": "too-large",
+      "message": "transaction is 1572 bytes (limit 1232). It is not split automatically, because a split would no longer be atomic. 40 accounts could move to an address lookup table (saves up to 1240 bytes)."
+    }
+  ]
+}

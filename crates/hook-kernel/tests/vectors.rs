@@ -50,6 +50,8 @@ fn generate() -> String {
             c
         })),
         ("slot-limit", entry(SLOT_LIMIT, 4, false, SlotLimitConfig { max_per_slot: 3, flags: 0, _pad: [0; 3], _rest: [0; 88] })),
+        ("multisig", entry(MULTISIG, 1 << 2, true, MultisigConfig { threshold: 2, member_mask: 0b111, _rest: [0; 94] })),
+        ("price-impact", entry(PRICE_IMPACT, 1 << 6, false, PriceImpactConfig { max_bps: 150, _pad: [0; 6], _rest: [0; 88] })),
     ];
     let stacks: Vec<String> = stack_cases(&entries)
         .iter()

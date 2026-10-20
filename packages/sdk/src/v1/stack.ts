@@ -151,6 +151,8 @@ export const configs = {
   accounting: () => new Uint8Array(CONFIG_LEN),
   credential: (target: number, gatekeeperNetwork: Uint8Array) => new W(CONFIG_LEN).u8(0, target).key(8, gatekeeperNetwork).b,
   slotLimit: (maxPerSlot: number) => new W(CONFIG_LEN).u32(0, maxPerSlot).b,
+  multisig: (threshold: number, memberMask: number) => new W(CONFIG_LEN).u8(0, threshold).u8(1, memberMask).b,
+  priceImpact: (maxBps: number) => new W(CONFIG_LEN).u16(0, maxBps).b,
 };
 
 export function encodeEntry(env: EnvironmentId, spec: EntrySpec): Uint8Array {
