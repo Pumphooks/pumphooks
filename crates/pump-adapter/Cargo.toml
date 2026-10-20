@@ -1,0 +1,13 @@
+[package]
+name = "pump-adapter"
+version = "0.1.0"
+edition = "2021"
+description = "Pump / PumpSwap account layouts, PDAs, discriminators, quote math and instruction builders used by the Pump Hooks router."
+license = "Apache-2.0"
+
+[dependencies]
+solana-program = "2"
+
+[dev-dependencies]
+pump-rust-client = "=0.4.1"
+anchor-lang = "1"

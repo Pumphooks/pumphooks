@@ -4,6 +4,7 @@ members = [
     "crates/hook-types",
     "crates/hook-runtime",
     "crates/policy-vm",
+    "crates/pump-adapter",
 ]
 
 [workspace.package]
