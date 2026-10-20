@@ -42,7 +42,9 @@
 | POOL example hooks | `programs/example-hooks/pool-*` | planned; `programs/test-hook` is a scripted test hook |
 | Legacy Pump router (v0) | `programs/pump-hooks` (own policy VM, not ABI v1) | built, LiteSVM-tested against the real Pump binaries |
 | Policy VM (bounded WHEN/IF/THEN) | `crates/policy-vm` | built |
-| SDK, composer, CLI | `packages/sdk`, `packages/hook-types`, `packages/cli` | SDK and CLI exist for the router; extending |
+| Cross-engine state records | `programs/hook-state` (producer), `hook_standard::state` (verification) | built; one record gates a smart-account withdrawal and a router swap in one transaction (`tests/hooks/tests/cross_engine.rs`) |
+| Program-hook SDK and example | `crates/hook-sdk`, `examples/anti-jit-hook` | built; example installed from the registry and called by the router on a real PumpSwap route |
+| SDK, composer, CLI | `packages/sdk` (v0 + `v1`), `packages/hook-types`, `packages/cli` (`pump-hooks`, `pumphooks`) | SDK v1 and developer CLI built; composer pending |
 | Indexer | `services/indexer` | built (file store); Postgres store pending |
 | Web | `apps/web` | built for the router; expanding to the full page set |
 

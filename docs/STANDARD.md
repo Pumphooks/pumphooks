@@ -304,6 +304,12 @@ Composition can happen in two ways:
   automatically. A keeper may submit that transaction, but the consumer re-validates everything
   on-chain.
 
+The reference producer is `programs/hook-state`: an issuer (any signer) publishes a record at
+`["record", issuer, namespace, subject]`. Consumers that pin `producer = hook-state` and
+`issuer = <key>` (the allowlist builtin's `key_a` / `key_b` with `source = record`) accept only
+that issuer's records. Revocation clears the magic but keeps the account, so a later re-publish
+continues the sequence instead of restarting it.
+
 ## 8. Versioning
 
 - `standard` is `pump-hooks/v1`. Callback ids, capability bits and wire layouts are frozen; later

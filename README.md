@@ -128,6 +128,11 @@ min-out, max-in and SOL caps must bind independently of the venue, and the pool 
 | `programs/smart-accounts` | ACCOUNT engine: vault, proposals, sessions, recovery, lock |
 | `programs/token-hooks` | TOKEN engine: Token-2022 transfer hook, token policies, extra-account-metas built from the stack |
 | `programs/token-wrapper` | 1:1 backed wrapped mints: vault, measured deposits, burn-then-release, reserve check |
+| `programs/hook-state` | Producer of authenticated state records that the router, smart accounts and pools verify by owner and issuer |
+| `crates/hook-sdk` | Rust SDK for program hooks: `PolicyHook`, caller verification, test builders |
+| `examples/anti-jit-hook` | Example program hook: refuses routed round trips within N slots |
+| `packages/cli` | `pumphooks` (init, build, test, simulate, bench, security-check, deploy, register) and the v0 `pump-hooks` commands |
+| `packages/*` | SDK, execution lab, benchmarks, security checks, transaction compiler, stack analyzer |
 | `programs/pump-hooks` | The original Pump-only router (v0). It predates ABI v1 and has its own policy VM. |
 | `tests/` | LiteSVM suites, plus devnet fixtures for the real Pump binaries |
 | `apps/web` | The website |
@@ -155,8 +160,10 @@ Tooling never reads your Solana CLI config. Pass `--url` and keys explicitly.
 - Not deployed on mainnet, and it won't be without an audit.
 - Built and tested on localnet: standard, kernel, registry, router, pool manager, smart accounts,
   token hooks and token wrapper. Progress is tracked in [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
-- Not built yet: the ABI v1 SDK and CLI (the current SDK and CLI target the v0 router), the visual
-  composer, and example pool hooks.
+- Built: ABI v1 TypeScript SDK (`v1`), Rust hook SDK, `pumphooks` developer CLI, cross-engine
+  state records.
+- Not done: devnet deployment of the v1 programs (needs funded devnet SOL), the visual composer,
+  example pool hooks, Trident fuzzing, and an external audit.
 
 <br>
 

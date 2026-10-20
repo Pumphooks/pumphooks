@@ -1,0 +1,8 @@
+{
+  "slug": "anti-jit",
+  "version": "0.1.0",
+  "environment": "router",
+  "callbacks": ["before_swap"],
+  "capabilities": ["VALIDATE_OPERATION", "VETO_OPERATION", "UPDATE_OWN_STATE"],
+  "manifestUri": ""
+}

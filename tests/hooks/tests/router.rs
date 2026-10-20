@@ -553,3 +553,98 @@ fn credential_and_realized_price_limit_gate_routes() {
     assert!(t.s.send_err(&[i], &[&user]).contains("reason 15"));
     assert_eq!(t.s.token_balance(&base), before);
 }
+
+/// The `examples/anti-jit-hook` program, built with `crates/hook-sdk`, installed from the registry
+/// as a program entry and called by the router through the real PumpSwap route.
+#[test]
+fn example_program_hook_refuses_round_trips_within_the_window() {
+    use hook_standard::{cap, IMPL_PROGRAM};
+    use solana_instruction::{AccountMeta as M, Instruction};
+    let mut t = setup();
+    let dev = t.s.funded(100);
+    let hook = Pk::new_unique();
+    t.s.add_program(&hook, "anti_jit_hook.so");
+    t.s.set_upgrade_authority(&hook, Some(kp(&dev)));
+    let caps = cap::VALIDATE_OPERATION | cap::VETO_OPERATION | cap::UPDATE_OWN_STATE;
+    let h = registry::hook("anti-jit");
+    t.s.send_ok(
+        &[
+            registry::create_hook(&kp(&dev), "anti-jit"),
+            registry::publish(&kp(&dev), &h, 0, Some(hook), registry::program_params(Environment::Router, BEFORE_SWAP, caps, [1, 0, 0])),
+        ],
+        &[&dev],
+    );
+    let mut e = StackEntry::zeroed();
+    e.hook_version = registry::version(&h, 0).to_bytes();
+    e.program = hook.to_bytes();
+    e.impl_kind = IMPL_PROGRAM;
+    e.callbacks = BEFORE_SWAP;
+    e.granted = caps;
+    e.mandatory = 1;
+    let owner = t.s.funded(10);
+    let policy = create_policy(&mut t, &owner, 7, 0, &[e]);
+
+    let cfg = anti_jit_hook::config_pda(&hook, &policy).0;
+    let configure = |by: &Pk, slots: u64| Instruction {
+        program_id: addr(&hook),
+        accounts: vec![M::new(addr(by), true), M::new_readonly(addr(&policy), false), M::new(addr(&cfg), false), M::new_readonly(addr(&SYS), false)],
+        data: [&[0u8][..], &slots.to_le_bytes()].concat(),
+    };
+    let mallory = t.s.funded(10);
+    assert!(t.s.send_err(&[configure(&kp(&mallory), 0)], &[&mallory]).contains("IllegalOwner"), "only the policy authority configures");
+    t.s.send_ok(&[configure(&kp(&owner), 10)], &[&owner]);
+
+    let user = t.venue.wallet(&mut t.s, 5 * SOL, 2 * SOL);
+    let u = kp(&user);
+    let state = anti_jit_hook::actor_pda(&hook, &policy, &u).0;
+    let authority = hook_kernel::cpi::callback_authority(&ID, &hook).0;
+    let route = |t: &mut T, r: Route| {
+        let (mut i, _) = route_ix(t, &u, &Route { policy: Some(policy), ..r });
+        for (k, w) in [(hook, false), (authority, false), (cfg, false), (state, true)] {
+            i.accounts.push(solana_instruction::AccountMeta { pubkey: addr(&k), is_signer: false, is_writable: w });
+        }
+        i
+    };
+
+    // Not registered: refused (fail closed), with the hook's own reason.
+    let i = route(&mut t, Route::buy(SOL / 10));
+    assert!(t.s.send_err(&[i], &[&user]).contains("hook_reason 1001"));
+
+    // Register in the same transaction as the first buy.
+    let register = Instruction {
+        program_id: addr(&hook),
+        accounts: vec![M::new(addr(&u), true), M::new_readonly(addr(&policy), false), M::new_readonly(addr(&u), false), M::new(addr(&state), false), M::new_readonly(addr(&SYS), false)],
+        data: vec![1],
+    };
+    let i = route(&mut t, Route::buy(SOL / 10));
+    t.s.send_ok(&[register.clone(), i], &[&user]);
+    let (base, _) = t.venue.atas(&u);
+    let tokens = t.s.token_balance(&base);
+    assert!(tokens > 0);
+
+    // Selling back within 10 slots reverses the buy: refused, nothing moves.
+    let i = route(&mut t, Route::sell(tokens / 2));
+    assert!(t.s.send_err(&[i], &[&user]).contains("hook_reason 1000"));
+    assert_eq!(t.s.token_balance(&base), tokens);
+    // Buying again (same direction) is fine.
+    let i = route(&mut t, Route::buy(SOL / 20));
+    t.s.send_ok(&[i], &[&user]);
+    // After the window, the sell goes through.
+    let slot = t.s.svm.get_sysvar::<solana_clock::Clock>().slot;
+    t.s.warp_slot(slot + 11);
+    let tokens = t.s.token_balance(&base);
+    let i = route(&mut t, Route::sell(tokens / 2));
+    t.s.send_ok(&[i], &[&user]);
+
+    // A policy call not signed by the router's callback authority is refused by the SDK.
+    let mut ctx = hook_sdk::testing::context(Environment::Router, 2, policy, u);
+    ctx.slot = 1;
+    let mut forged = hook_sdk::testing::call(&hook, &ID, ctx, &[], &[]);
+    forged.accounts[0].is_signer = false;
+    let forged = Instruction {
+        program_id: addr(&forged.program_id),
+        accounts: forged.accounts.iter().map(|a| M { pubkey: addr(&a.pubkey), is_signer: a.is_signer, is_writable: a.is_writable }).collect(),
+        data: forged.data,
+    };
+    assert!(t.s.send_err(&[forged], &[&user]).contains("missing required signature"));
+}

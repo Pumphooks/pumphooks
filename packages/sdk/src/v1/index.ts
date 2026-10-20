@@ -8,6 +8,8 @@ import type { InstructionV1 } from "./ix.js";
 export * from "./ix.js";
 export * from "./stack.js";
 export * from "./tokens.js";
+export * from "./registry.js";
+export * from "./policy.js";
 
 export function toWeb3(ix: InstructionV1): TransactionInstruction {
   return new TransactionInstruction({

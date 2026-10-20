@@ -57,6 +57,18 @@ importers:
 
   packages/cli:
     dependencies:
+      '@pump-hooks/execution-lab':
+        specifier: workspace:*
+        version: link:../execution-lab
+      '@pump-hooks/hook-analyzer':
+        specifier: workspace:*
+        version: link:../hook-analyzer
+      '@pump-hooks/hook-bench':
+        specifier: workspace:*
+        version: link:../hook-bench
+      '@pump-hooks/hook-security':
+        specifier: workspace:*
+        version: link:../hook-security
       '@pump-hooks/sdk':
         specifier: workspace:*
         version: link:../sdk

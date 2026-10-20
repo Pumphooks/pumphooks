@@ -8,6 +8,7 @@ members = [
     "crates/hooks-interface",
     "crates/hook-standard",
     "crates/hook-kernel",
+    "crates/hook-sdk",
     "programs/pump-hooks",
     "programs/hooks-core",
     "programs/test-hook",
@@ -16,10 +17,12 @@ members = [
     "programs/hook-router",
     "programs/token-hooks",
     "programs/token-wrapper",
+    "programs/hook-state",
     "tests/integration",
     "tests/core",
     "tests/hooks",
     "bench",
+    "examples/anti-jit-hook",
 ]
 
 [workspace.package]

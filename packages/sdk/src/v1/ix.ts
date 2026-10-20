@@ -21,6 +21,11 @@ export function anchorDiscriminator(name: string, ns = "global"): Uint8Array {
 }
 
 export const u8 = (n: number) => Uint8Array.of(n);
+export function u16(n: number): Uint8Array {
+  const b = new Uint8Array(2);
+  new DataView(b.buffer).setUint16(0, n, true);
+  return b;
+}
 export function u32(n: number): Uint8Array {
   const b = new Uint8Array(4);
   new DataView(b.buffer).setUint32(0, n, true);

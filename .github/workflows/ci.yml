@@ -72,6 +72,7 @@ jobs:
           pnpm --filter @pump-hooks/hook-bench test
           pnpm --filter @pump-hooks/hook-security test
           pnpm --filter @pump-hooks/transaction-compiler test
+          pnpm --filter @pump-hooks/cli test
         env:
           PUMPHOOKS_SBF: "1"
 

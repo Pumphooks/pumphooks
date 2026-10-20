@@ -169,6 +169,34 @@ export function encodeEntry(env: EnvironmentId, spec: EntrySpec): Uint8Array {
   return w.b;
 }
 
+/** A program-hook entry (an `IMPL_PROGRAM` registry version). */
+export interface ProgramEntrySpec {
+  hookVersion: Uint8Array;
+  program: Uint8Array;
+  callbacks: number[];
+  granted: number;
+  mandatory?: boolean;
+  dependsOn?: number;
+  /** The version's observed deploy slot, or 0 to accept upgrades. */
+  pinnedSlot?: bigint;
+  config?: Uint8Array;
+}
+
+export function encodeProgramEntry(env: EnvironmentId, spec: ProgramEntrySpec): Uint8Array {
+  const mask = spec.callbacks.reduce((m, c) => m | (1 << c), 0);
+  const count = CALLBACK_NAMES[env].length;
+  if (mask === 0 || mask >> count !== 0) throw new Error(`invalid callbacks for ${ENVIRONMENT_NAMES[env]}`);
+  const w = new W(ENTRY_LEN);
+  w.b.set(spec.hookVersion, 0);
+  w.b.set(spec.program, 32);
+  w.u8(64, IMPL_PROGRAM).u8(65, 0).u8(66, spec.mandatory ? 1 : 0).u8(67, spec.dependsOn ?? 0);
+  w.u16(68, mask).u32(72, spec.granted).u64(80, spec.pinnedSlot ?? 0n);
+  const cfg = spec.config ?? new Uint8Array(CONFIG_LEN);
+  if (cfg.length > CONFIG_LEN) throw new Error("config too long");
+  w.b.set(cfg, 88);
+  return w.b;
+}
+
 /** Compact stack bytes (header + entries), as accepted by `create_policy` / `update_policy`. */
 export function encodeStack(env: EnvironmentId, entries: (EntrySpec | Uint8Array)[]): Uint8Array {
   if (entries.length > MAX_STACK) throw new Error(`at most ${MAX_STACK} entries`);

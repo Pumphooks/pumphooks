@@ -1,0 +1,21 @@
+[package]
+name = "hook-state"
+version = "0.1.0"
+edition = "2021"
+description = "Producer of authenticated cross-environment state records (docs/STANDARD.md §7): an issuer publishes or revokes typed records that the router, smart accounts and pools verify by owner, issuer, namespace, schema, subject and freshness."
+license = "Apache-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+hook-standard = { workspace = true }
+solana-program = "2"
+bytemuck = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }

@@ -1,0 +1,11 @@
+[package]
+name = "hook-sdk"
+version = "0.1.0"
+edition = "2021"
+description = "Rust SDK for PUMP HOOKS program hooks: decode and authenticate policy calls from the router and smart-account environments, return results, find hook-owned state."
+license = "Apache-2.0"
+
+[dependencies]
+bytemuck = { workspace = true }
+hook-standard = { workspace = true }
+solana-program = "2"

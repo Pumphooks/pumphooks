@@ -1,0 +1,21 @@
+[package]
+name = "anti-jit-hook"
+version = "0.1.0"
+edition = "2021"
+description = "EXAMPLE program hook built with hook-sdk: refuses a router swap that reverses the same actor's previous swap within N slots (JIT / round-trip guard). Router hooks only govern routed trades."
+license = "Apache-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+hook-sdk = { path = "../../crates/hook-sdk" }
+solana-program = "2"
+bytemuck = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }
