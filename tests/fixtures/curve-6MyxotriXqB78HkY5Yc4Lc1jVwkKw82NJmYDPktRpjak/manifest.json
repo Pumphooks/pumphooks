@@ -1,0 +1,16 @@
+{
+ "bonding_curve": "6MyxotriXqB78HkY5Yc4Lc1jVwkKw82NJmYDPktRpjak",
+ "mint": "FvkNfhZh9qSes5T871h48j46sTMv3dmYEpdhPN26HDSG",
+ "base_token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+ "buyback_fee_recipient": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD",
+ "source_rpc": "https://api.devnet.solana.com",
+ "accounts": {
+  "bonding_curve": "6MyxotriXqB78HkY5Yc4Lc1jVwkKw82NJmYDPktRpjak",
+  "base_mint": "FvkNfhZh9qSes5T871h48j46sTMv3dmYEpdhPN26HDSG",
+  "quote_mint": "So11111111111111111111111111111111111111112",
+  "associated_base_bonding_curve": "JBAABiziTtEVygAAR7iXAiKpRv13U1hut3MBtJhG4ccQ",
+  "pump_global": "4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf",
+  "pump_fee_config": "8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt",
+  "buyback_fee_recipient": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD"
+ }
+}

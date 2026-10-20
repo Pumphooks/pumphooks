@@ -93,8 +93,23 @@ fn program_path(name: &str) -> PathBuf {
     panic!("missing {} — run scripts/dump_programs.sh", devnet.display());
 }
 
+/// Legacy 82-byte curve with deep remaining reserves.
+pub const DEEP_CURVE: &str = "AwHTvGo8UcR4CEyqmTWs1xEbeajBNwC5ELFdMdPyB33w";
+/// 115-byte curve with ~37k tokens left: a 0.2 SOL buy completes it.
+pub const NEAR_COMPLETE_CURVE: &str = "6MyxotriXqB78HkY5Yc4Lc1jVwkKw82NJmYDPktRpjak";
+
 impl Env {
+    /// Existing migrated coin: PumpSwap pool fixture.
     pub fn new() -> Self {
+        Self::load(POOL)
+    }
+
+    /// Existing un-migrated coin: bonding-curve fixture.
+    pub fn curve(curve: &str) -> Self {
+        Self::load(&format!("curve-{curve}"))
+    }
+
+    fn load(fixture: &str) -> Self {
         let mut svm = LiteSVM::new().with_precompiles().with_log_bytes_limit(None);
         let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64;
         let mut clock: solana_clock::Clock = svm.get_sysvar();
@@ -109,7 +124,7 @@ impl Env {
         assert!(so.exists(), "build the program first: cargo build-sbf --manifest-path programs/pump-hooks/Cargo.toml");
         svm.add_program_from_file(addr(&pump_hooks::ID), so).unwrap();
 
-        let dir = root().join(format!("tests/fixtures/{POOL}"));
+        let dir = root().join(format!("tests/fixtures/{fixture}"));
         let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("manifest.json")).unwrap()).unwrap();
         let mut accounts = HashMap::new();
         for (label, key) in manifest["accounts"].as_object().unwrap() {
@@ -124,7 +139,7 @@ impl Env {
         let mint = Pk::from_str(manifest["mint"].as_str().unwrap()).unwrap();
         let base_token_program = pk(&svm.get_account(&addr(&mint)).unwrap().owner);
         let fx = Fixture {
-            pool: Pk::from_str(POOL).unwrap(),
+            pool: manifest["pool"].as_str().map(|p| Pk::from_str(p).unwrap()).unwrap_or_default(),
             mint,
             base_token_program,
             buyback_recipient: Pk::from_str(manifest["buyback_fee_recipient"].as_str().unwrap()).unwrap(),
@@ -302,6 +317,34 @@ impl Env {
             extra,
             pump_hooks::instruction::RouteAmm { mode, amount, limit },
         )
+    }
+
+    pub fn curve_keys(&self) -> pump_adapter::ix::CurveKeys {
+        pump_adapter::ix::CurveKeys {
+            base_mint: self.fx.mint,
+            quote_mint: pump_adapter::NATIVE_MINT,
+            base_token_program: self.fx.base_token_program,
+            quote_token_program: pump_adapter::TOKEN_PROGRAM_ID,
+        }
+    }
+
+    pub fn route_curve_ix(&self, market: &Pk, user: &Pk, mode: u8, amount: u64, limit: u64) -> Instruction {
+        let extra = pump_adapter::ix::curve_v3_metas(&self.curve_keys(), user, &self.fx.buyback_recipient);
+        hooks_ix(
+            pump_hooks::accounts::Route {
+                user: *user,
+                global: self.global(),
+                market: *market,
+                user_state: self.user_state(market, user),
+                system_program: pump_adapter::SYSTEM_PROGRAM_ID,
+            },
+            extra,
+            pump_hooks::instruction::RouteCurve { mode, amount, limit },
+        )
+    }
+
+    pub fn lamports(&self, k: &Pk) -> u64 {
+        self.svm.get_account(&addr(k)).map(|a| a.lamports).unwrap_or(0)
     }
 
     pub fn direct_amm_ix(&self, user: &Pk, mode: pump_adapter::ix::Mode, amount: u64, limit: u64) -> Instruction {

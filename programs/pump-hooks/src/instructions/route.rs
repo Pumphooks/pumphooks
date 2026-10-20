@@ -61,8 +61,21 @@ struct Snapshot {
     user_quote: u64,
     base_reserve: u64,
     quote_reserve: u64,
-    /// Lamports of Pump's user volume accumulator (rent paid by the wallet on first use).
-    volume_acc_lamports: u64,
+    /// Data lengths of the Pump accounts Pump may create or grow at the wallet's expense inside the
+    /// trade: the user volume accumulator and the market account (legacy curve/pool resize).
+    rent_lens: [usize; 2],
+}
+
+/// Rent the wallet paid inside the CPI for accounts Pump created or resized.
+fn rent_outlay(pre: &Snapshot, post: &Snapshot) -> Result<u64> {
+    let rent = Rent::get()?;
+    let at = |len: usize| if len == 0 { 0 } else { rent.minimum_balance(len) };
+    Ok(pre
+        .rent_lens
+        .iter()
+        .zip(post.rent_lens)
+        .map(|(&a, b)| if b > a { at(b).saturating_sub(at(a)) } else { 0 })
+        .sum())
 }
 
 fn token(ai: &AccountInfo, owner: &Pubkey, mint: &Pubkey) -> Result<u64> {
@@ -103,7 +116,7 @@ fn snapshot_amm(m: &MarketConfig, user: &Pubkey, a: &[AccountInfo]) -> Result<(S
             user_quote: token(&a[amm_v2::USER_QUOTE_TOKEN_ACCOUNT], user, &m.quote_mint)?,
             base_reserve: vault_amount(&a[amm_v2::POOL_BASE_TOKEN_ACCOUNT])?,
             quote_reserve: pool.effective_quote_reserve(quote_vault).ok_or(E::MathOverflow)?,
-            volume_acc_lamports: a[amm_v2::USER_VOLUME_ACCUMULATOR].lamports(),
+            rent_lens: [a[amm_v2::USER_VOLUME_ACCUMULATOR].data_len(), pool_ai.data_len()],
         },
         pool,
     ))
@@ -132,7 +145,7 @@ fn snapshot_curve(m: &MarketConfig, user: &Pubkey, a: &[AccountInfo]) -> Result<
             user_quote,
             base_reserve: curve.virtual_token_reserves,
             quote_reserve: curve.virtual_quote_reserves,
-            volume_acc_lamports: a[curve_v3::USER_VOLUME_ACCUMULATOR].lamports(),
+            rent_lens: [a[curve_v3::USER_VOLUME_ACCUMULATOR].data_len(), bc_ai.data_len()],
         },
         curve,
     ))
@@ -349,7 +362,7 @@ fn observed(side: Side, pre: &Snapshot, post: &Snapshot, acc_rent: u64) -> Resul
         let got = post.user_base.checked_sub(pre.user_base).ok_or(E::UnexpectedBalanceChange)?;
         Ok((spent.saturating_sub(acc_rent), got))
     } else {
-        // Proceeds = quote delta + accumulator rent the wallet paid inside the trade.
+        // Proceeds = quote delta + rent the wallet paid inside the trade.
         let net = post.user_quote as i128 - pre.user_quote as i128 + acc_rent as i128;
         let got = u64::try_from(net).map_err(|_| E::UnexpectedBalanceChange)?;
         let sold = pre.user_base.checked_sub(post.user_base).ok_or(E::UnexpectedBalanceChange)?;
@@ -443,8 +456,7 @@ pub fn route<'info>(ctx: Context<'_, '_, 'info, 'info, Route<'info>>, venue: Ven
 
     // ---- observe
     let (post, _, completed) = snapshot(venue, &m, &user_key, pump)?;
-    let acc_rent = if quote_native && pre.volume_acc_lamports == 0 { post.volume_acc_lamports } else { 0 };
-    let (quote_amount, base_amount) = observed(side, &pre, &post, acc_rent)?;
+    let acc_rent = if quote_native { rent_outlay(&pre, &post)? } else { 0 };    let (quote_amount, base_amount) = observed(side, &pre, &post, acc_rent)?;
     w.ctx.quote_amount = quote_amount;
     w.ctx.base_amount = base_amount;
     w.ctx.post_base_reserves = post.base_reserve;
