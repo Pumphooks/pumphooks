@@ -11,6 +11,11 @@
     "overrides": {
       "rpc-websockets>uuid": "^11.1.0"
     },
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
   }
 }

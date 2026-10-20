@@ -20,3 +20,6 @@ id.json
 
 # third-party program binaries (scripts/dump_programs.sh)
 tests/fixtures/programs/*.so
+
+# next.js generated
+next-env.d.ts
