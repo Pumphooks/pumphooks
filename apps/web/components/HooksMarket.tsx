@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Callback, PUMP_HOOKS_PROGRAM_ID } from "@pump-hooks/sdk";
 import { DitherStage } from "./DitherStage";
-import { useRegistry, type RegistryState } from "./Registry";
+import { useModuleActivity, useRegistry, type ModuleActivity, type RegistryState } from "./Registry";
 import { useNetwork } from "./Providers";
 import { CATALOG, CATEGORIES, type Category, type CatalogEntry } from "@/lib/catalog";
 import { CLUSTERS } from "@/lib/cluster";
@@ -13,6 +13,7 @@ import { short } from "@/lib/format";
 export function HooksMarket() {
   const [cats, setCats] = useState<Set<Category>>(new Set());
   const reg = useRegistry(CATALOG.map((c) => c.moduleId));
+  const activity = useModuleActivity();
   const { cluster } = useNetwork();
   const list = CATALOG.filter((c) => cats.size === 0 || c.categories.some((k) => cats.has(k)));
   return (
@@ -65,7 +66,7 @@ export function HooksMarket() {
       ) : (
         <div className="market-grid">
           {list.map((c) => (
-            <HookCard key={c.slug} c={c} reg={reg} />
+            <HookCard key={c.slug} c={c} reg={reg} activity={activity} />
           ))}
         </div>
       )}
@@ -73,8 +74,9 @@ export function HooksMarket() {
   );
 }
 
-function HookCard({ c, reg }: { c: CatalogEntry; reg: RegistryState }) {
+function HookCard({ c, reg, activity }: { c: CatalogEntry; reg: RegistryState; activity?: Map<number, ModuleActivity> }) {
   const def = reg.status === "ok" ? reg.defs.get(c.moduleId) : undefined;
+  const act = activity && (activity.get(c.moduleId) ?? { executions: 0, denials: 0 });
   const subs = new Set(c.callbacks);
   return (
     <Link href={`/hooks/${c.slug}`} className="hook-card">
@@ -106,7 +108,7 @@ function HookCard({ c, reg }: { c: CatalogEntry; reg: RegistryState }) {
         <span>Installs</span>
         <b>{def ? def.installs.toString() : "—"}</b>
         <span>Executions</span>
-        <b title="Needs the indexer">—</b>
+        <b title={act ? `${act.denials} routed trades denied` : "No indexer configured for this cluster"}>{act ? act.executions.toLocaleString() : "—"}</b>
         <span>Markets</span>
         <b>curve · pumpswap</b>
         <span>Audit</span>
