@@ -50,8 +50,14 @@ pub fn supported_callbacks(id: u8, env: Environment) -> u16 {
     //          4 before_execute 5 after_execute 6 before_authority_change 7 after_authority_change
     // Router:  0 before_execute 1 after_execute 2 before_swap 3 after_swap
     // Token:   2 before_wrap 3 before_unwrap (0 before_transfer is the Token-2022 hook program)
+    // Pool:    2 before_add_liquidity 6 before_swap 8 before_donate gate entry; no builtin may
+    //          run on 4 before_remove_liquidity, so a pool policy can never trap LP funds.
     let before_account = 0b0101_0101;
     match (id, env) {
+        (ALLOWLIST | CONDITIONAL | TIME_WINDOW, Pool) => POOL_ENTRY,
+        (SPENDING_LIMIT, Pool) => 1 << 6,
+        (MAX_SIZE, Pool) => (1 << 2) | (1 << 6),
+        (ACCOUNTING, Pool) => POOL_AFTER,
         (ALLOWLIST, Account) => before_account,
         (ALLOWLIST, Router) => 0b0101,
         (ALLOWLIST, Token) => 0b1100,
@@ -72,6 +78,9 @@ pub fn supported_callbacks(id: u8, env: Environment) -> u16 {
         _ => 0,
     }
 }
+
+const POOL_ENTRY: u16 = (1 << 2) | (1 << 6) | (1 << 8);
+const POOL_AFTER: u16 = (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9);
 
 /// "after_*" callbacks of the router/account environments (odd ids).
 fn odd_after(env: Environment) -> u16 {

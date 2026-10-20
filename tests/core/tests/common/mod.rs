@@ -128,6 +128,84 @@ pub struct Env {
     pub hook_dev: Keypair,
     pub hook: Pk,
     pub protocol: Pk,
+    /// Latest `hook-registry` version published for the test hook (default until published).
+    pub version: Pk,
+    versions: u32,
+}
+
+/// `hook-registry` accounts and builders.
+pub mod reg {
+    use super::*;
+    use hook_registry::{accounts as RA, instruction as RI, PublishParams, CONFIG_SEED, HOOK_SEED, VERSION_SEED};
+
+    pub const ID: Pk = hook_registry::ID;
+    pub const TEST_HOOK: &str = "test-hook";
+
+    pub fn ix(accounts: impl ToAccountMetas, data: impl InstructionData) -> Instruction {
+        convert(ID, accounts.to_account_metas(None), data.data())
+    }
+    pub fn config() -> Pk {
+        Pk::find_program_address(&[CONFIG_SEED], &ID).0
+    }
+    pub fn hook(slug: &str) -> Pk {
+        Pk::find_program_address(&[HOOK_SEED, slug.as_bytes()], &ID).0
+    }
+    pub fn version(hook: &Pk, index: u32) -> Pk {
+        Pk::find_program_address(&[VERSION_SEED, hook.as_ref(), &index.to_le_bytes()], &ID).0
+    }
+    pub fn initialize(admin: &Pk) -> Instruction {
+        ix(
+            RA::Initialize {
+                admin: *admin,
+                config: config(),
+                registry_program: ID,
+                registry_program_data: programdata(&ID),
+                system_program: anchor_lang::system_program::ID,
+            },
+            RI::Initialize {},
+        )
+    }
+    pub fn create_hook(authority: &Pk, slug: &str) -> Instruction {
+        ix(
+            RA::CreateHook { authority: *authority, hook: hook(slug), system_program: anchor_lang::system_program::ID },
+            RI::CreateHook { slug: slug.into() },
+        )
+    }
+    pub fn publish(publisher: &Pk, slug: &str, index: u32, program: Option<Pk>, p: PublishParams) -> Instruction {
+        let h = hook(slug);
+        ix(
+            RA::PublishVersion {
+                publisher: *publisher,
+                hook: h,
+                config: config(),
+                version: version(&h, index),
+                hook_program: Some(program.unwrap_or(ID)),
+                hook_program_data: Some(program.map(|p| programdata(&p)).unwrap_or(ID)),
+                system_program: anchor_lang::system_program::ID,
+            },
+            RI::PublishVersion { p },
+        )
+    }
+    pub fn set_status(authority: &Pk, slug: &str, version: Pk, status: u8) -> Instruction {
+        ix(RA::SetVersionStatus { authority: *authority, hook: hook(slug), version }, RI::SetVersionStatus { status })
+    }
+    pub fn params(impl_kind: u8, builtin_id: u8, callbacks: u16, capabilities: u32) -> PublishParams {
+        let env = hook_standard::Environment::Pool;
+        let mut cbs = [0u16; 4];
+        cbs[env as usize] = callbacks;
+        PublishParams {
+            semver: [1, 0, 0],
+            impl_kind,
+            builtin_id,
+            environments: env.bit(),
+            callbacks: cbs,
+            capabilities,
+            config_schema_hash: [1; 32],
+            manifest_hash: [2; 32],
+            manifest_uri: "https://example.invalid/manifest.json".into(),
+            artifact_hash: [3; 32],
+        }
+    }
 }
 
 pub fn programdata(program: &Pk) -> Pk {
@@ -155,10 +233,15 @@ impl Env {
         let hook_dev = Keypair::new();
         svm.airdrop(&admin.pubkey(), 1_000 * SOL).unwrap();
         svm.airdrop(&hook_dev.pubkey(), 100 * SOL).unwrap();
+        svm.add_program_from_file(addr(&reg::ID), deploy.join("hook_registry.so")).unwrap();
         let protocol = Pk::find_program_address(&[PROTOCOL_SEED], &CORE).0;
-        let mut env = Env { svm, admin, hook_dev, hook, protocol };
+        let mut env = Env { svm, admin, hook_dev, hook, protocol, version: Pk::default(), versions: 0 };
         env.set_upgrade_authority(&CORE, Some(kp(&env.admin)));
         env.set_upgrade_authority(&hook, Some(kp(&env.hook_dev)));
+        env.set_upgrade_authority(&reg::ID, Some(kp(&env.admin)));
+        let (admin, dev) = (env.admin.insecure_clone(), env.hook_dev.insecure_clone());
+        env.send_ok(&[reg::initialize(&kp(&admin))], &[&admin]);
+        env.send_ok(&[reg::create_hook(&kp(&dev), reg::TEST_HOOK)], &[&dev]);
         env
     }
 
@@ -328,29 +411,56 @@ impl Env {
 
     // ------------------------------------------------------------ registry and pools
 
-    pub fn registration(&self, hook: &Pk) -> Pk {
-        Pk::find_program_address(&[HOOK_SEED, hook.as_ref()], &CORE).0
+    /// Publishes the test hook as a Pool program version declaring `callbacks` and `caps`.
+    pub fn publish_hook_with(&mut self, callbacks: u16, caps: u32) -> Pk {
+        let i = self.versions;
+        let dev = self.hook_dev.insecure_clone();
+        let mut p = reg::params(hook_standard::IMPL_PROGRAM, 0, callbacks, caps);
+        p.semver = [1, 0, i as u16];
+        let ix = reg::publish(&kp(&dev), reg::TEST_HOOK, i, Some(self.hook), p);
+        self.send_ok(&[ix], &[&dev]);
+        self.versions += 1;
+        self.version = reg::version(&reg::hook(reg::TEST_HOOK), i);
+        self.version
     }
 
-    pub fn register_hook_ix(&self, registrant: &Pk, hook: &Pk, permissions: u32) -> Instruction {
+    /// Publishes a version declaring exactly what `permissions` need.
+    pub fn publish_hook(&mut self, permissions: u32) -> Pk {
+        self.publish_hook_with((permissions & 0x7ff) as u16, hooks_core::policy::required_caps(permissions))
+    }
+
+    /// Publishes builtin `id` for the Pool environment under its own registry hook.
+    pub fn publish_builtin(&mut self, id: u8, callbacks: u16) -> Pk {
+        let slug = hook_kernel::builtin::name(id).unwrap();
+        let admin = self.admin.insecure_clone();
+        let p = reg::params(hook_standard::IMPL_BUILTIN, id, callbacks, hook_kernel::builtin::required_caps(id));
+        let ixs = [reg::create_hook(&kp(&admin), slug), reg::publish(&kp(&admin), slug, 0, None, p)];
+        self.send_ok(&ixs, &[&admin]);
+        reg::version(&reg::hook(slug), 0)
+    }
+
+    pub fn policy_key(pool: &Pk) -> Pk {
+        Pk::find_program_address(&[POLICY_SEED, pool.as_ref()], &CORE).0
+    }
+
+    pub fn attach_policy_ix(&self, creator: &Pk, p: &PoolKeys, stack: &hook_standard::HookStack, versions: &[Pk]) -> Instruction {
         core_ix(
-            A::RegisterHook {
-                registrant: *registrant,
-                protocol: self.protocol,
-                hook_program: *hook,
-                hook_program_data: Some(programdata(hook)),
-                registration: self.registration(hook),
+            A::AttachPolicy {
+                creator: *creator,
+                pool: p.pool,
+                policy: Self::policy_key(&p.pool),
                 system_program: anchor_lang::system_program::ID,
             },
-            vec![],
-            I::RegisterHook { permissions, interface_version: 1, metadata_uri: "ipfs://test-hook".into() },
+            versions.iter().map(|v| Meta2::new_readonly(*v, false)).collect(),
+            I::AttachPolicy { stack: stack.compact().to_vec() },
         )
     }
 
-    pub fn register_hook(&mut self, permissions: u32) {
-        let ix = self.register_hook_ix(&kp(&self.hook_dev), &self.hook.clone(), permissions);
-        let dev = self.hook_dev.insecure_clone();
-        self.send_ok(&[ix], &[&dev]);
+    /// The pool's policy account if it has one (read from chain), for instruction builders.
+    fn policy_of(&self, p: &PoolKeys) -> Option<Pk> {
+        let a = self.svm.get_account(&addr(&p.pool))?;
+        let pool = Pool::try_deserialize(&mut &a.data[..]).ok()?;
+        (pool.policy != Pk::default()).then_some(pool.policy)
     }
 
     pub fn pool_keys(&self, mint: [Pk; 2], token_program: [Pk; 2], hook: Option<Pk>, salt: u64) -> PoolKeys {
@@ -388,7 +498,9 @@ impl Env {
                 vault_0: p.vault[0],
                 vault_1: p.vault[1],
                 lp_mint: p.lp_mint,
-                hook_registration: h.map(|h| self.registration(&h)),
+                hook_version: h.map(|_| {
+                    if self.version == Pk::default() { reg::version(&reg::hook(reg::TEST_HOOK), 0) } else { self.version }
+                }),
                 hook_program: h,
                 callback_authority: h.map(|h| callback_authority(&h).0),
                 hook_program_data: h.map(|h| programdata(&h)),
@@ -417,8 +529,8 @@ impl Env {
         let (mint, tp) = self.mint_pair(kinds.0, kinds.1);
         let hook_key = hook.map(|_| self.hook);
         if let Some(perms) = hook {
-            if !self.account_exists(&self.registration(&self.hook.clone())) {
-                self.register_hook(perms);
+            if self.version == Pk::default() {
+                self.publish_hook(perms);
             }
         }
         let p = self.pool_keys(mint, tp, hook_key, 0);
@@ -474,6 +586,7 @@ impl Env {
                 trader_token_0: u.token[0],
                 trader_token_1: u.token[1],
                 hooks: self.hook_io(p),
+                policy: self.policy_of(p),
             },
             extra,
             I::Swap { zero_for_one, exact_in, amount, limit, hook_data },
@@ -495,6 +608,7 @@ impl Env {
             owner_lp: u.lp,
             lp_token_program: SPL,
             hooks: self.hook_io(p),
+            policy: self.policy_of(p),
         }
     }
 
@@ -515,6 +629,7 @@ impl Env {
                 donor_token_0: u.token[0],
                 donor_token_1: u.token[1],
                 hooks: self.hook_io(p),
+                policy: self.policy_of(p),
             },
             vec![],
             I::Donate { amount_0, amount_1, hook_data: vec![] },

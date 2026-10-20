@@ -113,7 +113,7 @@ fn stack(entries: &[StackEntry]) -> Vec<u8> {
     let mut s = HookStack::empty(Environment::Router);
     s.len = entries.len() as u8;
     s.entries[..entries.len()].copy_from_slice(entries);
-    bytemuck::bytes_of(&s).to_vec()
+    s.compact().to_vec()
 }
 fn versions_of(entries: &[StackEntry]) -> Vec<Meta> {
     let mut v: Vec<Pk> = entries.iter().map(|e| Pk::new_from_array(e.hook_version)).collect();

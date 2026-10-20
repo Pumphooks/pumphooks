@@ -29,7 +29,7 @@ use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, Tran
 use hook_kernel::{
     carry_state, cpi::CpiPolicyHooks, reason, requires_guard, validate_stack, Op, Record,
 };
-use hook_standard::{state::HEADER_LEN, Environment, HookStack, STACK_LEN};
+use hook_standard::{state::HEADER_LEN, Environment, HookStack};
 
 pub mod state;
 use state::*;
@@ -810,9 +810,8 @@ fn boxed<T: bytemuck::Pod>(v: &T) -> Box<T> {
 }
 
 fn parse_stack(bytes: &[u8]) -> Result<Box<HookStack>> {
-    require!(bytes.len() == STACK_LEN, AccountError::InvalidStack);
     let mut s: Box<HookStack> = bytemuck::zeroed_box();
-    bytemuck::bytes_of_mut(&mut *s).copy_from_slice(bytes);
+    require!(HookStack::read_compact(bytes, &mut s), AccountError::InvalidStack);
     require!(
         s.environment == Environment::Account as u8,
         AccountError::InvalidStack

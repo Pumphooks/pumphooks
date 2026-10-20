@@ -23,8 +23,11 @@ custom-panic = []
 [dependencies]
 anchor-lang = "0.31.1"
 anchor-spl = { version = "0.31.1", default-features = false, features = ["token", "token_2022", "token_2022_extensions"] }
-bytemuck = { workspace = true }
+bytemuck = { workspace = true, features = ["extern_crate_alloc"] }
 hooks-interface = { workspace = true }
+hook-standard = { workspace = true }
+hook-kernel = { workspace = true }
+hook-registry = { path = "../hook-registry", features = ["cpi"] }
 
 [dev-dependencies]
 proptest = "1"

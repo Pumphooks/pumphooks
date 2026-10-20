@@ -7,6 +7,7 @@ use crate::{
     errors::CoreError,
     events::*,
     hook::{cpi_hooks, CpiHooks, HookAccounts},
+    policy::{self, PoolOp},
     state::*,
     token as tok,
 };
@@ -129,6 +130,9 @@ pub struct Swap<'info> {
     #[account(mut)]
     pub trader_token_1: UncheckedAccount<'info>,
     pub hooks: HookIo<'info>,
+    /// Required when the pool has a policy (`pool.policy`).
+    #[account(mut)]
+    pub policy: Option<AccountLoader<'info, PoolPolicy>>,
 }
 
 pub fn swap<'info>(
@@ -148,6 +152,10 @@ pub fn swap<'info>(
     let snapshot: Pool = (*a.io.pool).clone().into_inner();
     let pool_info = a.io.pool.to_account_info();
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, trader.key())?;
+    let (max_in, min_out) = if exact_in { (amount, limit) } else { (limit, amount) };
+    let mut op = PoolOp { actor: trader.key(), asset: a.io.mint(i).key(), amount: max_in, amount_b: min_out, sequence: snapshot.sequence };
+    let policy = a.policy.as_ref();
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeSwap as u8, &op, ctx.remaining_accounts)?;
 
     let amount_eff = if exact_in {
         a.io.pull_in(i, &user[i], &trader, amount)?
@@ -165,6 +173,8 @@ pub fn swap<'info>(
         require!(got == r.user_in, CoreError::ExactOutTransferFee);
     }
     a.io.pay_out(o, &user[o], r.user_out)?;
+    (op.amount, op.amount_b) = (r.user_in, r.user_out);
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::AfterSwap as u8, &op, ctx.remaining_accounts)?;
     let sequence = a.io.commit(&book)?;
     emit!(Swapped {
         pool: pool_info.key(),
@@ -210,6 +220,9 @@ pub struct Liquidity<'info> {
     pub owner_lp: UncheckedAccount<'info>,
     pub lp_token_program: Program<'info, Token>,
     pub hooks: HookIo<'info>,
+    /// Required when the pool has a policy (`pool.policy`).
+    #[account(mut)]
+    pub policy: Option<AccountLoader<'info, PoolPolicy>>,
 }
 
 pub fn add_liquidity<'info>(
@@ -229,6 +242,9 @@ pub fn add_liquidity<'info>(
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, owner.key())?;
     let mut book = snapshot.book();
 
+    let mut op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: max_0, amount_b: max_1, sequence: snapshot.sequence };
+    let policy = a.policy.as_ref();
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeAddLiquidity as u8, &op, ctx.remaining_accounts)?;
     invoke(&mut hooks, Callback::BeforeAddLiquidity, &book, 0, [max_0, max_1, min_shares, 0, 0, 0, 0])?;
 
     let want = if book.lp_supply == 0 {
@@ -278,6 +294,8 @@ pub fn add_liquidity<'info>(
         require!(want[k] as i128 + d[k] as i128 <= max[k] as i128, CoreError::Slippage);
     }
     require!(shares >= min_shares, CoreError::Slippage);
+    (op.amount, op.amount_b) = (got[0], got[1]);
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::AfterAddLiquidity as u8, &op, ctx.remaining_accounts)?;
 
     {
         let p: &Pool = &a.io.pool;
@@ -358,6 +376,11 @@ pub fn remove_liquidity<'info>(
     require!(out[0] >= min_0 && out[1] >= min_1, CoreError::Slippage);
     a.io.pay_out(0, &user[0], out[0])?;
     a.io.pay_out(1, &user[1], out[1])?;
+    // Withdrawals never depend on the policy: accounting runs only if the LP supplies it.
+    if a.policy.is_some() {
+        let op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: out[0], amount_b: out[1], sequence: snapshot.sequence };
+        policy::run(pool_info.key(), snapshot.policy, a.policy.as_ref(), Callback::AfterRemoveLiquidity as u8, &op, ctx.remaining_accounts)?;
+    }
     let sequence = a.io.commit(&book)?;
     emit!(LiquidityChanged {
         pool: pool_info.key(),
@@ -391,6 +414,9 @@ pub struct Donate<'info> {
     #[account(mut)]
     pub donor_token_1: UncheckedAccount<'info>,
     pub hooks: HookIo<'info>,
+    /// Required when the pool has a policy (`pool.policy`).
+    #[account(mut)]
+    pub policy: Option<AccountLoader<'info, PoolPolicy>>,
 }
 
 /// Adds tokens to the reserves without minting shares, i.e. pays current LPs.
@@ -411,6 +437,9 @@ pub fn donate<'info>(
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, donor.key())?;
     let mut book = snapshot.book();
 
+    let mut op = PoolOp { actor: donor.key(), asset: snapshot.mint_0, amount: amount_0, amount_b: amount_1, sequence: snapshot.sequence };
+    let policy = a.policy.as_ref();
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeDonate as u8, &op, ctx.remaining_accounts)?;
     invoke(&mut hooks, Callback::BeforeDonate, &book, 0, [amount_0, amount_1, 0, 0, 0, 0, 0])?;
     let got = [a.io.pull_in(0, &user[0], &donor, amount_0)?, a.io.pull_in(1, &user[1], &donor, amount_1)?];
     for k in 0..2 {
@@ -418,6 +447,8 @@ pub fn donate<'info>(
     }
     invoke(&mut hooks, Callback::AfterDonate, &book, 0, [got[0], got[1], 0, 0, 0, 0, 0])?;
     drop(hooks);
+    (op.amount, op.amount_b) = (got[0], got[1]);
+    policy::run(pool_info.key(), snapshot.policy, policy, Callback::AfterDonate as u8, &op, ctx.remaining_accounts)?;
     let sequence = a.io.commit(&book)?;
     emit!(Donated { pool: pool_info.key(), donor: donor.key(), from_credit: false, amount_0: got[0], amount_1: got[1], sequence });
     Ok(())

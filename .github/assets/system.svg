@@ -14,7 +14,7 @@
 <rect width="1280" height="958" fill="#efede6"/>
 <text x="48" y="74" class="m eyebrow" font-size="12" fill="#0e0e0c" ><tspan fill="#6f6d65">01</tspan>   /   SYSTEM</text>
 <text x="48" y="140" class="d" font-size="56" fill="#0e0e0c" font-weight="500" letter-spacing="-0.04em" >One standard. Four engines.</text>
-<text x="48" y="182" class="d" font-size="17" fill="#2c2b27" >Every environment speaks the same hook ABI, installs from the same registry and runs through the same kernel.</text>
+<text x="48" y="182" class="d" font-size="17" fill="#2c2b27" >Router, pool and account engines install from one registry and run through one kernel. Tokens are next.</text>
 <text x="68.0" y="252" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.12em" >SDK</text>
 <text x="68.0" y="286" class="d" font-size="24" fill="#0e0e0c" font-weight="500" letter-spacing="-0.025em" >@pumphooks/sdk</text>
 <rect x="315.62666666666667" y="238.5" width="106.53999999999999" height="21" fill="none" stroke="#a86a00" stroke-opacity="0.45"/><circle cx="326.62666666666667" cy="249" r="3.5" fill="#a86a00" class="pulse"/><text x="336.12666666666667" y="253" class="m" font-size="10.5" fill="#a86a00" letter-spacing="0.08em" >IN PROGRESS</text>
@@ -55,13 +55,13 @@
 <text x="68.0" y="658" class="m" font-size="11" fill="#6f6d65" >0x00 · TOKEN</text>
 <rect x="258.52" y="643.5" width="64.98" height="21" fill="#0e0e0c" stroke="#0e0e0c" stroke-opacity="1"/><text x="266.02" y="658" class="m" font-size="10.5" fill="#efede6" letter-spacing="0.08em" >WRAPPER</text>
 <text x="68.0" y="702" class="d" font-size="28" fill="#0e0e0c" font-weight="500" letter-spacing="-0.03em" >Tokens</text>
-<text x="68.0" y="732" class="d" font-size="14.5" fill="#2c2b27" >SPL in, Token-2022 out. The</text>
-<text x="68.0" y="752" class="d" font-size="14.5" fill="#2c2b27" >transfer hook runs on every</text>
-<text x="68.0" y="772" class="d" font-size="14.5" fill="#2c2b27" >move of the wrapped asset.</text>
+<text x="68.0" y="732" class="d" font-size="14.5" fill="#2c2b27" >SPL in, Token-2022 out. In the</text>
+<text x="68.0" y="752" class="d" font-size="14.5" fill="#2c2b27" >standard and the kernel; the</text>
+<text x="68.0" y="772" class="d" font-size="14.5" fill="#2c2b27" >wrapper engine is not built.</text>
 <line x1="68.0" y1="806.5" x2="324.0" y2="806.5" stroke="#cdc9bd"/>
 <text x="68.0" y="832" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.06em" >STATUS</text>
 <circle cx="71.5" cy="848" r="3.5" fill="#a86a00" class="pulse"/>
-<text x="80.0" y="852" class="m" font-size="12" fill="#0e0e0c" >building</text>
+<text x="80.0" y="852" class="m" font-size="12" fill="#0e0e0c" >not built</text>
 <text x="206.0" y="832" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.06em" >LITESVM TESTS</text>
 <text x="206.0" y="852" class="m" font-size="12" fill="#0e0e0c" >—</text>
 <line x1="344.5" y1="626" x2="344.5" y2="862" stroke="#0e0e0c"/>
@@ -76,20 +76,20 @@
 <circle cx="367.5" cy="848" r="3.5" fill="#17803d" class="pulse"/>
 <text x="376.0" y="852" class="m" font-size="12" fill="#0e0e0c" >tested</text>
 <text x="502.0" y="832" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.06em" >LITESVM TESTS</text>
-<text x="502.0" y="852" class="m" font-size="12" fill="#0e0e0c" >9</text>
+<text x="502.0" y="852" class="m" font-size="12" fill="#0e0e0c" >11</text>
 <line x1="640.5" y1="626" x2="640.5" y2="862" stroke="#0e0e0c"/>
 <text x="660.0" y="658" class="m" font-size="11" fill="#6f6d65" >0x02 · POOL</text>
 <rect x="850.52" y="643.5" width="64.98" height="21" fill="#0e0e0c" stroke="#0e0e0c" stroke-opacity="1"/><text x="858.02" y="658" class="m" font-size="10.5" fill="#efede6" letter-spacing="0.08em" >PROGRAM</text>
 <text x="660.0" y="702" class="d" font-size="28" fill="#0e0e0c" font-weight="500" letter-spacing="-0.03em" >Liquidity pools</text>
-<text x="660.0" y="732" class="d" font-size="14.5" fill="#2c2b27" >A v4-style pool manager: hooks</text>
-<text x="660.0" y="752" class="d" font-size="14.5" fill="#2c2b27" >on swaps and liquidity, with</text>
-<text x="660.0" y="772" class="d" font-size="14.5" fill="#2c2b27" >permissioned dynamic fees.</text>
+<text x="660.0" y="732" class="d" font-size="14.5" fill="#2c2b27" >Registry-pinned pool hooks for</text>
+<text x="660.0" y="752" class="d" font-size="14.5" fill="#2c2b27" >fees, deltas and quotes, plus</text>
+<text x="660.0" y="772" class="d" font-size="14.5" fill="#2c2b27" >builtin stacks on the kernel.</text>
 <line x1="660.0" y1="806.5" x2="916.0" y2="806.5" stroke="#cdc9bd"/>
 <text x="660.0" y="832" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.06em" >STATUS</text>
 <circle cx="663.5" cy="848" r="3.5" fill="#17803d" class="pulse"/>
 <text x="672.0" y="852" class="m" font-size="12" fill="#0e0e0c" >tested</text>
 <text x="798.0" y="832" class="m" font-size="11" fill="#6f6d65" letter-spacing="0.06em" >LITESVM TESTS</text>
-<text x="798.0" y="852" class="m" font-size="12" fill="#0e0e0c" >21</text>
+<text x="798.0" y="852" class="m" font-size="12" fill="#0e0e0c" >25</text>
 <line x1="936.5" y1="626" x2="936.5" y2="862" stroke="#0e0e0c"/>
 <text x="956.0" y="658" class="m" font-size="11" fill="#6f6d65" >0x03 · ACCOUNT</text>
 <rect x="1146.52" y="643.5" width="64.98" height="21" fill="#0e0e0c" stroke="#0e0e0c" stroke-opacity="1"/><text x="1154.02" y="658" class="m" font-size="10.5" fill="#efede6" letter-spacing="0.08em" >PROGRAM</text>

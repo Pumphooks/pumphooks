@@ -16,12 +16,8 @@ pub enum CoreError {
     Paused,
     #[msg("Invalid permission mask")]
     InvalidPermissions,
-    #[msg("Pool permissions exceed the hook's declared permissions")]
+    #[msg("Pool permissions exceed what the hook version declares in hook-registry")]
     PermissionsNotDeclared,
-    #[msg("Metadata URI too long")]
-    UriTooLong,
-    #[msg("Unsupported hook interface version")]
-    UnsupportedInterface,
     #[msg("Mints must be distinct and sorted (mint_0 < mint_1)")]
     MintOrder,
     #[msg("Mint uses a token extension the core does not support")]
@@ -30,8 +26,8 @@ pub enum CoreError {
     FeeTooHigh,
     #[msg("Hook program account missing or mismatched")]
     HookAccountMismatch,
-    #[msg("Hook is not registered")]
-    HookNotRegistered,
+    #[msg("Hook version missing, inactive, or not a Pool program hook for this program")]
+    HookVersionMismatch,
     #[msg("Hook program was redeployed since the pool pinned it")]
     HookRedeployed,
     #[msg("Hook rejected the operation")]
@@ -62,4 +58,14 @@ pub enum CoreError {
     VaultInvariant,
     #[msg("Wrong vault, mint or token program for this pool")]
     PoolAccountMismatch,
+    #[msg("Invalid pool policy stack")]
+    InvalidPolicy,
+    #[msg("Policy can only be attached once, by the creator, before the first deposit")]
+    PolicyLocked,
+    #[msg("Pool policy account missing or mismatched")]
+    PolicyMismatch,
+    #[msg("Registry version for a policy entry not supplied")]
+    MissingVersion,
+    #[msg("Pool policy rejected the operation")]
+    PolicyRejected,
 }

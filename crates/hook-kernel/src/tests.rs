@@ -586,10 +586,27 @@ fn validation_rejects_bad_stacks() {
     let mut long = stack(Environment::Account, &[ok]);
     long.len = 9;
     assert_eq!(validate_stack(&long, 1), Err(StackError::TooLong));
+    let pool_program = StackEntry {
+        callbacks: 1 << 6,
+        ..program_entry(W)
+    };
     assert_eq!(
-        validate_stack(&stack(Environment::Pool, &[]), 1),
-        Err(StackError::Environment)
+        validate_stack(&stack(Environment::Pool, &[pool_program]), 1),
+        Err(StackError::UnknownImpl(0))
     );
+}
+
+#[test]
+fn pool_policies_gate_entry_and_never_withdrawals() {
+    use hook_standard::Environment::Pool;
+    const BEFORE_REMOVE: u16 = 1 << 4;
+    for id in builtin::IDS {
+        assert_eq!(builtin::supported_callbacks(id, Pool) & BEFORE_REMOVE, 0, "builtin {id}");
+    }
+    let s = stack(Pool, &[StackEntry { callbacks: BEFORE_REMOVE, ..max_size(10) }]);
+    assert_eq!(validate_stack(&s, 1), Err(StackError::Callbacks(0)));
+    let s = stack(Pool, &[StackEntry { callbacks: 1 << 6, ..max_size(10) }]);
+    assert_eq!(validate_stack(&s, 1), Ok(()));
 }
 
 // ---------------------------------------------------------------- program hooks

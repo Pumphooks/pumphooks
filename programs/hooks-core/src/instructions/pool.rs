@@ -6,8 +6,9 @@ use hooks_interface::{perm, Callback, CALLBACK_SEED, MAX_FEE_PPM};
 use crate::{
     engine::invoke,
     errors::CoreError,
-    events::PoolInitialized,
+    events::{PolicyAttached, PoolInitialized},
     hook::{cpi_hooks, read_program, HookAccounts},
+    policy,
     state::*,
     token,
 };
@@ -20,7 +21,8 @@ pub struct InitPoolParams {
     pub fee_ppm: u32,
     pub max_fee_ppm: u32,
     pub salt: u64,
-    /// Freeze the hook at its current deploy slot; every later operation fails if it is redeployed.
+    /// Freeze the hook at the deploy slot its registry version observed; every later operation
+    /// fails if it is redeployed.
     pub pin_hook: bool,
 }
 
@@ -63,8 +65,8 @@ pub struct InitializePool<'info> {
         mint::token_program = lp_token_program,
     )]
     pub lp_mint: Box<InterfaceAccount<'info, Mint>>,
-    #[account(mut, seeds = [HOOK_SEED, params.hook_program.as_ref()], bump = hook_registration.bump)]
-    pub hook_registration: Option<Box<Account<'info, HookRegistration>>>,
+    /// `hook-registry` version the hook is installed from (owner-checked by `Account`).
+    pub hook_version: Option<Box<Account<'info, hook_registry::HookVersion>>>,
     /// CHECK: must equal `params.hook_program`.
     pub hook_program: Option<UncheckedAccount<'info>>,
     /// CHECK: seeds checked in the handler.
@@ -98,11 +100,8 @@ pub fn initialize_pool<'info>(
     let has_hook = params.hook_program != Pubkey::default();
     let (mut callback_bump, mut flags, mut pinned_slot) = (0u8, 0u8, 0u64);
     if has_hook {
-        let reg = a.hook_registration.as_ref().ok_or(error!(CoreError::HookNotRegistered))?;
-        require!(
-            params.permissions & !reg.permissions == 0,
-            CoreError::PermissionsNotDeclared
-        );
+        let version = a.hook_version.as_ref().ok_or(error!(CoreError::HookVersionMismatch))?;
+        policy::check_hook_version(version, &params.hook_program, params.permissions)?;
         let program = a.hook_program.as_ref().ok_or(error!(CoreError::HookAccountMismatch))?;
         require_keys_eq!(program.key(), params.hook_program, CoreError::HookAccountMismatch);
         let (cb, bump) =
@@ -112,6 +111,7 @@ pub fn initialize_pool<'info>(
         callback_bump = bump;
         if params.pin_hook {
             let info = read_program(program, a.hook_program_data.as_ref().map(|p| p.as_ref()))?;
+            require!(info.deploy_slot == version.observed_deploy_slot, CoreError::HookRedeployed);
             flags |= POOL_HOOK_PINNED;
             pinned_slot = info.deploy_slot;
         }
@@ -153,6 +153,8 @@ pub fn initialize_pool<'info>(
     pool.token_program_1 = ctx.accounts.token_program_1.key();
     pool.lp_mint = ctx.accounts.lp_mint.key();
     pool.hook_program = params.hook_program;
+    pool.hook_version = ctx.accounts.hook_version.as_ref().filter(|_| has_hook).map(|v| v.key()).unwrap_or_default();
+    pool.policy = Pubkey::default();
     pool.creator = ctx.accounts.creator.key();
     pool.pinned_deploy_slot = pinned_slot;
     pool.created_at = now;
@@ -173,9 +175,6 @@ pub fn initialize_pool<'info>(
         invoke(h, Callback::AfterInitialize, &book, 0, args)?;
     }
 
-    if let Some(reg) = ctx.accounts.hook_registration.as_mut() {
-        reg.pool_count += 1;
-    }
     ctx.accounts.protocol.pool_count += 1;
     emit!(PoolInitialized {
         pool: pool_key,
@@ -183,11 +182,47 @@ pub fn initialize_pool<'info>(
         mint_0: m0,
         mint_1: m1,
         hook_program: params.hook_program,
+        hook_version: ctx.accounts.pool.hook_version,
         permissions: params.permissions,
         fee_ppm: params.fee_ppm,
         max_fee_ppm: params.max_fee_ppm,
         salt: params.salt,
         pinned: flags & POOL_HOOK_PINNED != 0,
     });
+    Ok(())
+}
+
+// ---------------------------------------------------------------- policy
+
+#[derive(Accounts)]
+pub struct AttachPolicy<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(mut, has_one = creator @ CoreError::PolicyLocked)]
+    pub pool: Box<Account<'info, Pool>>,
+    #[account(
+        init,
+        payer = creator,
+        space = 8 + core::mem::size_of::<PoolPolicy>(),
+        seeds = [POLICY_SEED, pool.key().as_ref()],
+        bump
+    )]
+    pub policy: AccountLoader<'info, PoolPolicy>,
+    pub system_program: Program<'info, System>,
+}
+
+/// Attaches a builtin policy stack (compact ABI v1 form; remaining accounts are the registry
+/// versions of its entries). Only before the first deposit, so every LP sees it; immutable after.
+pub fn attach_policy<'info>(ctx: Context<'_, '_, 'info, 'info, AttachPolicy<'info>>, stack: Vec<u8>) -> Result<()> {
+    let pool = &mut ctx.accounts.pool;
+    require!(pool.lp_supply == 0 && pool.policy == Pubkey::default(), CoreError::PolicyLocked);
+    let mut s = policy::parse_stack(&stack)?;
+    policy::check_install(&mut s, ctx.remaining_accounts)?;
+    let mut p = ctx.accounts.policy.load_init()?;
+    p.pool = pool.key();
+    p.bump = ctx.bumps.policy;
+    bytemuck::bytes_of_mut(&mut p.stack).copy_from_slice(bytemuck::bytes_of(&*s));
+    pool.policy = ctx.accounts.policy.key();
+    emit!(PolicyAttached { pool: pool.key(), policy: pool.policy, entries: s.len });
     Ok(())
 }

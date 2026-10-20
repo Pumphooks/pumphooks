@@ -3,6 +3,8 @@ mod common;
 use anchor_lang::solana_program::instruction::AccountMeta as Meta2;
 use common::*;
 use hooks_core::{accounts as A, instruction as I, instructions::ProtocolUpdate, state::*};
+use hook_kernel::builtin::{self, AllowlistConfig, MaxSizeConfig};
+use hook_standard::{cap, Environment, HookStack, StackEntry, IMPL_BUILTIN};
 use hooks_interface::{callback_authority, hook_authority, math, perm::*, Callback, HookResult};
 use solana_signer::Signer;
 
@@ -158,51 +160,231 @@ fn pool_creation_validates_inputs() {
 // ---------------------------------------------------------------- registry
 
 #[test]
-fn registration_rules() {
+fn hooks_install_from_registry_versions() {
     let mut env = Env::new();
     let hook = env.hook;
-    // Not the upgrade authority.
     let admin = env.admin.insecure_clone();
-    let ix = env.register_hook_ix(&kp(&admin), &hook, BEFORE_SWAP);
-    assert!(env.send_err(&[ix], &[&admin]).contains("NotUpgradeAuthority"));
-    // Invalid mask (returns-delta without its callback).
-    let dev = env.hook_dev.insecure_clone();
-    let ix = env.register_hook_ix(&kp(&dev), &hook, BEFORE_SWAP_RETURNS_DELTA);
-    assert!(env.send_err(&[ix], &[&dev]).contains("InvalidPermissions"));
-    // Immutable programs can be registered by anyone.
-    env.set_upgrade_authority(&hook, None);
-    let ix = env.register_hook_ix(&kp(&admin), &hook, BEFORE_SWAP | AFTER_SWAP);
-    env.send_ok(&[ix], &[&admin]);
-    assert_eq!(env.protocol_state().hook_count, 1);
-
-    // Pools may only use declared permissions.
     let (mint, tp) = env.mint_pair(MintKind::Spl, MintKind::Spl);
     let p = env.pool_keys(mint, tp, Some(hook), 0);
-    let ix = env.create_pool_ix(&kp(&admin), &p, BEFORE_SWAP | DYNAMIC_FEE, 3_000, 10_000, 0, false, vec![]);
-    assert!(env.send_err(&[ix], &[&admin]).contains("PermissionsNotDeclared"));
-    let ix = env.create_pool_ix(&kp(&admin), &p, BEFORE_SWAP, 3_000, 10_000, 0, false, vec![]);
-    env.send_ok(&[ix], &[&admin]);
+    let create = |env: &Env, perms: u32| env.create_pool_ix(&kp(&admin), &p, perms, 3_000, 10_000, 0, false, vec![]);
 
-    // Attestations are signed statements; revocable by the attester only.
-    let auditor = solana_keypair::Keypair::new();
-    env.svm.airdrop(&auditor.pubkey(), SOL).unwrap();
-    let att = Pk::find_program_address(&[ATTEST_SEED, hook.as_ref(), kp(&auditor).as_ref()], &CORE).0;
-    let ix = core_ix(
-        A::Attest {
-            attester: kp(&auditor),
-            registration: env.registration(&hook),
-            attestation: att,
-            system_program: anchor_lang::system_program::ID,
-        },
-        vec![],
-        I::Attest { kind: ATTEST_REVIEW, content_hash: [7; 32], uri: "https://example.com/review".into() },
-    );
-    env.send_ok(&[ix], &[&auditor]);
-    let ix = core_ix(A::RevokeAttestation { attester: kp(&admin), attestation: att }, vec![], I::RevokeAttestation {});
+    // The registry only accepts versions from the hook's upgrade authority.
+    let params = reg::params(hook_standard::IMPL_PROGRAM, 0, BEFORE_SWAP as u16, cap::VALIDATE_OPERATION | cap::VETO_OPERATION);
+    let ix = reg::publish(&kp(&admin), reg::TEST_HOOK, 0, Some(hook), params);
     assert!(env.send_err(&[ix], &[&admin]).contains("Unauthorized"));
-    let ix = core_ix(A::RevokeAttestation { attester: kp(&auditor), attestation: att }, vec![], I::RevokeAttestation {});
-    env.send_ok(&[ix], &[&auditor]);
-    assert!(!env.account_exists(&att));
+
+    // A version declaring before_swap with veto only.
+    let v = env.publish_hook_with(BEFORE_SWAP as u16, cap::VALIDATE_OPERATION | cap::VETO_OPERATION);
+    // Undeclared callback, and a dynamic fee without the fee-allocation capability.
+    assert!(env.send_err(&[create(&env, BEFORE_SWAP | AFTER_SWAP)], &[&admin]).contains("PermissionsNotDeclared"));
+    assert!(env.send_err(&[create(&env, BEFORE_SWAP | DYNAMIC_FEE)], &[&admin]).contains("PermissionsNotDeclared"));
+
+    // A builtin version is not a program hook for this program.
+    let b = env.publish_builtin(builtin::MAX_SIZE, 1 << Callback::BeforeSwap as u8);
+    env.version = b;
+    assert!(env.send_err(&[create(&env, BEFORE_SWAP)], &[&admin]).contains("HookVersionMismatch"));
+
+    // Deprecated versions cannot be installed.
+    let dev = env.hook_dev.insecure_clone();
+    let v2 = env.publish_hook(BEFORE_SWAP);
+    env.send_ok(&[reg::set_status(&kp(&dev), reg::TEST_HOOK, v2, hook_registry::STATUS_DEPRECATED)], &[&dev]);
+    assert!(env.send_err(&[create(&env, BEFORE_SWAP)], &[&admin]).contains("HookVersionMismatch"));
+
+    env.version = v;
+    env.send_ok(&[create(&env, BEFORE_SWAP)], &[&admin]);
+    assert_eq!(env.pool(&p.pool).hook_version, v);
+    assert_eq!(env.protocol_state().pool_count, 1);
+}
+
+#[test]
+fn pinning_requires_the_binary_the_version_describes() {
+    let mut env = Env::new();
+    env.publish_hook(ALL_SWAP);
+    let hook = env.hook;
+    env.set_deploy_slot(&hook, 77);
+    let (mint, tp) = env.mint_pair(MintKind::Spl, MintKind::Spl);
+    let p = env.pool_keys(mint, tp, Some(hook), 0);
+    let admin = env.admin.insecure_clone();
+    let ix = env.create_pool_ix(&kp(&admin), &p, BEFORE_SWAP, 3_000, 10_000, 0, true, vec![]);
+    assert!(env.send_err(&[ix], &[&admin]).contains("HookRedeployed"));
+    // Publishing a version for the new binary makes it pinnable.
+    env.publish_hook(ALL_SWAP);
+    let ix = env.create_pool_ix(&kp(&admin), &p, BEFORE_SWAP, 3_000, 10_000, 0, true, vec![]);
+    env.send_ok(&[ix], &[&admin]);
+    assert_eq!(env.pool(&p.pool).pinned_deploy_slot, 77);
+}
+
+// ---------------------------------------------------------------- builtin policy stacks
+
+fn entry<C: bytemuck::Pod>(version: &Pk, id: u8, callbacks: u16, cfg: C) -> StackEntry {
+    let mut e: StackEntry = bytemuck::Zeroable::zeroed();
+    e.hook_version = version.to_bytes();
+    e.impl_kind = IMPL_BUILTIN;
+    e.builtin_id = id;
+    e.callbacks = callbacks;
+    e.granted = builtin::required_caps(id);
+    e.config[..core::mem::size_of::<C>()].copy_from_slice(bytemuck::bytes_of(&cfg));
+    e
+}
+
+fn pool_stack(entries: &[StackEntry]) -> HookStack {
+    let mut s = HookStack::empty(Environment::Pool);
+    s.len = entries.len() as u8;
+    s.entries[..entries.len()].copy_from_slice(entries);
+    s
+}
+
+const CB_ADD: u16 = 1 << Callback::BeforeAddLiquidity as u8;
+const CB_SWAP: u16 = 1 << Callback::BeforeSwap as u8;
+const CB_REMOVE: u16 = 1 << Callback::BeforeRemoveLiquidity as u8;
+const CB_AFTER: u16 = (1 << Callback::AfterAddLiquidity as u8)
+    | (1 << Callback::AfterRemoveLiquidity as u8)
+    | (1 << Callback::AfterSwap as u8);
+
+/// Replaces the policy account of a core instruction with "none".
+fn without_policy(mut ix: solana_instruction::Instruction, policy: &Pk) -> solana_instruction::Instruction {
+    for m in ix.accounts.iter_mut().filter(|m| m.pubkey == addr(policy)) {
+        m.pubkey = addr(&CORE);
+        m.is_writable = false;
+    }
+    ix
+}
+
+#[test]
+fn pool_policy_runs_on_the_shared_kernel() {
+    let mut env = Env::new();
+    let allow = env.publish_builtin(builtin::ALLOWLIST, CB_ADD | CB_SWAP);
+    let max = env.publish_builtin(builtin::MAX_SIZE, CB_SWAP);
+    let acct = env.publish_builtin(builtin::ACCOUNTING, CB_AFTER);
+    let (p, _) = env.pool_with(Default::default(), None, 0);
+    let lp = env.user(&p, SEED * 10);
+    let other = env.user(&p, SEED * 10);
+    let admin = env.admin.insecure_clone();
+
+    let only_lp = AllowlistConfig {
+        target: builtin::TARGET_ACTOR,
+        source: builtin::SOURCE_INLINE,
+        _pad: [0; 6],
+        max_age_slots: 0,
+        key_a: lp.key().to_bytes(),
+        key_b: [0; 32],
+        _rest: [0; 16],
+    };
+    let cap_in = MaxSizeConfig { asset: p.mint[0].to_bytes(), max_amount: 10_000, _rest: [0; 56] };
+    let stack = pool_stack(&[
+        entry(&allow, builtin::ALLOWLIST, CB_ADD, only_lp),
+        entry(&max, builtin::MAX_SIZE, CB_SWAP, cap_in),
+        entry(&acct, builtin::ACCOUNTING, CB_AFTER, [0u8; 96]),
+    ]);
+
+    // Only the creator may attach, and only with the versions supplied.
+    let ix = env.attach_policy_ix(&lp.key(), &p, &stack, &[allow, max, acct]);
+    assert!(env.send_err(&[ix], &[&signer(&lp)]).contains("PolicyLocked"));
+    let ix = env.attach_policy_ix(&kp(&admin), &p, &stack, &[allow, max]);
+    assert!(env.send_err(&[ix], &[&admin]).contains("MissingVersion"));
+    let ix = env.attach_policy_ix(&kp(&admin), &p, &stack, &[allow, max, acct]);
+    env.send_ok(&[ix], &[&admin]);
+    let policy = Env::policy_key(&p.pool);
+    assert_eq!(env.pool(&p.pool).policy, policy);
+
+    // Allowlist gates deposits.
+    let ix = env.add_liquidity_ix(&p, &other, SEED, SEED, 0, vec![]);
+    let err = env.send_err(&[ix], &[&signer(&other)]);
+    assert!(err.contains("PolicyRejected") && err.contains("callback 2 entry 0"), "{err}");
+    let ix = env.add_liquidity_ix(&p, &lp, SEED, SEED, 0, vec![]);
+    env.send_ok(&[ix], &[&signer(&lp)]);
+
+    // Max size caps swaps of mint_0; the other direction and small swaps pass; anyone may swap.
+    let ix = env.swap_ix(&p, &other, true, true, 10_001, 0, vec![]);
+    assert!(env.send_err(&[ix], &[&signer(&other)]).contains("PolicyRejected"));
+    let ix = env.swap_ix(&p, &other, true, true, 10_000, 0, vec![]);
+    env.send_ok(&[ix], &[&signer(&other)]);
+    let ix = env.swap_ix(&p, &other, false, true, 50_000, 0, vec![]);
+    env.send_ok(&[ix], &[&signer(&other)]);
+
+    // The policy account cannot be omitted on gated operations.
+    let ix = without_policy(env.swap_ix(&p, &other, true, true, 1_000, 0, vec![]), &policy);
+    assert!(env.send_err(&[ix], &[&signer(&other)]).contains("PolicyMismatch"));
+
+    // Policy is immutable once liquidity exists.
+    let ix = env.attach_policy_ix(&kp(&admin), &p, &stack, &[allow, max, acct]);
+    assert!(env.send_err(&[ix], &[&admin]).contains("already in use"));
+
+    // Withdrawals never need the policy; accounting counts them when it is supplied.
+    let shares = env.balance(&lp.lp);
+    let ix = without_policy(env.remove_liquidity_ix(&p, &lp, shares / 2, 0, 0, vec![]), &policy);
+    env.send_ok(&[ix], &[&signer(&lp)]);
+    let ix = env.remove_liquidity_ix(&p, &lp, shares / 4, 0, 0, vec![]);
+    env.send_ok(&[ix], &[&signer(&lp)]);
+    let data = env.svm.get_account(&addr(&policy)).unwrap().data;
+    let pol: &PoolPolicy = bytemuck::from_bytes(&data[8..8 + core::mem::size_of::<PoolPolicy>()]);
+    let counted = u64::from_le_bytes(pol.stack.entries[2].state[16..24].try_into().unwrap());
+    assert_eq!(counted, 4, "add + two swaps + one supplied removal");
+    env.assert_solvent(&p);
+}
+
+#[test]
+fn pool_policies_cannot_gate_withdrawals() {
+    let mut env = Env::new();
+    // The registry refuses to publish a builtin claiming before_remove_liquidity for pools.
+    let admin = env.admin.insecure_clone();
+    let p = reg::params(IMPL_BUILTIN, builtin::ALLOWLIST, CB_REMOVE, builtin::required_caps(builtin::ALLOWLIST));
+    let ixs = [reg::create_hook(&kp(&admin), "allowlist"), reg::publish(&kp(&admin), "allowlist", 0, None, p)];
+    assert!(env.send_err(&ixs, &[&admin]).contains("InvalidClaims"));
+    // And the pool refuses a stack entry on it even with a valid version.
+    let allow = env.publish_builtin(builtin::ALLOWLIST, CB_ADD);
+    let (pk_, _) = env.pool_with(Default::default(), None, 0);
+    let cfg = AllowlistConfig {
+        target: builtin::TARGET_ACTOR,
+        source: builtin::SOURCE_INLINE,
+        _pad: [0; 6],
+        max_age_slots: 0,
+        key_a: [9; 32],
+        key_b: [0; 32],
+        _rest: [0; 16],
+    };
+    let stack = pool_stack(&[entry(&allow, builtin::ALLOWLIST, CB_REMOVE, cfg)]);
+    let ix = env.attach_policy_ix(&kp(&admin), &pk_, &stack, &[allow]);
+    assert!(env.send_err(&[ix], &[&admin]).contains("InvalidPolicy"));
+}
+
+fn legacy_tx_size(env: &Env, payer: &solana_keypair::Keypair, ix: &solana_instruction::Instruction) -> usize {
+    let tx = solana_transaction::Transaction::new_signed_with_payer(&[ix.clone()], Some(&payer.pubkey()), &[payer], env.svm.latest_blockhash());
+    bincode::serialize(&tx).unwrap().len()
+}
+
+/// Stacks travel in compact form; with their registry versions as plain accounts, three entries
+/// fit a legacy transaction and four do not (those need an address lookup table).
+#[test]
+fn compact_policy_fits_in_a_transaction() {
+    let mut env = Env::new();
+    let ids = [builtin::ALLOWLIST, builtin::MAX_SIZE, builtin::TIME_WINDOW, builtin::ACCOUNTING];
+    let cbs = [CB_ADD, CB_SWAP, CB_SWAP, CB_AFTER];
+    let versions: Vec<Pk> = ids.iter().zip(cbs).map(|(id, cb)| env.publish_builtin(*id, cb)).collect();
+    let (p, _) = env.pool_with(Default::default(), None, 0);
+    let admin = env.admin.insecure_clone();
+    let window = builtin::TimeWindowConfig { not_before: 0, not_after: i64::MAX, daily_start: 0, daily_end: 0, _rest: [0; 72] };
+    let cfg = AllowlistConfig {
+        target: builtin::TARGET_ACTOR,
+        source: builtin::SOURCE_INLINE,
+        _pad: [0; 6],
+        max_age_slots: 0,
+        key_a: [9; 32],
+        key_b: [0; 32],
+        _rest: [0; 16],
+    };
+    let entries = [
+        entry(&versions[0], ids[0], cbs[0], cfg),
+        entry(&versions[1], ids[1], cbs[1], MaxSizeConfig { asset: [0; 32], max_amount: 1, _rest: [0; 56] }),
+        entry(&versions[2], ids[2], cbs[2], window),
+        entry(&versions[3], ids[3], cbs[3], [0u8; 96]),
+    ];
+    let four = env.attach_policy_ix(&kp(&admin), &p, &pool_stack(&entries), &versions);
+    assert!(legacy_tx_size(&env, &admin, &four) > 1232);
+    let three = env.attach_policy_ix(&kp(&admin), &p, &pool_stack(&entries[..3]), &versions[..3]);
+    let size = legacy_tx_size(&env, &admin, &three);
+    assert!(size <= 1232, "attach_policy with 3 entries is {size} bytes");
+    env.send_ok(&[three], &[&admin]);
 }
 
 // ---------------------------------------------------------------- hook powers
@@ -464,7 +646,7 @@ fn pause_never_blocks_withdrawals() {
 #[test]
 fn pinned_hook_stops_on_redeploy() {
     let mut env = Env::new();
-    env.register_hook(ALL_SWAP);
+    env.publish_hook(ALL_SWAP);
     let (mint, tp) = env.mint_pair(MintKind::Spl, MintKind::Spl);
     let p = env.pool_keys(mint, tp, Some(env.hook), 0);
     let admin = env.admin.insecure_clone();

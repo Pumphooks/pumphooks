@@ -3,9 +3,18 @@
 **Shared market infrastructure + a developer hook program = a programmable market.**
 
 The core program (`hooks-core`) provides pools, vaults, accounting, settlement, LP shares, hook
-invocation and permissions, and the hook and market registries. A hook is any Solana program that
-implements the hook interface ([pool-hook-interface.md](pool-hook-interface.md)). It supplies market behavior
-the core never anticipated, without changes to the core.
+invocation and permissions. It is the **Pool environment** of the shared hook standard
+([STANDARD.md](../STANDARD.md)):
+
+- A pool's program hook is installed from a `hook-registry` version, the same registry the router
+  and smart accounts use. The core has no registry of its own.
+- A pool may carry a builtin policy stack (ABI v1 `HookStack`) evaluated by `hook-kernel`, the same
+  kernel the router and smart accounts use (section 4.7).
+
+A pool hook is any Solana program that implements the pool hook interface
+([pool-hook-interface.md](pool-hook-interface.md)). That interface is the Pool environment's
+extension of ABI v1: on top of allow/reject, pool hooks can return fee overrides, deltas and
+quotes, which policy hooks in other environments cannot.
 
 The core has no dependency on Pump. Pump tokens are ordinary SPL / Token-2022 mints. The earlier
 Pump router is an optional adapter documented in
@@ -20,7 +29,7 @@ as `[R#]`.
 
 ```
                  ┌───────────────────────── hooks-core (one program) ─────────────────────────┐
- trader / LP ──▶ │ Protocol · HookRegistration · Attestation · Pool (+ vaults, LP mint)        │
+ trader / LP ──▶ │ Protocol · Pool (+ vaults, LP mint) · PoolPolicy (optional builtin stack)  │
  aggregator      │ swap · add/remove liquidity · donate · initialize                          │
                  │ hook credits · credit swaps · fee accounting · invariants · events          │
                  └───────────────┬─────────────────────────────────────────────────────────────┘
@@ -50,8 +59,7 @@ All PDAs are under `hooks-core`.
 | Account | Seeds | Purpose |
 | --- | --- | --- |
 | `Protocol` | `["protocol"]` | Admin, pause flags, protocol fee share (≤ 25% of LP fee; **0 at launch**), fee authority |
-| `HookRegistration` | `["hook", hook_program]` | Declared permission mask, interface version, metadata URI, upgrade authority and deploy slot observed at registration, registrant, pool count |
-| `Attestation` | `["attest", hook_program, attester]` | Named attester's statement (kind, URI, content hash). There is no protocol-level "audited" flag [R11]. |
+| `PoolPolicy` | `["pool-policy", pool]` | Optional builtin `HookStack` (Pool environment), attached by the creator before the first deposit and immutable afterwards |
 | `Pool` | `["pool", mint_0, mint_1, hook_program, salt_le_u64]` | Identity includes the hook [§1.1 of research]. Mints are sorted (`mint_0 < mint_1`). |
 | Vaults | `["vault", pool, mint]` | Token accounts owned by the pool PDA |
 | LP mint | `["lp", pool]` | SPL Token mint, authority = pool PDA |
@@ -59,10 +67,14 @@ All PDAs are under `hooks-core`.
 
 `hook_program = Pubkey::default()` means a plain pool with no hook.
 
+Hook metadata, publishers, status (active, deprecated, revoked) and reviews live in `hook-registry`
+`HookVersion` / `Review` accounts. The pool records which version it installed (`hook_version`).
+There is no protocol-level "audited" flag [R11].
+
 ### Pool state (key fields)
 
 - `mint_0`, `mint_1`, `vault_0`, `vault_1`, `token_program_0/1`, `lp_mint`, `hook_program`,
-  `permissions: u32`.
+  `hook_version`, `policy`, `permissions: u32`.
 - `fee_ppm: u32` (current LP fee, parts per million), `max_fee_ppm: u32` (cap a dynamic-fee hook
   cannot exceed; ≤ 500 000).
 - `reserve_0`, `reserve_1`: the LP-owned amounts priced by the curve.
@@ -98,8 +110,15 @@ A `u32` mask. Wire values are frozen and listed in [pool-hook-interface.md](pool
 
 Rules [R3]:
 
-- The hook declares a mask when registering. A pool's mask is chosen at creation, must be a subset
-  of the declared mask, and **never changes**.
+- The hook's `hook-registry` version declares its Pool callbacks and capabilities. A pool's mask is
+  chosen at creation and **never changes**. It must satisfy all of these:
+  - the version is active, a program version (not a builtin), for the Pool environment, and for this
+    exact program;
+  - every callback in the mask is among the version's Pool callbacks;
+  - the version declares the capabilities the powers need: `VALIDATE_OPERATION | VETO_OPERATION`
+    always (every pool callback may reject); `CUSTOM_PRICING` for any returns-delta power or
+    `CUSTOM_CURVE`; `REQUEST_AUTHORIZED_FEE_ALLOCATION` for `DYNAMIC_FEE`
+    (`hooks_core::policy::required_caps`).
 - Each returns-delta power requires its base callback.
 - `DYNAMIC_FEE` alone allows `set_fee`. A per-swap fee override additionally requires `BEFORE_SWAP`.
   `CUSTOM_CURVE` enables the `quote` callback and needs nothing else.
@@ -115,8 +134,8 @@ instructions in one transaction. Each settles independently and the transaction 
 ### 4.1 Initialize pool
 
 - **Who:** anyone.
-- **Inputs:** mints, hook program (registered, or none), `permissions ⊆ declared`, `fee_ppm`,
-  `max_fee_ppm`, `salt`, `pin_hook`.
+- **Inputs:** mints, hook program and its `HookVersion` account (or none), `permissions` (section 3),
+  `fee_ppm`, `max_fee_ppm`, `salt`, `pin_hook`.
 - **Token policy:** mints must pass [R9].
 - **Steps:**
   1. Run `before_initialize`. A rejection reverts.
@@ -206,6 +225,36 @@ caller, so this is not re-entrancy. Operations:
   `withdraw_protocol_fees`.
 - The admin cannot touch reserves, credits or hooks.
 
+### 4.7 Builtin policy stacks
+
+`attach_policy(stack)` stores an ABI v1 `HookStack` for the Pool environment in `PoolPolicy`.
+Instruction data is the compact form: an 8-byte header plus the active 216-byte entries. The
+remaining accounts are the entries' registry versions, each checked with
+`hook_registry::verify_install`.
+
+- **Who and when:** only the pool creator, only while `lp_supply == 0`, and only once. Every LP
+  therefore deposits into a pool whose policy is already fixed.
+- **What:** builtins only. A program hook in a pool stack is rejected by `validate_stack`; a pool's
+  program hook is its single pool-interface hook.
+- **Where it runs:**
+
+| Builtin | Pool callbacks |
+| --- | --- |
+| allowlist, conditional, time-window | `before_add_liquidity`, `before_swap`, `before_donate` |
+| spending-limit | `before_swap` |
+| max-size | `before_add_liquidity`, `before_swap` |
+| accounting | `after_add_liquidity`, `after_remove_liquidity`, `after_swap`, `after_donate` |
+
+- **What the builtins see:**
+  - swaps: actor = trader, asset = input mint, amount = max in (`amount` for exact-in, `limit` for
+    exact-out), amount_b = min out. After the swap: actual in and out.
+  - liquidity and donate: asset = `mint_0`, amounts = side 0 and side 1.
+- **Withdrawals are never gated.** No builtin supports `before_remove_liquidity` in the Pool
+  environment, so the registry refuses to publish one and the kernel refuses to install one.
+  `remove_liquidity` evaluates accounting only if the LP supplies the policy account.
+- **Size:** three entries plus their versions fit a legacy transaction. Four do not (1286 bytes,
+  measured in `tests/core`) and need an address lookup table.
+
 ## 5. Calling a hook
 
 See [pool-hook-interface.md](pool-hook-interface.md) for exact bytes.
@@ -223,8 +272,10 @@ See [pool-hook-interface.md](pool-hook-interface.md) for exact bytes.
   - the program id must equal the hook, and the length and version must match. Anything else is
     `HookResultInvalid`.
   - A missing result is invalid. There is no fallthrough-allow [§3 of research].
-- **Pinning:** with `HOOK_PINNED`, the hook's `ProgramData` account must be supplied and its
-  last-deploy slot must equal `pinned_deploy_slot`. LPs then get a hook that cannot silently
+- **Pinning:** with `HOOK_PINNED`, the program's deploy slot at pool creation must equal the
+  registry version's `observed_deploy_slot`, so the pinned binary is the one the version
+  describes. Afterwards the hook's `ProgramData` account must be supplied on every operation and
+  its last-deploy slot must equal `pinned_deploy_slot`. LPs then get a hook that cannot silently
   upgrade under them [research §6].
 - **Depth:** core→hook is one CPI. Hooks get 2 more levels when called from a top-level instruction
   and 1 more through an aggregator, until SIMD-0268 activates [R8].
@@ -237,7 +288,7 @@ Anchor events are emitted via `emit!` (program log data):
   `LiquidityAdded`, `LiquidityRemoved`, `Donated`;
 - `HookCalled` (callback, decision, reason, compute used is not observable on-chain so is not
   claimed);
-- `CreditMoved`, `FeeChanged`, `HookRegistered`, `Attested`, `ProtocolUpdated`.
+- `CreditMoved`, `FeeChanged`, `PolicyAttached`, `PolicyRejected`, `ProtocolUpdated`.
 
 The indexer decodes these. Explorers render a swap as the ordered callback trace.
 
@@ -260,7 +311,8 @@ The indexer decodes these. Explorers render a swap as the ordered callback trace
 | Accounting is conserved | The vault invariant is checked after every instruction. |
 | LPs can always exit the core's pause | Pause never blocks `remove_liquidity`. A hook with `BEFORE_REMOVE_LIQUIDITY` can, and the UI labels that power "can block withdrawals". |
 | No silent upgrades (opt-in) | `HOOK_PINNED`. |
-| No fake trust signals | Registry facts are observed on-chain, and attestations are signed by named attesters. |
+| Pool policies never trap LPs | No builtin can run on `before_remove_liquidity` (kernel table, registry claims and core all refuse it). |
+| No fake trust signals | Registry facts (upgrade authority, deploy slot) are observed on-chain; reviews in `hook-registry` are signed by named reviewers. |
 
 What it does **not** protect against:
 

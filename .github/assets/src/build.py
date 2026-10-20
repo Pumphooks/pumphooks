@@ -243,7 +243,7 @@ def system():
     body, css = [], []
     body.append(text(X0, 74, f'<tspan fill="{MUTE}">01</tspan>   /   SYSTEM', 12, "m eyebrow"))
     body.append(text(X0, 140, "One standard. Four engines.", 56, "d", INK, weight=500, ls="-0.04em"))
-    body.append(text(X0, 182, "Every environment speaks the same hook ABI, installs from the same registry and runs through the same kernel.", 17, "d", INK2))
+    body.append(text(X0, 182, "Router, pool and account engines install from one registry and run through one kernel. Tokens are next.", 17, "d", INK2))
 
     y = 222
     top = y
@@ -315,9 +315,9 @@ def system():
     # D: engines (hook-card)
     EH = 236
     engines = [
-        ("0x00", "TOKEN", "Tokens", ["SPL in, Token-2022 out. The", "transfer hook runs on every", "move of the wrapped asset."], "wrapper", "building", "warn", "\u2014"),
-        ("0x01", "ROUTER", "Transactions", ["Allowlisted venue swaps with", "measured slippage, deadline", "and replay-proof receipts."], "router", "tested", "ok", "9"),
-        ("0x02", "POOL", "Liquidity pools", ["A v4-style pool manager: hooks", "on swaps and liquidity, with", "permissioned dynamic fees."], "program", "tested", "ok", "21"),
+        ("0x00", "TOKEN", "Tokens", ["SPL in, Token-2022 out. In the", "standard and the kernel; the", "wrapper engine is not built."], "wrapper", "not built", "warn", "\u2014"),
+        ("0x01", "ROUTER", "Transactions", ["Allowlisted venue swaps with", "measured slippage, deadline", "and replay-proof receipts."], "router", "tested", "ok", "11"),
+        ("0x02", "POOL", "Liquidity pools", ["Registry-pinned pool hooks for", "fees, deltas and quotes, plus", "builtin stacks on the kernel."], "program", "tested", "ok", "25"),
         ("0x03", "ACCOUNT", "Smart accounts", ["Vault PDA with limits, timelocks,", "multisig, sessions, recovery", "and an emergency lock."], "program", "tested", "ok", "13"),
     ]
     hl = (f'<rect x="{X0}" y="{y}" width="{ew}" height="{EH}" fill="{PAPER2}">'

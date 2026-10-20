@@ -1,7 +1,7 @@
 <a href="https://github.com/pumphooks/pumphooks"><img src="https://raw.githubusercontent.com/pumphooks/pumphooks/main/.github/assets/hero.svg" alt="Pump Hooks: make Solana programmable" width="100%"></a>
 
-One hook standard, one registry and one execution kernel for Solana's tokens, transactions,
-liquidity pools and smart accounts.
+One hook standard, one registry and one execution kernel for Solana transactions, liquidity
+pools and smart accounts, with tokens next.
 
 **[pumphooks/pumphooks](https://github.com/pumphooks/pumphooks)** &nbsp;&middot;&nbsp;
 [Website](https://pumphooks.vercel.app) &nbsp;&middot;&nbsp;

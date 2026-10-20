@@ -1,14 +1,12 @@
 use anchor_lang::prelude::*;
 
 pub const PROTOCOL_SEED: &[u8] = b"protocol";
-pub const HOOK_SEED: &[u8] = b"hook";
-pub const ATTEST_SEED: &[u8] = b"attest";
 pub const POOL_SEED: &[u8] = b"pool";
 pub const VAULT_SEED: &[u8] = b"vault";
 pub const LP_SEED: &[u8] = b"lp";
+pub const POLICY_SEED: &[u8] = b"pool-policy";
 
 pub const MAX_PROTOCOL_FEE_BPS: u16 = 2_500;
-pub const MAX_URI_LEN: usize = 200;
 pub const LP_DECIMALS: u8 = 9;
 
 pub const PAUSE_POOLS: u8 = 1 << 0;
@@ -28,48 +26,6 @@ pub struct Protocol {
     pub paused: u8,
     pub bump: u8,
     pub pool_count: u64,
-    pub hook_count: u64,
-}
-
-#[account]
-#[derive(InitSpace)]
-pub struct HookRegistration {
-    pub program: Pubkey,
-    pub registrant: Pubkey,
-    /// Upgrade authority observed at registration (or last update); `None` = immutable.
-    pub upgrade_authority: Option<Pubkey>,
-    /// Last-deploy slot observed at registration (or last update).
-    pub deploy_slot: u64,
-    pub permissions: u32,
-    pub interface_version: u8,
-    pub bump: u8,
-    pub pool_count: u64,
-    pub registered_at: i64,
-    pub updated_at: i64,
-    #[max_len(MAX_URI_LEN)]
-    pub metadata_uri: String,
-}
-
-pub const ATTEST_AUDIT: u8 = 0;
-pub const ATTEST_REVIEW: u8 = 1;
-pub const ATTEST_VERIFIED_BUILD: u8 = 2;
-pub const ATTEST_WARNING: u8 = 3;
-
-/// A statement about a hook, signed by whoever makes it. The protocol does not judge attesters;
-/// clients decide whom to trust.
-#[account]
-#[derive(InitSpace)]
-pub struct Attestation {
-    pub hook_program: Pubkey,
-    pub attester: Pubkey,
-    pub kind: u8,
-    pub bump: u8,
-    /// Deploy slot the statement refers to; it goes stale when the hook is redeployed.
-    pub deploy_slot: u64,
-    pub content_hash: [u8; 32],
-    pub created_at: i64,
-    #[max_len(MAX_URI_LEN)]
-    pub uri: String,
 }
 
 #[account]
@@ -92,6 +48,10 @@ pub struct Pool {
     pub lp_mint: Pubkey,
     /// `Pubkey::default()` for a plain pool.
     pub hook_program: Pubkey,
+    /// `hook-registry` HookVersion the hook was installed from; default for a plain pool.
+    pub hook_version: Pubkey,
+    /// `PoolPolicy` account, or default when the pool has no builtin policy stack.
+    pub policy: Pubkey,
     pub creator: Pubkey,
     pub reserve_0: u64,
     pub reserve_1: u64,
@@ -104,6 +64,17 @@ pub struct Pool {
     pub sequence: u64,
     pub pinned_deploy_slot: u64,
     pub created_at: i64,
+}
+
+/// Builtin-only ABI v1 hook stack evaluated by `hook-kernel` around this pool's operations.
+/// Attached before the first deposit and immutable afterwards.
+#[account(zero_copy)]
+#[repr(C)]
+pub struct PoolPolicy {
+    pub pool: Pubkey,
+    pub bump: u8,
+    pub _pad: [u8; 7],
+    pub stack: hook_standard::HookStack,
 }
 
 impl Pool {

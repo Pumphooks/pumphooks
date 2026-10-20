@@ -32,14 +32,15 @@
 
 | Component | Path | Status |
 | --- | --- | --- |
-| ABI v1 types | `crates/hook-standard`, `packages/hook-types` | building |
-| Composition kernel and builtin policies | `crates/hook-kernel` | building |
-| Hook registry | `programs/hook-registry` | building |
-| POOL engine (PoolManager) | `programs/hooks-core` | **built, 41 tests** |
-| POOL example hooks | `programs/example-hooks/pool-*` | planned |
-| ACCOUNT engine | `programs/smart-accounts` | planned |
-| TOKEN engine | `programs/token-wrapper`, `programs/token-hooks` | planned |
-| ROUTER engine | `programs/pump-hooks` (PumpSwap and Pump curve adapters) | **built, LiteSVM-tested against the real Pump binaries**; receipts and deadline pending |
+| ABI v1 types | `crates/hook-standard`, `packages/hook-types` | built, 6 unit tests |
+| Composition kernel and builtin policies | `crates/hook-kernel` | built, 14 unit and property tests |
+| Hook registry | `programs/hook-registry` | built, 7 LiteSVM tests |
+| ROUTER engine | `programs/hook-router` (registry + kernel) | built, 11 LiteSVM tests against the real PumpSwap binary |
+| POOL engine (PoolManager) | `programs/hooks-core` (registry + kernel) | built, 25 LiteSVM tests + 11 engine unit and property tests |
+| ACCOUNT engine | `programs/smart-accounts` (registry + kernel) | built, 13 LiteSVM tests |
+| TOKEN engine | `programs/token-wrapper`, `programs/token-hooks` | **not built** |
+| POOL example hooks | `programs/example-hooks/pool-*` | planned; `programs/test-hook` is a scripted test hook |
+| Legacy Pump router (v0) | `programs/pump-hooks` (own policy VM, not ABI v1) | built, LiteSVM-tested against the real Pump binaries |
 | Policy VM (bounded WHEN/IF/THEN) | `crates/policy-vm` | built |
 | SDK, composer, CLI | `packages/sdk`, `packages/hook-types`, `packages/cli` | SDK and CLI exist for the router; extending |
 | Indexer | `services/indexer` | built (file store); Postgres store pending |
@@ -78,6 +79,10 @@
 - Constant-product pools with fungible LP shares, keyed by mints, hook and salt.
 - Hooks get v4-style callbacks, bounded return deltas against their own credit, dynamic fees
   within `max_fee_ppm`, and an optional custom-curve `quote`.
+- A pool's hook is installed from a `hook-registry` Pool version that declares its callbacks and
+  capabilities; pinning ties the pool to the binary that version observed.
+- A pool may also carry a builtin ABI v1 stack (allowlist, max-size, time-window, accounting, ...)
+  evaluated by `hook-kernel`. It can gate entry and never withdrawals.
 - The settlement engine is property-tested for token conservation under arbitrary hook results.
 
 ### ACCOUNT
@@ -101,8 +106,11 @@
 
 ### ROUTER
 
-- The `pump-hooks` program routes voluntary trades to PumpSwap and the Pump bonding curve via CPI.
-  It runs before and after hooks, then enforces min-out and slippage after the venue returns.
+- The `hook-router` program routes voluntary trades to allowlisted venues via CPI. It runs the
+  route policy's ABI v1 stack before and after, then measures the user's token and SOL deltas and
+  enforces max-in, min-out and a SOL cap after the venue returns.
+- The older `pump-hooks` program (v0, PumpSwap and the Pump bonding curve) predates ABI v1 and uses
+  its own policy VM.
 - Other venues are documented with their verified CPI surfaces and status in
   [RESEARCH.md](RESEARCH.md). Adapters are only added when they can be tested against the real
   program binary.

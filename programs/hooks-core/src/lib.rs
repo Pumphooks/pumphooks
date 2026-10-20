@@ -1,5 +1,6 @@
-//! Programmable-market core. Pools, vaults, LP shares, settlement, the hook and market
-//! registries, and hook invocation. Market behavior lives in hook programs
+//! Programmable-market core. Pools, vaults, LP shares, settlement and hook invocation. Pool
+//! hooks are installed from `hook-registry` versions (Pool environment); optional builtin policy
+//! stacks are evaluated by `hook-kernel`. Market behavior lives in hook programs
 //! (`docs/engines/pool-manager.md`, `docs/engines/pool-hook-interface.md`).
 
 #![allow(unexpected_cfgs, deprecated)]
@@ -11,6 +12,7 @@ pub mod errors;
 pub mod events;
 pub mod hook;
 pub mod instructions;
+pub mod policy;
 pub mod state;
 pub mod token;
 
@@ -38,20 +40,6 @@ pub mod hooks_core {
         instructions::withdraw_protocol_fees(ctx)
     }
 
-    // registry
-    pub fn register_hook(ctx: Context<RegisterHook>, permissions: u32, interface_version: u8, metadata_uri: String) -> Result<()> {
-        instructions::register_hook(ctx, permissions, interface_version, metadata_uri)
-    }
-    pub fn update_hook(ctx: Context<UpdateHook>, permissions: u32, metadata_uri: String) -> Result<()> {
-        instructions::update_hook(ctx, permissions, metadata_uri)
-    }
-    pub fn attest(ctx: Context<Attest>, kind: u8, content_hash: [u8; 32], uri: String) -> Result<()> {
-        instructions::attest(ctx, kind, content_hash, uri)
-    }
-    pub fn revoke_attestation(ctx: Context<RevokeAttestation>) -> Result<()> {
-        instructions::revoke_attestation(ctx)
-    }
-
     // markets
     pub fn initialize_pool<'info>(
         ctx: Context<'_, '_, 'info, 'info, InitializePool<'info>>,
@@ -59,6 +47,12 @@ pub mod hooks_core {
         hook_data: Vec<u8>,
     ) -> Result<()> {
         instructions::initialize_pool(ctx, params, hook_data)
+    }
+    pub fn attach_policy<'info>(
+        ctx: Context<'_, '_, 'info, 'info, AttachPolicy<'info>>,
+        stack: Vec<u8>,
+    ) -> Result<()> {
+        instructions::attach_policy(ctx, stack)
     }
     pub fn swap<'info>(
         ctx: Context<'_, '_, 'info, 'info, Swap<'info>>,

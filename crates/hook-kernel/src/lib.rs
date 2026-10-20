@@ -272,10 +272,6 @@ pub fn validate_stack(stack: &HookStack, members: u8) -> Result<(), StackError> 
         return Err(StackError::Version);
     }
     let env = Environment::from_u8(stack.environment).ok_or(StackError::Environment)?;
-    if env == Environment::Pool {
-        // Pools use hooks-core's own registration and callback format.
-        return Err(StackError::Environment);
-    }
     let len = stack.len as usize;
     if len > MAX_STACK {
         return Err(StackError::TooLong);
@@ -318,7 +314,9 @@ pub fn validate_stack(stack: &HookStack, members: u8) -> Result<(), StackError> 
                 }
             }
             IMPL_PROGRAM => {
-                if e.builtin_id != 0 {
+                // A pool's program hook is its single pool-interface hook (fees, deltas, quotes),
+                // not a stack entry; pool stacks hold builtins only.
+                if e.builtin_id != 0 || env == Environment::Pool {
                     return Err(StackError::UnknownImpl(ix));
                 }
                 if e.program == [0; 32] {

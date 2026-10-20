@@ -69,7 +69,13 @@ observed off-chain is called "enforced".
 | 9 | `afterDonate` | PROGRAM |
 | 10 | `quote` | PROGRAM |
 
-The pool wire format is defined in [engines/pool-hook-interface.md](engines/pool-hook-interface.md).
+A pool has two kinds of hook, both installed through `hook-registry`:
+
+- one **program hook**, using the pool wire format in
+  [engines/pool-hook-interface.md](engines/pool-hook-interface.md), which can also return fee
+  overrides, deltas and quotes;
+- an optional **builtin stack** (ABI v1 `HookStack`, builtins only) evaluated by `hook-kernel`. No
+  builtin may run on `beforeRemoveLiquidity`, so a pool policy cannot block withdrawals.
 
 ### ACCOUNT (our smart accounts)
 
@@ -227,6 +233,14 @@ on-chain where versions are known.
 
 **Bounds.** At most 8 entries, at most 2 program-hook CPIs per callback, and a per-callback compute
 estimate summed from the manifests.
+
+### Wire form
+
+A full `HookStack` is 1736 bytes, more than a transaction (1232). Environments therefore take the
+**compact form**: the 8-byte header followed by exactly `len` 216-byte entries
+(`HookStack::compact` / `HookStack::read_compact`). The decoded stack, with unused slots zeroed, is
+what gets validated and stored. Three entries plus their registry version accounts fit a legacy
+transaction; larger stacks need an address lookup table.
 
 ### Plan determinism
 

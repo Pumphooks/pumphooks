@@ -247,7 +247,29 @@ impl HookStack {
         let n = (self.len as usize).min(MAX_STACK);
         &mut self.entries[..n]
     }
+    /// Header plus exactly the `len` active entries: the wire form, since a full stack
+    /// (`STACK_LEN`) does not fit in a transaction.
+    pub fn compact(&self) -> &[u8] {
+        let n = (self.len as usize).min(MAX_STACK);
+        &bytemuck::bytes_of(self)[..STACK_HEADER_LEN + n * ENTRY_LEN]
+    }
+    /// Decodes the compact form into `out` (which must be zeroed). Unused slots stay zero.
+    pub fn read_compact(bytes: &[u8], out: &mut HookStack) -> bool {
+        if bytes.len() < STACK_HEADER_LEN {
+            return false;
+        }
+        let n = bytes[2] as usize;
+        if n > MAX_STACK || bytes.len() != STACK_HEADER_LEN + n * ENTRY_LEN {
+            return false;
+        }
+        bytemuck::bytes_of_mut(out)[..bytes.len()].copy_from_slice(bytes);
+        true
+    }
 }
+
+pub const STACK_HEADER_LEN: usize = 8;
+pub const ENTRY_LEN: usize = core::mem::size_of::<StackEntry>();
+const _: () = assert!(STACK_HEADER_LEN + MAX_STACK * ENTRY_LEN == STACK_LEN);
 
 // ---------------------------------------------------------------- policy calls
 
@@ -435,6 +457,24 @@ mod tests {
             policy_discriminator(Environment::Router, 2).unwrap(),
             [25, 176, 132, 91, 189, 161, 105, 119]
         );
+    }
+
+    #[test]
+    fn compact_stacks_round_trip() {
+        let mut s = HookStack::empty(Environment::Pool);
+        s.len = 2;
+        s.entries[0].callbacks = 1;
+        s.entries[1].builtin_id = 6;
+        let bytes = s.compact();
+        assert_eq!(bytes.len(), STACK_HEADER_LEN + 2 * ENTRY_LEN);
+        let mut out = HookStack::zeroed();
+        assert!(HookStack::read_compact(bytes, &mut out));
+        assert_eq!(bytemuck::bytes_of(&out), bytemuck::bytes_of(&s));
+        // Length must match the header's entry count exactly.
+        let mut out = HookStack::zeroed();
+        assert!(!HookStack::read_compact(&bytes[..bytes.len() - 1], &mut out));
+        assert!(!HookStack::read_compact(bytemuck::bytes_of(&s), &mut out));
+        assert!(!HookStack::read_compact(&[0; 4], &mut out));
     }
 
     #[test]

@@ -18,7 +18,7 @@ use anchor_lang::{
     },
 };
 use hook_kernel::{carry_state, cpi::CpiPolicyHooks, reason, requires_guard, validate_stack, Op, Record};
-use hook_standard::{loader, state::HEADER_LEN, Environment, HookStack, STACK_LEN};
+use hook_standard::{loader, state::HEADER_LEN, Environment, HookStack};
 
 pub mod venues;
 
@@ -267,9 +267,8 @@ fn boxed<T: bytemuck::Pod>(v: &T) -> Box<T> {
 }
 
 fn parse_stack(bytes: &[u8]) -> Result<Box<HookStack>> {
-    require!(bytes.len() == STACK_LEN, RouterError::InvalidStack);
     let mut s: Box<HookStack> = bytemuck::zeroed_box();
-    bytemuck::bytes_of_mut(&mut *s).copy_from_slice(bytes);
+    require!(HookStack::read_compact(bytes, &mut s), RouterError::InvalidStack);
     require!(s.environment == Environment::Router as u8, RouterError::InvalidStack);
     Ok(s)
 }

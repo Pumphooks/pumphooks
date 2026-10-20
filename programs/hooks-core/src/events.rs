@@ -10,38 +10,33 @@ pub struct ProtocolUpdated {
 }
 
 #[event]
-pub struct HookRegistered {
-    pub program: Pubkey,
-    pub registrant: Pubkey,
-    pub permissions: u32,
-    pub upgrade_authority: Option<Pubkey>,
-    pub deploy_slot: u64,
-    pub metadata_uri: String,
-}
-
-#[event]
-pub struct Attested {
-    pub hook_program: Pubkey,
-    pub attester: Pubkey,
-    pub kind: u8,
-    pub deploy_slot: u64,
-    pub content_hash: [u8; 32],
-    pub uri: String,
-    pub revoked: bool,
-}
-
-#[event]
 pub struct PoolInitialized {
     pub pool: Pubkey,
     pub creator: Pubkey,
     pub mint_0: Pubkey,
     pub mint_1: Pubkey,
     pub hook_program: Pubkey,
+    pub hook_version: Pubkey,
     pub permissions: u32,
     pub fee_ppm: u32,
     pub max_fee_ppm: u32,
     pub salt: u64,
     pub pinned: bool,
+}
+
+#[event]
+pub struct PolicyAttached {
+    pub pool: Pubkey,
+    pub policy: Pubkey,
+    pub entries: u8,
+}
+
+#[event]
+pub struct PolicyRejected {
+    pub pool: Pubkey,
+    pub callback: u8,
+    pub entry: u8,
+    pub reason: u16,
 }
 
 #[event]
