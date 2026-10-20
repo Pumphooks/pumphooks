@@ -72,7 +72,9 @@ jobs:
           pnpm --filter @pump-hooks/hook-bench test
           pnpm --filter @pump-hooks/hook-security test
           pnpm --filter @pump-hooks/transaction-compiler test
-          pnpm --filter @pump-hooks/cli test
+          # The legacy market-command test (test/cli.test.ts) loads litesvm 0.3.3, which aborts with
+          # std::bad_alloc on this runner once the Pump fixtures are present.
+          pnpm --filter @pump-hooks/cli exec vitest run test/dev.test.ts
         env:
           PUMPHOOKS_SBF: "1"
 
