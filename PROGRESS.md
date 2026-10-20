@@ -53,7 +53,14 @@ Next:
 - TypeScript SDK and simulator for the core;
 - indexer extension;
 - centralized branding config, and web repositioning (pools, registry, explorer, docs);
-- devnet deploy once the deployer has devnet SOL.
+- initialize the protocol on devnet (once the SDK exists), then deploy the reference hooks.
+
+**Devnet:** the core is deployed at `8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw`.
+
+- It was deployed at slot 513154080. The upgrade authority is the devnet deployer
+  `41L6nJ9wrsCK3RuXzvZafNcTWuSEBouvtWqanVdAKi6b`.
+- The protocol account is not initialized yet. Only the upgrade authority can initialize it.
+- Nothing is on mainnet.
 
 ## STATUS: Pump router (now the optional adapter)
 
