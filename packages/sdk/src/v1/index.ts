@@ -1,5 +1,6 @@
-// ABI v1 encoders for the token engine (token-hooks, token-wrapper) and hook stacks of every
-// environment. Instructions are library-neutral (`InstructionV1`); convert with `toWeb3`.
+// ABI v1 encoders for every engine (token-hooks / token-wrapper, hook-router, hooks-core,
+// smart-accounts), the registry and hook stacks. Instructions are library-neutral
+// (`InstructionV1`); convert with `toWeb3`.
 
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { Buffer } from "buffer";
@@ -10,6 +11,9 @@ export * from "./stack.js";
 export * from "./tokens.js";
 export * from "./registry.js";
 export * from "./policy.js";
+export * from "./router.js";
+export * from "./accounts.js";
+export * from "./pool.js";
 
 export function toWeb3(ix: InstructionV1): TransactionInstruction {
   return new TransactionInstruction({

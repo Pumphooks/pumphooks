@@ -11,22 +11,26 @@ function delta(before: string, after: string) {
   return d === 0n ? "" : `${d > 0n ? "+" : ""}${d}`;
 }
 
-export function TraceViewer({ traces }: { traces: TraceJson[] }) {
-  const [i, setI] = useState(0);
+/** With `index`, the caller selects the trace and the chips are not shown. */
+export function TraceViewer({ traces, index }: { traces: TraceJson[]; index?: number }) {
+  const [own, setI] = useState(0);
+  const i = index ?? own;
   const t = traces[i];
   const labels = new Map(t.accountDiffs.filter((d) => d.label).map((d) => [d.address, d.label!]));
   const name = (a: string) => labels.get(a) ?? short(a);
   const ret = t.returnData ? v1.decodePolicyResult(b64(t.returnData.data)) : null;
   return (
     <div>
-      <div className="chips" role="tablist">
-        {traces.map((x, k) => (
-          <button key={k} className="chip" aria-pressed={k === i} onClick={() => setI(k)}>
-            <span>{x.label}</span>
-            <span className={x.status === "success" ? "ok" : "deny"}>{x.status === "success" ? "ok" : "failed"}</span>
-          </button>
-        ))}
-      </div>
+      {index === undefined ? (
+        <div className="chips" role="tablist">
+          {traces.map((x, k) => (
+            <button key={k} className="chip" aria-pressed={k === i} onClick={() => setI(k)}>
+              <span>{x.label}</span>
+              <span className={x.status === "success" ? "ok" : "deny"}>{x.status === "success" ? "ok" : "failed"}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="section">
         {t.note ? <p style={{ marginTop: 0 }}>{t.note}</p> : null}

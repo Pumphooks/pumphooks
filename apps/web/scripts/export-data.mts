@@ -10,6 +10,7 @@ import { generateKeyPairSigner } from "@solana/kit";
 import { v1 } from "@pump-hooks/sdk";
 import { ExecutionLab, toJson, type ExecutionTrace } from "@pump-hooks/execution-lab";
 import { ATTACKS, CATEGORIES, DISCLAIMER, WRAPPER_INVARIANTS, applyWrapperOp, fuzz, setupWrapper, toKit, wrapperTarget } from "@pump-hooks/hook-security";
+import { DEMOS, routerFixturesAvailable, type Engine } from "@pump-hooks/demos";
 import { CompileError, compile, withMeasuredCompute, type CompiledTransaction, type Operation } from "@pump-hooks/transaction-compiler";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
@@ -151,8 +152,40 @@ async function security() {
   };
 }
 
+const FIXTURES = join(ROOT, "tests", "fixtures");
+const DEMO_SO = ["hook_registry.so", "token_hooks.so", "token_wrapper.so", "hook_router.so", "hooks_core.so", "smart_accounts.so"];
+
+async function demos() {
+  const fixtures = routerFixturesAvailable(FIXTURES);
+  const ran = [];
+  for (const id of Object.keys(DEMOS) as Engine[]) {
+    if (id === "router" && !fixtures) throw new Error("router demo needs tests/fixtures (scripts/dump_programs.sh)");
+    const d = await DEMOS[id]({ deployDir: DEPLOY, fixturesDir: FIXTURES });
+    if (!d.steps.every((s) => s.ok)) throw new Error(`demo ${id} did not behave as documented`);
+    ran.push({
+      ...d,
+      steps: d.steps.map(({ trace: { instructions: _ix, accountDiffs, provenance, ...t }, ...s }) => ({
+        ...s,
+        trace: {
+          ...t,
+          label: s.title,
+          note: s.outcome,
+          accountDiffs: accountDiffs.filter((a) => a.changedRanges.length || a.lamportsBefore !== a.lamportsAfter || a.created || a.closed),
+          provenance: Object.fromEntries(["invocations", "tokenBalances", "hookSteps", "accountDiffs"].map((k) => [k, provenance[k as keyof typeof provenance]])),
+        },
+      })),
+    });
+  }
+  const m = meta("pnpm --filter @pump-hooks/web export-data");
+  m.programs = Object.fromEntries([
+    ...DEMO_SO.map((f) => [f, sha(readFileSync(join(DEPLOY, f)))]),
+    ...["pump_amm.so", "pump.so", "pump_fees.so"].map((f) => [`fixtures/${f} (dumped from devnet)`, sha(readFileSync(join(FIXTURES, "programs", f)))]),
+  ]);
+  return { ...m, demos: ran };
+}
+
 mkdirSync(OUT, { recursive: true });
-for (const [name, f] of [["lab", lab], ["compiler", compiler], ["security", security]] as const) {
+for (const [name, f] of [["lab", lab], ["compiler", compiler], ["security", security], ["demos", demos]] as const) {
   const data = await f();
   writeFileSync(join(OUT, `${name}.json`), toJson(data) + "\n");
   console.log(`wrote data/${name}.json`);

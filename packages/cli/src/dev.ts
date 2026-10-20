@@ -29,6 +29,8 @@ usage: pumphooks <command> [args]
   security-check [--stack <hex|file>] [--runs n] [--deploy-dir target/deploy] [--out file]
                                    stack diagnostics + stateful fuzzing of the token wrapper
                                    (not an audit)
+  demo [token|router|pool|account] [--json] [--deploy-dir target/deploy]
+                                   run the four engine demos against the compiled programs in LiteSVM
   deploy --cluster devnet|localnet --program <file.so> --keypair <file> [--program-id <keypair>] [--yes]
   register --cluster devnet|localnet --manifest hook.json --keypair <file> [--program <id>] [--so <file.so>] [--yes]
 
@@ -79,7 +81,7 @@ const OPTIONS = {
   help: { type: "boolean", short: "h" },
 } as const;
 
-export const DEV_COMMANDS = ["init", "build", "test", "bench", "security-check", "deploy", "register"];
+export const DEV_COMMANDS = ["init", "build", "test", "bench", "security-check", "demo", "deploy", "register"];
 
 /** `simulate` is a dev command only with --program or --stack; otherwise it is the market simulate. */
 export function isDevCommand(argv: string[]): boolean {
@@ -410,6 +412,26 @@ export async function runDev(argv: string[], deps: DevDeps): Promise<number> {
 
       case "security-check":
         return await securityCheck(values, cwd, deps);
+
+      case "demo": {
+        const root = findRepoRoot(cwd);
+        if (!root) throw new UsageError("demo runs inside the pumphooks repository (target/deploy, tests/fixtures)");
+        const { DEMOS } = await import("@pump-hooks/demos");
+        const ids = a1 ? [a1] : Object.keys(DEMOS);
+        for (const id of ids) if (!(id in DEMOS)) throw new UsageError(`unknown demo "${id}" (${Object.keys(DEMOS).join(", ")})`);
+        let ok = true;
+        for (const id of ids) {
+          const d = await DEMOS[id as keyof typeof DEMOS]({ deployDir: resolve(cwd, values["deploy-dir"] ?? join(root, "target", "deploy")), fixturesDir: join(root, "tests", "fixtures") });
+          if (values.json) {
+            deps.out(JSON.stringify({ ...d, steps: d.steps.map(({ trace, ...s }) => ({ ...s, status: trace.status, computeUnits: trace.computeUnits.total, logs: trace.logs })) }, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2));
+          } else {
+            deps.out(`\n${d.title}\n  ${d.enforcement}`);
+            for (const s of d.steps) deps.out(`  ${s.ok ? "✓" : "✗"} ${s.trace.status === "success" ? "ok      " : "rejected"} ${String(s.trace.computeUnits.total).padStart(6)} CU  ${s.title}\n      ${s.outcome}`);
+          }
+          ok &&= d.steps.every((s) => s.ok);
+        }
+        return ok ? 0 : 1;
+      }
 
       case "deploy": {
         const url = clusterUrl(values.cluster);

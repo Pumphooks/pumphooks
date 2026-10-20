@@ -28,6 +28,7 @@ describe("routing", () => {
   it("dev commands vs market commands", () => {
     expect(isDevCommand(["init", "x"])).toBe(true);
     expect(isDevCommand(["security-check"])).toBe(true);
+    expect(isDevCommand(["demo", "pool"])).toBe(true);
     expect(isDevCommand(["simulate", "--program", "a.so"])).toBe(true);
     expect(isDevCommand(["simulate", "MARKET", "--buy", "1"])).toBe(false);
     expect(isDevCommand(["inspect", "MINT"])).toBe(false);
@@ -205,6 +206,15 @@ describe("simulate", () => {
     const bad = new Uint8Array(stack);
     bad[8 + 64] = 9;
     expect((await cli(["simulate", "--stack", Buffer.from(bad).toString("hex")])).code).toBe(1);
+  });
+
+  it.skipIf(!SBF || !existsSync(join(DEPLOY, "hooks_core.so")))("demo runs an engine demo against the compiled programs", async () => {
+    const r = await cli(["demo", "pool", "--json"]);
+    expect(r.code, r.out).toBe(0);
+    const d = JSON.parse(r.out);
+    expect(d.id).toBe("pool");
+    expect(d.steps.every((s: { ok: boolean }) => s.ok)).toBe(true);
+    expect((await cli(["demo", "nope"])).code).toBe(2);
   });
 
   it.skipIf(!SBF)("runs a policy call against the example hook program", async () => {

@@ -1,0 +1,34 @@
+{
+  "name": "@pump-hooks/demos",
+  "version": "0.1.0",
+  "description": "Four end-to-end demonstrations, one per engine (token allowlist, routed max-size, pool dynamic fee, smart-account timelock + spending limit), executed against the compiled programs in LiteSVM.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "demo": "tsx scripts/run.mts"
+  },
+  "dependencies": {
+    "@pump-hooks/execution-lab": "workspace:*",
+    "@pump-hooks/hook-security": "workspace:*",
+    "@pump-hooks/sdk": "workspace:*",
+    "@solana/kit": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

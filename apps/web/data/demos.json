@@ -1,0 +1,4447 @@
+{
+  "commit": "12c2a02ddb7f231f93ee57d712e2b4075f6009c1",
+  "generatedAt": "2026-10-20T18:38:59.813Z",
+  "runtime": "LiteSVM (node, litesvm 1.6.1) with the compiled .so files",
+  "programs": {
+    "hook_registry.so": "2b594e9133007ce2aa02e5a2ee779f0f90bfc704aa0b3240e2fd7add71b19250",
+    "token_hooks.so": "969dd56de202ba3e740f6b6aa6875d43406aee7679c4b2522266b49d196b7e36",
+    "token_wrapper.so": "d37cdbe6acab5c349bbc42ece5b86fe37219cb73fd69d8ec2a2bfde7f401c067",
+    "hook_router.so": "f9f6df8b562c5fca657da3192307de70b51d206d15daa82429408e06a6e3fc38",
+    "hooks_core.so": "e38e6eff6b735fd65e15b635b3086707738df656cfc916991186dd51b2224ef5",
+    "smart_accounts.so": "b6191cff8282f9c1874f7959a0c809ab51695ce5533a103feeb618cc21d1df28",
+    "fixtures/pump_amm.so (dumped from devnet)": "494d2257ed4a9a2bc3eb210b22cdb5058d77e17f1ba5095b636e96c86b1fd4ef",
+    "fixtures/pump.so (dumped from devnet)": "bcee35d3eeb158090dd08764a8c5c03a2852c3cee553a0ce61dd5482469a5ec7",
+    "fixtures/pump_fees.so (dumped from devnet)": "446db24678fa22700d8eda86c48ba361b325a084e319c0c66f780c953520b317"
+  },
+  "command": "pnpm --filter @pump-hooks/web export-data",
+  "demos": [
+    {
+      "id": "token",
+      "title": "Token hook: recipient allowlist on a wrapped token",
+      "enforcement": "Native for the wrapped Token-2022 mint: every transfer_checked runs the stack. The original SPL token is unaffected; holders opt in by wrapping.",
+      "setup": [
+        "deploy token-hooks + token-wrapper; create the wrapper for a fresh SPL mint with an empty token policy",
+        "initialize hook-registry",
+        "publish builtin allowlist (token)",
+        "install allowlist(recipient = bob) on the wrapped mint"
+      ],
+      "steps": [
+        {
+          "title": "Alice wraps 1,000 tokens",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "alice holds 1000 wrapped; vault holds 1000",
+          "trace": {
+            "label": "Alice wraps 1,000 tokens",
+            "status": "success",
+            "feePayer": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                  "program": "token-hooks",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt"
+                  ],
+                  "data": "AKw1aTHyL10CQhaPSgmKV2BGKyuM3q0y/ZbuaY0XuMWg7loaWeN30XZCFo9KCYpXYEYrK4zerTL9lu5pjRe4xaDuWhpZ43fRdugDAAAAAAAA",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "B1sVMrumRzgPuf8ohwqoVGLWh9hj8nCREzNziifv2zFM",
+                    "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                    "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                    "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs"
+                  ],
+                  "data": "DOgDAAAAAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                  "program": "token-2022",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                    "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx"
+                  ],
+                  "data": "B+gDAAAAAAAA",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "program": "token-wrapper",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Wrap",
+                  "Program data: C3+RH86GSYLvqxBxGSR5xCoujO7RbfZIBJ07S2940Y/sVqjlpNinV0IWj0oJildgRisrjN6tMv2W7mmNF7jFoO5aGlnjd9F26AMAAAAAAADoAwAAAAAAAOgDAAAAAAAA6AMAAAAAAAA="
+                ],
+                "consumed": 19643,
+                "budget": 1399850
+              },
+              {
+                "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "program": "token-hooks",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: CheckOperation"
+                ],
+                "consumed": 3973,
+                "budget": 1391943
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1385712
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: MintTo"
+                ],
+                "consumed": 1534,
+                "budget": 1383244
+              }
+            ],
+            "computeUnits": {
+              "total": "19793",
+              "perInstruction": [
+                null,
+                19643
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "0",
+                "after": "1000",
+                "delta": "1000"
+              },
+              {
+                "account": "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                "mint": "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                "owner": "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "0",
+                "after": "1000",
+                "delta": "1000"
+              },
+              {
+                "account": "B1sVMrumRzgPuf8ohwqoVGLWh9hj8nCREzNziifv2zFM",
+                "mint": "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                "owner": "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000",
+                "after": "999000",
+                "delta": "-1000"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh invoke [1]",
+              "Program log: Instruction: Wrap",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+              "Program log: Instruction: CheckOperation",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 3973 of 1391943 compute units",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1385712 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]",
+              "Program log: Instruction: MintTo",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 1534 of 1383244 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+              "Program data: C3+RH86GSYLvqxBxGSR5xCoujO7RbfZIBJ07S2940Y/sVqjlpNinV0IWj0oJildgRisrjN6tMv2W7mmNF7jFoO5aGlnjd9F26AMAAAAAAADoAwAAAAAAAOgDAAAAAAAA6AMAAAAAAAA=",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh consumed 19643 of 1399850 compute units",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh success"
+            ],
+            "note": "alice holds 1000 wrapped; vault holds 1000",
+            "accountDiffs": [
+              {
+                "address": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+                "label": "issuer",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "99968378120",
+                "lamportsAfter": "99968368120",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "label": "alice wrapped",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1518920",
+                "lamportsAfter": "1518920",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 171,
+                "dataLenAfter": 171,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                "label": "vault",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "B1sVMrumRzgPuf8ohwqoVGLWh9hj8nCREzNziifv2zFM",
+                "label": "alice underlying",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1838960",
+                "lamportsAfter": "1838960",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 234,
+                "dataLenAfter": 234,
+                "changedRanges": [
+                  [
+                    36,
+                    38
+                  ]
+                ]
+              },
+              {
+                "address": "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1595120",
+                "lamportsAfter": "1595120",
+                "ownerBefore": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "ownerAfter": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "dataLenBefore": 186,
+                "dataLenAfter": 186,
+                "changedRanges": [
+                  [
+                    168,
+                    170
+                  ]
+                ]
+              },
+              {
+                "address": "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt",
+                "label": "token-policy",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "10160000",
+                "lamportsAfter": "10160000",
+                "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "dataLenBefore": 1872,
+                "dataLenAfter": 1872,
+                "changedRanges": [
+                  [
+                    104,
+                    105
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Alice sends 400 to Bob (allowlisted)",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "bob holds 400 wrapped",
+          "trace": {
+            "label": "Alice sends 400 to Bob (allowlisted)",
+            "status": "success",
+            "feePayer": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                  "program": "token-hooks",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                    "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                    "BNBh8H93KaZn14mobnxXRQmf8Tc7Fn6V4toUheuZkbw5",
+                    "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt"
+                  ],
+                  "data": "aSVlxUv7ZhqQAQAAAAAAAA==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: TransferChecked"
+                ],
+                "consumed": 20989,
+                "budget": 1399850
+              },
+              {
+                "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "program": "token-hooks",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Execute"
+                ],
+                "consumed": 6935,
+                "budget": 1386426
+              }
+            ],
+            "computeUnits": {
+              "total": "21139",
+              "perInstruction": [
+                null,
+                20989
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "1000",
+                "after": "600",
+                "delta": "-400"
+              },
+              {
+                "account": "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5TwcPLZCJ6qKqPTxTDRZdbwfQhEDyyzDCTBxzvZNVMBd",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "0",
+                "after": "400",
+                "delta": "400"
+              }
+            ],
+            "hookSteps": [
+              {
+                "engine": "token",
+                "program": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "policy": "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt",
+                "callback": "before_transfer",
+                "entry": 0,
+                "name": "allowlist",
+                "kind": "builtin",
+                "mandatory": false,
+                "result": "ran"
+              }
+            ],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
+              "Program log: Instruction: TransferChecked",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+              "Program log: Instruction: Execute",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 6935 of 1386426 compute units",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 20989 of 1399850 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success"
+            ],
+            "note": "bob holds 400 wrapped",
+            "accountDiffs": [
+              {
+                "address": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+                "label": "issuer",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "99968368120",
+                "lamportsAfter": "99968358120",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "label": "alice wrapped",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1518920",
+                "lamportsAfter": "1518920",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 171,
+                "dataLenAfter": 171,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                "label": "bob wrapped",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1518920",
+                "lamportsAfter": "1518920",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 171,
+                "dataLenAfter": 171,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt",
+                "label": "token-policy",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "10160000",
+                "lamportsAfter": "10160000",
+                "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "dataLenBefore": 1872,
+                "dataLenAfter": 1872,
+                "changedRanges": [
+                  [
+                    104,
+                    105
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Alice sends 100 to Carol (not allowlisted)",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "hook stack rejected: callback 0 entry 0 reason 2 (not allowlisted); carol still holds 0",
+          "trace": {
+            "label": "Alice sends 100 to Carol (not allowlisted)",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6008))",
+            "feePayer": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                  "program": "token-hooks",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "62bNPA8KX7hKb9wHEiXbHCcx1XCGcexBx1AchaBoVLRY",
+                    "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                    "BNBh8H93KaZn14mobnxXRQmf8Tc7Fn6V4toUheuZkbw5",
+                    "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt"
+                  ],
+                  "data": "aSVlxUv7ZhpkAAAAAAAAAA==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: TransferChecked"
+                ],
+                "consumed": 22946,
+                "budget": 1399850,
+                "error": "custom program error: 0x1778"
+              },
+              {
+                "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "program": "token-hooks",
+                "depth": 2,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Execute",
+                  "Program log: hook stack rejected: callback 0 entry 0 reason 2 (not allowlisted)",
+                  "Program data: 342jZOTiNam3SN1SFhPZ1WYpDbEfF053sEp6693Je0xzEFFcXnKejAAAAgA=",
+                  "Program log: AnchorError thrown in programs/token-hooks/src/lib.rs:329. Error Code: PolicyRejected. Error Number: 6008. Error Message: Hook stack rejected the operation."
+                ],
+                "consumed": 9522,
+                "budget": 1386426,
+                "error": "custom program error: 0x1778"
+              }
+            ],
+            "computeUnits": {
+              "total": "23096",
+              "perInstruction": [
+                null,
+                22946
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "600",
+                "after": "600",
+                "delta": "0"
+              },
+              {
+                "account": "62bNPA8KX7hKb9wHEiXbHCcx1XCGcexBx1AchaBoVLRY",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "7AixKztbc94GAcUEZdokH2WfAz7w42kLWEitoqofZc9u",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "0",
+                "after": "0",
+                "delta": "0"
+              }
+            ],
+            "hookSteps": [
+              {
+                "engine": "token",
+                "program": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "policy": "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt",
+                "callback": "before_transfer",
+                "entry": 0,
+                "name": "allowlist",
+                "kind": "builtin",
+                "mandatory": false,
+                "result": "rejected",
+                "reason": "2 (not allowlisted)"
+              }
+            ],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
+              "Program log: Instruction: TransferChecked",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+              "Program log: Instruction: Execute",
+              "Program log: hook stack rejected: callback 0 entry 0 reason 2 (not allowlisted)",
+              "Program data: 342jZOTiNam3SN1SFhPZ1WYpDbEfF053sEp6693Je0xzEFFcXnKejAAAAgA=",
+              "Program log: AnchorError thrown in programs/token-hooks/src/lib.rs:329. Error Code: PolicyRejected. Error Number: 6008. Error Message: Hook stack rejected the operation.",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 9522 of 1386426 compute units",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 failed: custom program error: 0x1778",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 22946 of 1399850 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1778"
+            ],
+            "note": "hook stack rejected: callback 0 entry 0 reason 2 (not allowlisted); carol still holds 0",
+            "accountDiffs": [
+              {
+                "address": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+                "label": "issuer",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "99968358120",
+                "lamportsAfter": "99968348120",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Alice sends to Carol without the hook accounts",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Token-2022 refuses the transfer: Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: An account required by the instruction is missing",
+          "trace": {
+            "label": "Alice sends to Carol without the hook accounts",
+            "status": "failed",
+            "error": "InstructionError(1, 31)",
+            "feePayer": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: TransferChecked",
+                  "Unknown program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54"
+                ],
+                "consumed": 9076,
+                "budget": 1399850,
+                "error": "An account required by the instruction is missing"
+              }
+            ],
+            "computeUnits": {
+              "total": "9226",
+              "perInstruction": [
+                null,
+                9076
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5Cwm5R5DHwffN6GsgEwj7ARPqYFu9hLY9CqAUZWje2bL",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5SyrszbcC8Y6vs32YSobfYBCdczQ7F5mPhVdBarxM9bs",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "600",
+                "after": "600",
+                "delta": "0"
+              },
+              {
+                "account": "62bNPA8KX7hKb9wHEiXbHCcx1XCGcexBx1AchaBoVLRY",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "7AixKztbc94GAcUEZdokH2WfAz7w42kLWEitoqofZc9u",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "0",
+                "after": "0",
+                "delta": "0"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
+              "Program log: Instruction: TransferChecked",
+              "Unknown program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 9076 of 1399850 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: An account required by the instruction is missing"
+            ],
+            "note": "Token-2022 refuses the transfer: Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: An account required by the instruction is missing",
+            "accountDiffs": [
+              {
+                "address": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+                "label": "issuer",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "99968348120",
+                "lamportsAfter": "99968338120",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Bob unwraps 400 back to the SPL token",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "bob: 0 wrapped, 400 more underlying",
+          "trace": {
+            "label": "Bob unwraps 400 back to the SPL token",
+            "status": "success",
+            "feePayer": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                  "program": "token-hooks",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt"
+                  ],
+                  "data": "AKw1aTHyL10DQlWYuH123iLNpLP117L/3CFqfWrR92mA27PDQKk9SKhCVZi4fXbeIs2ks/XXsv/cIWp9atH3aYDbs8NAqT1IqJABAAAAAAAA",
+                  "children": []
+                },
+                {
+                  "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                  "program": "token-2022",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                    "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                    "5TwcPLZCJ6qKqPTxTDRZdbwfQhEDyyzDCTBxzvZNVMBd"
+                  ],
+                  "data": "D5ABAAAAAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                    "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                    "JDEKQpiETVwjTwcEn39oPfBDH3e3FEWkjZr43Azh7ioX",
+                    "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx"
+                  ],
+                  "data": "DJABAAAAAAAABg==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "program": "token-wrapper",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Unwrap",
+                  "Program data: GVZdUJFxVl3vqxBxGSR5xCoujO7RbfZIBJ07S2940Y/sVqjlpNinV0JVmLh9dt4izaSz9dey/9whan1q0fdpgNuzw0CpPUiokAEAAAAAAACQAQAAAAAAAFgCAAAAAAAAWAIAAAAAAAA="
+                ],
+                "consumed": 19579,
+                "budget": 1399850
+              },
+              {
+                "programId": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "program": "token-hooks",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: CheckOperation"
+                ],
+                "consumed": 3973,
+                "budget": 1391937
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: BurnChecked"
+                ],
+                "consumed": 1742,
+                "budget": 1385889
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1381929
+              }
+            ],
+            "computeUnits": {
+              "total": "19729",
+              "perInstruction": [
+                null,
+                19579
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                "mint": "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                "owner": "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000",
+                "after": "600",
+                "delta": "-400"
+              },
+              {
+                "account": "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                "mint": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "owner": "5TwcPLZCJ6qKqPTxTDRZdbwfQhEDyyzDCTBxzvZNVMBd",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "400",
+                "after": "0",
+                "delta": "-400"
+              },
+              {
+                "account": "JDEKQpiETVwjTwcEn39oPfBDH3e3FEWkjZr43Azh7ioX",
+                "mint": "A16q7pe1Tzvd4iXmSwiaQYpfsi23CA14Qq4JxbymERDP",
+                "owner": "5TwcPLZCJ6qKqPTxTDRZdbwfQhEDyyzDCTBxzvZNVMBd",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000",
+                "after": "1000400",
+                "delta": "400"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh invoke [1]",
+              "Program log: Instruction: Unwrap",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 invoke [2]",
+              "Program log: Instruction: CheckOperation",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 consumed 3973 of 1391937 compute units",
+              "Program FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]",
+              "Program log: Instruction: BurnChecked",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 1742 of 1385889 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1381929 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: GVZdUJFxVl3vqxBxGSR5xCoujO7RbfZIBJ07S2940Y/sVqjlpNinV0JVmLh9dt4izaSz9dey/9whan1q0fdpgNuzw0CpPUiokAEAAAAAAACQAQAAAAAAAFgCAAAAAAAAWAIAAAAAAAA=",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh consumed 19579 of 1399850 compute units",
+              "Program 841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh success"
+            ],
+            "note": "bob: 0 wrapped, 400 more underlying",
+            "accountDiffs": [
+              {
+                "address": "C6fk8u9Th19q9SBLVW8XGaBf9sPMf4Cb25C8SLaW5ywD",
+                "label": "issuer",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "99968338120",
+                "lamportsAfter": "99968328120",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "94rMnAtJfbUGr2wKXG7JkNGotGdP98iVbRcbHoW27LvW",
+                "label": "vault",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "DKPKip4c8y1Y6VUizCmdZbjMj4D7eAQA3fNdZWtJN6P7",
+                "label": "bob wrapped",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1518920",
+                "lamportsAfter": "1518920",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 171,
+                "dataLenAfter": 171,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "DLU3vj4L7MfdA7SE1iBbZWn4RQDwTG9xTi2PELyPbVas",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1838960",
+                "lamportsAfter": "1838960",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 234,
+                "dataLenAfter": 234,
+                "changedRanges": [
+                  [
+                    36,
+                    38
+                  ]
+                ]
+              },
+              {
+                "address": "H8ZjLAFTUAcwBCWSSw8p5q6e5MGxhNZKukeMQPJddaPx",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1595120",
+                "lamportsAfter": "1595120",
+                "ownerBefore": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "ownerAfter": "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh",
+                "dataLenBefore": 186,
+                "dataLenAfter": 186,
+                "changedRanges": [
+                  [
+                    176,
+                    178
+                  ]
+                ]
+              },
+              {
+                "address": "JDEKQpiETVwjTwcEn39oPfBDH3e3FEWkjZr43Azh7ioX",
+                "label": "bob underlying",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    66
+                  ]
+                ]
+              },
+              {
+                "address": "N6nfGetzbAurDTYXAVhpyXYro2RRJoAueVqxutMicWt",
+                "label": "token-policy",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "10160000",
+                "lamportsAfter": "10160000",
+                "ownerBefore": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "ownerAfter": "FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54",
+                "dataLenBefore": 1872,
+                "dataLenAfter": 1872,
+                "changedRanges": [
+                  [
+                    104,
+                    105
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "router",
+      "title": "Transaction hook: maximum trade size on routed PumpSwap buys",
+      "enforcement": "Router: applies only to trades sent through hook-router. PumpSwap has no native hooks and stays directly callable, as the last step shows.",
+      "setup": [
+        "initialize hook-registry",
+        "load PumpSwap (devnet binaries) and the cloned devnet pool 9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+        "initialize hook-router; enable the PumpSwap venue",
+        "publish builtin max-size (router)",
+        "create a shared route policy: max-size 1 SOL on before_swap (mandatory)",
+        "trader: token accounts, 5 SOL wrapped"
+      ],
+      "steps": [
+        {
+          "title": "Routed buy for 0.5 SOL (cap is 1 SOL)",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "receipt: spent 0.5000 SOL, received 28909803408 base (measured by the router, venue verified: true)",
+          "trace": {
+            "label": "Routed buy for 0.5 SOL (cap is 1 SOL)",
+            "status": "success",
+            "feePayer": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "11111111111111111111111111111111",
+                  "program": "system",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                    "7P1k8vTpQEvTWbwZTh3gUf8YQqM2V1S9unmJRCJqMVXr"
+                  ],
+                  "data": "AAAAAEioGQAAAAAAywAAAAAAAAAXUy1+xh1wwk72mI2217dBfaWlUbmdaucMrhLP40GV8Q==",
+                  "children": []
+                },
+                {
+                  "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                  "program": "pumpswap",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                    "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                    "ADyA8hdefvWN2dbGGWFotbzWxrAvLW83WG6QCVXvJKqw",
+                    "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                    "So11111111111111111111111111111111111111112",
+                    "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                    "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                    "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                    "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                    "11111111111111111111111111111111",
+                    "7xL63txdnaDdfn2tqtCo9QtSaTHDTBADffxM2s1GpxMU",
+                    "5PHirr8joyTMp9JMm6nW7hNDVyEYdkzDqazxPD7RaTjx",
+                    "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                    "GS4CU59F31iL7aR2Q8zVS8DRrcRnXX1yjQ66TqNVQnaR",
+                    "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+                  ],
+                  "data": "wqscRmhNWy8AZc0dAAAAAAEAAAAAAAAA",
+                  "children": [
+                    {
+                      "programId": "11111111111111111111111111111111",
+                      "program": "system",
+                      "stackHeight": 3,
+                      "accounts": [
+                        "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                        "7xL63txdnaDdfn2tqtCo9QtSaTHDTBADffxM2s1GpxMU"
+                      ],
+                      "data": "AAAAAJiKFAAAAAAAiQAAAAAAAAAMFN78gl7GdpQlCBi7ZUBl9CmNMVbVcbTU+AkMGOmoYw==",
+                      "children": []
+                    },
+                    {
+                      "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                      "program": "token-2022",
+                      "stackHeight": 3,
+                      "accounts": [
+                        "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                        "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                        "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                        "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ"
+                      ],
+                      "data": "DJCXKLsGAAAABg==",
+                      "children": []
+                    },
+                    {
+                      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                      "program": "spl-token",
+                      "stackHeight": 3,
+                      "accounts": [
+                        "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                        "So11111111111111111111111111111111111111112",
+                        "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                        "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq"
+                      ],
+                      "data": "DDcEzR0AAAAACQ==",
+                      "children": []
+                    },
+                    {
+                      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                      "program": "spl-token",
+                      "stackHeight": 3,
+                      "accounts": [
+                        "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                        "So11111111111111111111111111111111111111112",
+                        "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                        "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq"
+                      ],
+                      "data": "DMlgAAAAAAAACQ==",
+                      "children": []
+                    },
+                    {
+                      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                      "program": "pumpswap",
+                      "stackHeight": 3,
+                      "accounts": [
+                        "GS4CU59F31iL7aR2Q8zVS8DRrcRnXX1yjQ66TqNVQnaR"
+                      ],
+                      "data": "5EWlLlHLmh1n9FIfLPV3dwAAAAAAAAAAkJcouwYAAAAAZc0dAAAAAAAAAAAAAAAAAPIFKgEAAAC6nzYXXgUAAFL+Ek0XAAAAAGXNHQAAAAAUAAAAAAAAAGkfDwAAAAAABQAAAAAAAADbxwMAAAAAABJ3mB0AAAAAqVeJHQAAAAB8bKJ9kUUNpo7LCyu8boN4JxN+CenHb3JqdvpWvzrWYEiem1J9ok+dT1Ml2waKJJOkY0lIxn7x1e4iKALCIVCmMtEofnKY9LB4ozwt9H/pPVtAEpG2H6I/NZYy95nP7QSPLF61ZPSUXqkwtaRgi26ftGJaMEWCPmMn8tapw5NsrgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt6jjcd2/WCi95vT/g7JNBKCNnssa8taxaxJ944d+mk0EAAAAAAAAAEyYxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAABUAAABidXlfZXhhY3RfcXVvdGVfaW5fdjIAAAAAAAAAAAAAAAAAAAAA6AMAAAAAAADJYAAAAAAAACk7/yIAAAAAAAAAAAAAAAABGNnYxlGMAwAAAAAAAAAAAAAAAAAAAAAAuCEyAAAAAAA=",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "program": "hook-router",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Route",
+                  "Program data: 6X+kmwKJ9/Beyb2EWGCy2h2Tv2DQeTx1o4mqiE0DpvXK9zypWDVibUiem1J9ok+dT1Ml2waKJJOkY0lIxn7x1e4iKALCIVCm2OGGuILnZAoq8TScrTzqmk8AoVlmXpiO/M9s52Z4G4UABpuIV/6rgYT7aH9jRhjANdrEOdwa6ztVmKDwAAAAAAEtl6uNzwFL3NjNEzZpxIdseFM6epuSmYrXPj706RhFEABlzR0AAAAAkJcouwYAAAABAAAAAAAAAA=="
+                ],
+                "consumed": 90589,
+                "budget": 1399850
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 2,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "program": "pumpswap",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: BuyExactQuoteInV2",
+                  "Program data: Z/RSHyz1d3cAAAAAAAAAAJCXKLsGAAAAAGXNHQAAAAAAAAAAAAAAAADyBSoBAAAAup82F14FAABS/hJNFwAAAABlzR0AAAAAFAAAAAAAAABpHw8AAAAAAAUAAAAAAAAA28cDAAAAAAASd5gdAAAAAKlXiR0AAAAAfGyifZFFDaaOywsrvG6DeCcTfgnpx29yanb6Vr861mBInptSfaJPnU9TJdsGiiSTpGNJSMZ+8dXuIigCwiFQpjLRKH5ymPSweKM8LfR/6T1bQBKRth+iPzWWMveZz+0EjyxetWT0lF6pMLWkYItun7RiWjBFgj5jJ/LWqcOTbK4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALeo43Hdv1goveb0/4OyTQSgjZ7LGvLWsWsSfeOHfppNBAAAAAAAAABMmMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAVAAAAYnV5X2V4YWN0X3F1b3RlX2luX3YyAAAAAAAAAAAAAAAAAAAAAOgDAAAAAAAAyWAAAAAAAAApO/8iAAAAAAAAAAAAAAAAARjZ2MZRjAMAAAAAAAAAAAAAAAAAAAAAALghMgAAAAAA"
+                ],
+                "consumed": 60857,
+                "budget": 1373244
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 3,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 3,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: TransferChecked"
+                ],
+                "consumed": 2547,
+                "budget": 1333223
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 3,
+                "result": "success",
+                "logs": [],
+                "consumed": 112,
+                "budget": 1327783
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 3,
+                "result": "success",
+                "logs": [],
+                "consumed": 112,
+                "budget": 1325137
+              },
+              {
+                "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "program": "pumpswap",
+                "depth": 3,
+                "result": "success",
+                "logs": [],
+                "consumed": 2116,
+                "budget": 1316696
+              }
+            ],
+            "computeUnits": {
+              "total": "90739",
+              "perInstruction": [
+                null,
+                90589
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "0",
+                "after": "28909803408",
+                "delta": "28909803408"
+              },
+              {
+                "account": "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "5000000000",
+                "after": "4500000000",
+                "delta": "-500000000"
+              },
+              {
+                "account": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "100077338194",
+                "after": "100577313417",
+                "delta": "499975223"
+              },
+              {
+                "account": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "5901674520506",
+                "after": "5872764717098",
+                "delta": "-28909803408"
+              },
+              {
+                "account": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "3403472967",
+                "after": "3403497744",
+                "delta": "24777"
+              }
+            ],
+            "hookSteps": [
+              {
+                "engine": "router",
+                "program": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "policy": "FbcX7rL2xAwLKxTcLEUS5kVsPaDgqEjwwuVj8F7cynRJ",
+                "callback": "before_swap",
+                "entry": 0,
+                "name": "max-size",
+                "kind": "builtin",
+                "mandatory": true,
+                "result": "ran"
+              }
+            ],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U invoke [1]",
+              "Program log: Instruction: Route",
+              "Program 11111111111111111111111111111111 invoke [2]",
+              "Program 11111111111111111111111111111111 success",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA invoke [2]",
+              "Program log: Instruction: BuyExactQuoteInV2",
+              "Program 11111111111111111111111111111111 invoke [3]",
+              "Program 11111111111111111111111111111111 success",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [3]",
+              "Program log: Instruction: TransferChecked",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 2547 of 1333223 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 112 of 1327783 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [3]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 112 of 1325137 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: Z/RSHyz1d3cAAAAAAAAAAJCXKLsGAAAAAGXNHQAAAAAAAAAAAAAAAADyBSoBAAAAup82F14FAABS/hJNFwAAAABlzR0AAAAAFAAAAAAAAABpHw8AAAAAAAUAAAAAAAAA28cDAAAAAAASd5gdAAAAAKlXiR0AAAAAfGyifZFFDaaOywsrvG6DeCcTfgnpx29yanb6Vr861mBInptSfaJPnU9TJdsGiiSTpGNJSMZ+8dXuIigCwiFQpjLRKH5ymPSweKM8LfR/6T1bQBKRth+iPzWWMveZz+0EjyxetWT0lF6pMLWkYItun7RiWjBFgj5jJ/LWqcOTbK4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALeo43Hdv1goveb0/4OyTQSgjZ7LGvLWsWsSfeOHfppNBAAAAAAAAABMmMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAVAAAAYnV5X2V4YWN0X3F1b3RlX2luX3YyAAAAAAAAAAAAAAAAAAAAAOgDAAAAAAAAyWAAAAAAAAApO/8iAAAAAAAAAAAAAAAAARjZ2MZRjAMAAAAAAAAAAAAAAAAAAAAAALghMgAAAAAA",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA invoke [3]",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA consumed 2116 of 1316696 compute units",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA success",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA consumed 60857 of 1373244 compute units",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA success",
+              "Program data: 6X+kmwKJ9/Beyb2EWGCy2h2Tv2DQeTx1o4mqiE0DpvXK9zypWDVibUiem1J9ok+dT1Ml2waKJJOkY0lIxn7x1e4iKALCIVCm2OGGuILnZAoq8TScrTzqmk8AoVlmXpiO/M9s52Z4G4UABpuIV/6rgYT7aH9jRhjANdrEOdwa6ztVmKDwAAAAAAEtl6uNzwFL3NjNEzZpxIdseFM6epuSmYrXPj706RhFEABlzR0AAAAAkJcouwYAAAABAAAAAAAAAA==",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U consumed 90589 of 1399850 compute units",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U success"
+            ],
+            "note": "receipt: spent 0.5000 SOL, received 28909803408 base (measured by the router, venue verified: true)",
+            "accountDiffs": [
+              {
+                "address": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+                "label": "admin",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999993615000",
+                "lamportsAfter": "999993605000",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "label": "trader",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "4996997720",
+                "lamportsAfter": "4993970040",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                "label": "trader base",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1513840",
+                "lamportsAfter": "1513840",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 170,
+                "dataLenAfter": 170,
+                "changedRanges": [
+                  [
+                    64,
+                    69
+                  ]
+                ]
+              },
+              {
+                "address": "7P1k8vTpQEvTWbwZTh3gUf8YQqM2V1S9unmJRCJqMVXr",
+                "signer": false,
+                "writable": true,
+                "created": true,
+                "closed": false,
+                "lamportsBefore": "0",
+                "lamportsAfter": "1681480",
+                "ownerBefore": null,
+                "ownerAfter": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "dataLenBefore": 0,
+                "dataLenAfter": 203,
+                "changedRanges": []
+              },
+              {
+                "address": "7xL63txdnaDdfn2tqtCo9QtSaTHDTBADffxM2s1GpxMU",
+                "signer": false,
+                "writable": true,
+                "created": true,
+                "closed": false,
+                "lamportsBefore": "0",
+                "lamportsAfter": "1346200",
+                "ownerBefore": null,
+                "ownerAfter": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "dataLenBefore": 0,
+                "dataLenAfter": 137,
+                "changedRanges": []
+              },
+              {
+                "address": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "label": "pool",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "2985840",
+                "lamportsAfter": "2985840",
+                "ownerBefore": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "ownerAfter": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "dataLenBefore": 301,
+                "dataLenAfter": 301,
+                "changedRanges": [
+                  [
+                    245,
+                    248
+                  ],
+                  [
+                    271,
+                    274
+                  ],
+                  [
+                    279,
+                    282
+                  ]
+                ]
+              },
+              {
+                "address": "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                "label": "trader wSOL",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "5001488440",
+                "lamportsAfter": "4501488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                "label": "pool quote token account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "100079377474",
+                "lamportsAfter": "100579352697",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                "label": "pool base token account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "2074080",
+                "lamportsAfter": "2074080",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 170,
+                "dataLenAfter": 170,
+                "changedRanges": [
+                  [
+                    64,
+                    69
+                  ]
+                ]
+              },
+              {
+                "address": "FbcX7rL2xAwLKxTcLEUS5kVsPaDgqEjwwuVj8F7cynRJ",
+                "label": "route policy",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "10038080",
+                "lamportsAfter": "10038080",
+                "ownerBefore": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "ownerAfter": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "dataLenBefore": 1848,
+                "dataLenAfter": 1848,
+                "changedRanges": [
+                  [
+                    80,
+                    81
+                  ]
+                ]
+              },
+              {
+                "address": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                "label": "buyback fee recipient wsol ata",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "3404961407",
+                "lamportsAfter": "3404986184",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Routed buy for 2 SOL",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "hook stack rejected: callback 2 entry 0 reason 8 (amount exceeds size cap) hook_reason 0; trader base balance unchanged (true)",
+          "trace": {
+            "label": "Routed buy for 2 SOL",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6014))",
+            "feePayer": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "11111111111111111111111111111111",
+                  "program": "system",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                    "2bW4sT8ePY1XmRDjzrKGzgqKHtN4ym3WLA3L5z5zFk8h"
+                  ],
+                  "data": "AAAAAEioGQAAAAAAywAAAAAAAAAXUy1+xh1wwk72mI2217dBfaWlUbmdaucMrhLP40GV8Q==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "program": "hook-router",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Route",
+                  "Program log: hook stack rejected: callback 2 entry 0 reason 8 (amount exceeds size cap) hook_reason 0",
+                  "Program data: 0yrep55wJbnY4Ya4gudkCirxNJytPOqaTwChWWZemI78z2znZngbhQIACAAAAA==",
+                  "Program log: AnchorError thrown in programs/hook-router/src/lib.rs:302. Error Code: PolicyRejected. Error Number: 6014. Error Message: Hook stack rejected the route."
+                ],
+                "consumed": 21210,
+                "budget": 1399850,
+                "error": "custom program error: 0x177e"
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 2,
+                "result": "success",
+                "logs": []
+              }
+            ],
+            "computeUnits": {
+              "total": "21360",
+              "perInstruction": [
+                null,
+                21210
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "28909803408",
+                "after": "28909803408",
+                "delta": "0"
+              },
+              {
+                "account": "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "4500000000",
+                "after": "4500000000",
+                "delta": "0"
+              },
+              {
+                "account": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "100577313417",
+                "after": "100577313417",
+                "delta": "0"
+              },
+              {
+                "account": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "5872764717098",
+                "after": "5872764717098",
+                "delta": "0"
+              },
+              {
+                "account": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "3403497744",
+                "after": "3403497744",
+                "delta": "0"
+              }
+            ],
+            "hookSteps": [
+              {
+                "engine": "router",
+                "program": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+                "policy": "FbcX7rL2xAwLKxTcLEUS5kVsPaDgqEjwwuVj8F7cynRJ",
+                "callback": "before_swap",
+                "entry": 0,
+                "name": "max-size",
+                "kind": "builtin",
+                "mandatory": true,
+                "result": "rejected",
+                "reason": "8 (amount exceeds size cap)"
+              }
+            ],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U invoke [1]",
+              "Program log: Instruction: Route",
+              "Program 11111111111111111111111111111111 invoke [2]",
+              "Program 11111111111111111111111111111111 success",
+              "Program log: hook stack rejected: callback 2 entry 0 reason 8 (amount exceeds size cap) hook_reason 0",
+              "Program data: 0yrep55wJbnY4Ya4gudkCirxNJytPOqaTwChWWZemI78z2znZngbhQIACAAAAA==",
+              "Program log: AnchorError thrown in programs/hook-router/src/lib.rs:302. Error Code: PolicyRejected. Error Number: 6014. Error Message: Hook stack rejected the route.",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U consumed 21210 of 1399850 compute units",
+              "Program 2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U failed: custom program error: 0x177e"
+            ],
+            "note": "hook stack rejected: callback 2 entry 0 reason 8 (amount exceeds size cap) hook_reason 0; trader base balance unchanged (true)",
+            "accountDiffs": [
+              {
+                "address": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+                "label": "admin",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999993605000",
+                "lamportsAfter": "999993595000",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Same 2 SOL buy sent to PumpSwap directly",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "executed: router hooks do not apply outside the router (received 112860223164 base)",
+          "trace": {
+            "label": "Same 2 SOL buy sent to PumpSwap directly",
+            "status": "success",
+            "feePayer": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                  "program": "token-2022",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                    "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                    "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                    "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ"
+                  ],
+                  "data": "DLxW/kYaAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                    "So11111111111111111111111111111111111111112",
+                    "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                    "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq"
+                  ],
+                  "data": "DNwQNHcAAAAACQ==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                    "So11111111111111111111111111111111111111112",
+                    "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                    "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq"
+                  ],
+                  "data": "DCSDAQAAAAAACQ==",
+                  "children": []
+                },
+                {
+                  "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                  "program": "pumpswap",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "GS4CU59F31iL7aR2Q8zVS8DRrcRnXX1yjQ66TqNVQnaR"
+                  ],
+                  "data": "5EWlLlHLmh1n9FIfLPV3dwAAAAAAAAAAvFb+RhoAAAAAlDV3AAAAAJCXKLsGAAAAAI04DAEAAAAqCA5cVwUAAIkC4GoXAAAAAJQ1dwAAAAAUAAAAAAAAAKJ9PAAAAAAABQAAAAAAAABpHw8AAAAAAEvcYXYAAAAAqV4ldgAAAAB8bKJ9kUUNpo7LCyu8boN4JxN+CenHb3JqdvpWvzrWYEiem1J9ok+dT1Ml2waKJJOkY0lIxn7x1e4iKALCIVCmMtEofnKY9LB4ozwt9H/pPVtAEpG2H6I/NZYy95nP7QSPLF61ZPSUXqkwtaRgi26ftGJaMEWCPmMn8tapw5NsrgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt6jjcd2/WCi95vT/g7JNBKCNnssa8taxaxJ944d+mk0EAAAAAAAAATJjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAABUAAABidXlfZXhhY3RfcXVvdGVfaW5fdjIAAAAAAAAAAAAAAAAAAAAA6AMAAAAAAAAkgwEAAAAAAASuyiIAAAAAAAAAAAAAAAABGNnYxlGMAwAAAAAAAAAAAAAAAAAAAAAABLr2AAAAAAA=",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "program": "pumpswap",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: BuyExactQuoteInV2",
+                  "Program data: Z/RSHyz1d3cAAAAAAAAAALxW/kYaAAAAAJQ1dwAAAACQlyi7BgAAAACNOAwBAAAAKggOXFcFAACJAuBqFwAAAACUNXcAAAAAFAAAAAAAAACifTwAAAAAAAUAAAAAAAAAaR8PAAAAAABL3GF2AAAAAKleJXYAAAAAfGyifZFFDaaOywsrvG6DeCcTfgnpx29yanb6Vr861mBInptSfaJPnU9TJdsGiiSTpGNJSMZ+8dXuIigCwiFQpjLRKH5ymPSweKM8LfR/6T1bQBKRth+iPzWWMveZz+0EjyxetWT0lF6pMLWkYItun7RiWjBFgj5jJ/LWqcOTbK4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALeo43Hdv1goveb0/4OyTQSgjZ7LGvLWsWsSfeOHfppNBAAAAAAAAAEyYxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAVAAAAYnV5X2V4YWN0X3F1b3RlX2luX3YyAAAAAAAAAAAAAAAAAAAAAOgDAAAAAAAAJIMBAAAAAAAErsoiAAAAAAAAAAAAAAAAARjZ2MZRjAMAAAAAAAAAAAAAAAAAAAAAAAS69gAAAAAA"
+                ],
+                "consumed": 57932,
+                "budget": 1399850
+              },
+              {
+                "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "program": "token-2022",
+                "depth": 2,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: TransferChecked"
+                ],
+                "consumed": 2547,
+                "budget": 1362744
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 112,
+                "budget": 1357304
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 112,
+                "budget": 1354658
+              },
+              {
+                "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "program": "pumpswap",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 2116,
+                "budget": 1346227
+              }
+            ],
+            "computeUnits": {
+              "total": "58082",
+              "perInstruction": [
+                null,
+                57932
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "28909803408",
+                "after": "141770026572",
+                "delta": "112860223164"
+              },
+              {
+                "account": "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5tUdMfZkaBZaLSFbYp2PkZiaFrWxvZkm3JaFnk4PWQnq",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "4500000000",
+                "after": "2500000000",
+                "delta": "-2000000000"
+              },
+              {
+                "account": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "100577313417",
+                "after": "102577214309",
+                "delta": "1999900892"
+              },
+              {
+                "account": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                "mint": "44yV5xk8C1QVRGz82Q8KLcpft5gqbNd3SG8Lt1NrhLo9",
+                "owner": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "before": "5872764717098",
+                "after": "5759904493934",
+                "delta": "-112860223164"
+              },
+              {
+                "account": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                "mint": "So11111111111111111111111111111111111111112",
+                "owner": "5YxQFdt3Tr9zJLvkFccqXVUwhdTWJQc1fFg2YPbxvxeD",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "3403497744",
+                "after": "3403596852",
+                "delta": "99108"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA invoke [1]",
+              "Program log: Instruction: BuyExactQuoteInV2",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [2]",
+              "Program log: Instruction: TransferChecked",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 2547 of 1362744 compute units",
+              "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 112 of 1357304 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 112 of 1354658 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: Z/RSHyz1d3cAAAAAAAAAALxW/kYaAAAAAJQ1dwAAAACQlyi7BgAAAACNOAwBAAAAKggOXFcFAACJAuBqFwAAAACUNXcAAAAAFAAAAAAAAACifTwAAAAAAAUAAAAAAAAAaR8PAAAAAABL3GF2AAAAAKleJXYAAAAAfGyifZFFDaaOywsrvG6DeCcTfgnpx29yanb6Vr861mBInptSfaJPnU9TJdsGiiSTpGNJSMZ+8dXuIigCwiFQpjLRKH5ymPSweKM8LfR/6T1bQBKRth+iPzWWMveZz+0EjyxetWT0lF6pMLWkYItun7RiWjBFgj5jJ/LWqcOTbK4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALeo43Hdv1goveb0/4OyTQSgjZ7LGvLWsWsSfeOHfppNBAAAAAAAAAEyYxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAVAAAAYnV5X2V4YWN0X3F1b3RlX2luX3YyAAAAAAAAAAAAAAAAAAAAAOgDAAAAAAAAJIMBAAAAAAAErsoiAAAAAAAAAAAAAAAAARjZ2MZRjAMAAAAAAAAAAAAAAAAAAAAAAAS69gAAAAAA",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA invoke [2]",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA consumed 2116 of 1346227 compute units",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA success",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA consumed 57932 of 1399850 compute units",
+              "Program pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA success"
+            ],
+            "note": "executed: router hooks do not apply outside the router (received 112860223164 base)",
+            "accountDiffs": [
+              {
+                "address": "EpYKPd4tuWpVocF7bg2xBQxZm6JiYhqFg2MqNT6for7w",
+                "label": "admin",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999993595000",
+                "lamportsAfter": "999993585000",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "4RNNCMAsQnmYy3zDjRkU1gesBSHcawa56PNNhWtWQQrf",
+                "label": "trader base",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1513840",
+                "lamportsAfter": "1513840",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 170,
+                "dataLenAfter": 170,
+                "changedRanges": [
+                  [
+                    64,
+                    69
+                  ]
+                ]
+              },
+              {
+                "address": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+                "label": "pool",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "2985840",
+                "lamportsAfter": "2985840",
+                "ownerBefore": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "ownerAfter": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+                "dataLenBefore": 301,
+                "dataLenAfter": 301,
+                "changedRanges": [
+                  [
+                    245,
+                    249
+                  ],
+                  [
+                    271,
+                    274
+                  ],
+                  [
+                    279,
+                    282
+                  ]
+                ]
+              },
+              {
+                "address": "AdtYRbNmuXptEAwP9oYyMB1MyTCjXqYrnaRSNsszBp8V",
+                "label": "trader wSOL",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "4501488440",
+                "lamportsAfter": "2501488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    69
+                  ]
+                ]
+              },
+              {
+                "address": "Dep73q7XvHGEPgpPU5PPFGLxtyhUyD1xEDSG2Qhq3Be8",
+                "label": "pool quote token account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "100579352697",
+                "lamportsAfter": "102579253589",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "Drcqe56BudT2DLNRWRpkQuKLP5m6QApBEa4LTwzMAAfg",
+                "label": "pool base token account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "2074080",
+                "lamportsAfter": "2074080",
+                "ownerBefore": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "ownerAfter": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                "dataLenBefore": 170,
+                "dataLenAfter": 170,
+                "changedRanges": [
+                  [
+                    64,
+                    69
+                  ]
+                ]
+              },
+              {
+                "address": "HjQjngTDqoHE6aaGhUqfz9aQ7WZcBRjy5xB8PScLSr8i",
+                "label": "buyback fee recipient wsol ata",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "3404986184",
+                "lamportsAfter": "3405085292",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pool",
+      "title": "Pool hook: bounded dynamic fee",
+      "enforcement": "Program: every swap of this hooks-core pool runs its stack. It governs only pools in this program, not PumpSwap or other AMMs.",
+      "setup": [
+        "initialize hook-registry",
+        "initialize hooks-core",
+        "publish builtin dynamic-fee (pool)",
+        "create SPL mint",
+        "create SPL mint",
+        "create pool (stored fee 0.30%, max 10%)",
+        "attach policy: dynamic fee 30 → 100 bps, pivot 100 tokens",
+        "lp token 0",
+        "lp token 1",
+        "lp shares",
+        "mint liquidity",
+        "seed the pool with 1,000 of each token",
+        "trader token 0",
+        "trader token 1",
+        "fund the trader"
+      ],
+      "steps": [
+        {
+          "title": "Swap 1 token 0 → token 1 (small)",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "received 996006 of token 1; fee charged 30 bps (recovered from measured reserves)",
+          "trace": {
+            "label": "Swap 1 token 0 → token 1 (small)",
+            "status": "success",
+            "feePayer": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                    "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                    "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                    "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf"
+                  ],
+                  "data": "DEBCDwAAAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                    "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                    "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                    "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG"
+                  ],
+                  "data": "DKYyDwAAAAAABg==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "program": "hooks-core",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Swap",
+                  "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAQEIPAAAAAACmMg8AAAAAAEBCDwAAAAAApjIPAAAAAAC4CwAAAAAAAAAAAAAAAAAAuAsAAAAAAAAAAAAAAAAAAAAAAABADKo7AAAAAFqXizsAAAAAAgAAAAAAAAA="
+                ],
+                "consumed": 20539,
+                "budget": 1399850
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1389113
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1383966
+              }
+            ],
+            "computeUnits": {
+              "total": "20689",
+              "perInstruction": [
+                null,
+                20539
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000000",
+                "after": "1001000000",
+                "delta": "1000000"
+              },
+              {
+                "account": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000000",
+                "after": "999003994",
+                "delta": "-996006"
+              },
+              {
+                "account": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000000",
+                "after": "999000000",
+                "delta": "-1000000"
+              },
+              {
+                "account": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000000000",
+                "after": "1000996006",
+                "delta": "996006"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw invoke [1]",
+              "Program log: Instruction: Swap",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1389113 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1383966 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAQEIPAAAAAACmMg8AAAAAAEBCDwAAAAAApjIPAAAAAAC4CwAAAAAAAAAAAAAAAAAAuAsAAAAAAAAAAAAAAAAAAAAAAABADKo7AAAAAFqXizsAAAAAAgAAAAAAAAA=",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw consumed 20539 of 1399850 compute units",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw success"
+            ],
+            "note": "received 996006 of token 1; fee charged 30 bps (recovered from measured reserves)",
+            "accountDiffs": [
+              {
+                "address": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+                "label": "pool creator",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999966839520",
+                "lamportsAfter": "999966829520",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "label": "vault 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              },
+              {
+                "address": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "label": "vault 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              },
+              {
+                "address": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "label": "pool",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "3007360",
+                "lamportsAfter": "3007360",
+                "ownerBefore": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "ownerAfter": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "dataLenBefore": 464,
+                "dataLenAfter": 464,
+                "changedRanges": [
+                  [
+                    384,
+                    387
+                  ],
+                  [
+                    392,
+                    395
+                  ],
+                  [
+                    440,
+                    441
+                  ]
+                ]
+              },
+              {
+                "address": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "label": "trader token 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              },
+              {
+                "address": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "label": "trader token 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    67
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Swap 100 token 0 (at the pivot)",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "received 89910359 of token 1; fee charged 100 bps (recovered from measured reserves)",
+          "trace": {
+            "label": "Swap 100 token 0 (at the pivot)",
+            "status": "success",
+            "feePayer": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                    "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                    "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                    "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf"
+                  ],
+                  "data": "DADh9QUAAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                    "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                    "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                    "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG"
+                  ],
+                  "data": "DFfsWwUAAAAABg==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "program": "hooks-core",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Swap",
+                  "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAAOH1BQAAAABX7FsFAAAAAADh9QUAAAAAV+xbBQAAAABAQg8AAAAAAAAAAAAAAAAAECcAAAAAAAAAAAAAAAAAAAAAAABA7Z9BAAAAAAOrLzYAAAAAAwAAAAAAAAA="
+                ],
+                "consumed": 20539,
+                "budget": 1399850
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1389113
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1383966
+              }
+            ],
+            "computeUnits": {
+              "total": "20689",
+              "perInstruction": [
+                null,
+                20539
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1001000000",
+                "after": "1101000000",
+                "delta": "100000000"
+              },
+              {
+                "account": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "999003994",
+                "after": "909093635",
+                "delta": "-89910359"
+              },
+              {
+                "account": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "999000000",
+                "after": "899000000",
+                "delta": "-100000000"
+              },
+              {
+                "account": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1000996006",
+                "after": "1090906365",
+                "delta": "89910359"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw invoke [1]",
+              "Program log: Instruction: Swap",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1389113 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1383966 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAAOH1BQAAAABX7FsFAAAAAADh9QUAAAAAV+xbBQAAAABAQg8AAAAAAAAAAAAAAAAAECcAAAAAAAAAAAAAAAAAAAAAAABA7Z9BAAAAAAOrLzYAAAAAAwAAAAAAAAA=",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw consumed 20539 of 1399850 compute units",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw success"
+            ],
+            "note": "received 89910359 of token 1; fee charged 100 bps (recovered from measured reserves)",
+            "accountDiffs": [
+              {
+                "address": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+                "label": "pool creator",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999966829520",
+                "lamportsAfter": "999966819520",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "label": "vault 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "label": "vault 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "label": "pool",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "3007360",
+                "lamportsAfter": "3007360",
+                "ownerBefore": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "ownerAfter": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "dataLenBefore": 464,
+                "dataLenAfter": 464,
+                "changedRanges": [
+                  [
+                    385,
+                    388
+                  ],
+                  [
+                    392,
+                    396
+                  ],
+                  [
+                    440,
+                    441
+                  ]
+                ]
+              },
+              {
+                "address": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "label": "trader token 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "label": "trader token 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Swap 300 token 0 (past the pivot)",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "received 193133626 of token 1; fee charged 100 bps (recovered from measured reserves)",
+          "trace": {
+            "label": "Swap 300 token 0 (past the pivot)",
+            "status": "success",
+            "feePayer": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                    "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                    "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                    "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf"
+                  ],
+                  "data": "DACj4REAAAAABg==",
+                  "children": []
+                },
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                    "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                    "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                    "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG"
+                  ],
+                  "data": "DDr8ggsAAAAABg==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "program": "hooks-core",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Swap",
+                  "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAAKPhEQAAAAA6/IILAAAAAACj4REAAAAAOvyCCwAAAADAxi0AAAAAAAAAAAAAAAAAECcAAAAAAAAAAAAAAAAAAAAAAABAkIFTAAAAAMmurCoAAAAABAAAAAAAAAA="
+                ],
+                "consumed": 20538,
+                "budget": 1399850
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1389114
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1383967
+              }
+            ],
+            "computeUnits": {
+              "total": "20688",
+              "perInstruction": [
+                null,
+                20538
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1101000000",
+                "after": "1401000000",
+                "delta": "300000000"
+              },
+              {
+                "account": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "909093635",
+                "after": "715960009",
+                "delta": "-193133626"
+              },
+              {
+                "account": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "899000000",
+                "after": "599000000",
+                "delta": "-300000000"
+              },
+              {
+                "account": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1090906365",
+                "after": "1284039991",
+                "delta": "193133626"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw invoke [1]",
+              "Program log: Instruction: Swap",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1389114 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1383967 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program data: 2TQ0U5OHYG3A1cS8HuCLdv13vGAdAV5FnFSTgUZFgguwMSIh5SmFV+0Ic0I9hqzIvldPtDjVXUdqW3uGQu1rA7rF8A85z3lAAQEAAKPhEQAAAAA6/IILAAAAAACj4REAAAAAOvyCCwAAAADAxi0AAAAAAAAAAAAAAAAAECcAAAAAAAAAAAAAAAAAAAAAAABAkIFTAAAAAMmurCoAAAAABAAAAAAAAAA=",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw consumed 20538 of 1399850 compute units",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw success"
+            ],
+            "note": "received 193133626 of token 1; fee charged 100 bps (recovered from measured reserves)",
+            "accountDiffs": [
+              {
+                "address": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+                "label": "pool creator",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999966819520",
+                "lamportsAfter": "999966809520",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "label": "vault 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "label": "vault 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "label": "pool",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "3007360",
+                "lamportsAfter": "3007360",
+                "ownerBefore": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "ownerAfter": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "dataLenBefore": 464,
+                "dataLenAfter": 464,
+                "changedRanges": [
+                  [
+                    385,
+                    388
+                  ],
+                  [
+                    392,
+                    396
+                  ],
+                  [
+                    440,
+                    441
+                  ]
+                ]
+              },
+              {
+                "address": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "label": "trader token 0",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    65,
+                    68
+                  ]
+                ]
+              },
+              {
+                "address": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "label": "trader token 1",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1488440",
+                "lamportsAfter": "1488440",
+                "ownerBefore": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "ownerAfter": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "dataLenBefore": 165,
+                "dataLenAfter": 165,
+                "changedRanges": [
+                  [
+                    64,
+                    68
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Swap 1 token 0 demanding the fee-free output",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Slippage limit exceeded: the policy's fee is charged, so 510670 out is unreachable",
+          "trace": {
+            "label": "Swap 1 token 0 demanding the fee-free output",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6021))",
+            "feePayer": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                  "program": "spl-token",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                    "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                    "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                    "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf"
+                  ],
+                  "data": "DEBCDwAAAAAABg==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "program": "hooks-core",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Swap",
+                  "Program log: AnchorError thrown in programs/hooks-core/src/engine.rs:206. Error Code: Slippage. Error Number: 6021. Error Message: Slippage limit exceeded."
+                ],
+                "consumed": 15547,
+                "budget": 1399850,
+                "error": "custom program error: 0x1785"
+              },
+              {
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "program": "spl-token",
+                "depth": 2,
+                "result": "success",
+                "logs": [],
+                "consumed": 105,
+                "budget": 1389113
+              }
+            ],
+            "computeUnits": {
+              "total": "15697",
+              "perInstruction": [
+                null,
+                15547
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1401000000",
+                "after": "1401000000",
+                "delta": "0"
+              },
+              {
+                "account": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "715960009",
+                "after": "715960009",
+                "delta": "0"
+              },
+              {
+                "account": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "599000000",
+                "after": "599000000",
+                "delta": "0"
+              },
+              {
+                "account": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1284039991",
+                "after": "1284039991",
+                "delta": "0"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw invoke [1]",
+              "Program log: Instruction: Swap",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 105 of 1389113 compute units",
+              "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+              "Program log: AnchorError thrown in programs/hooks-core/src/engine.rs:206. Error Code: Slippage. Error Number: 6021. Error Message: Slippage limit exceeded.",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw consumed 15547 of 1399850 compute units",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw failed: custom program error: 0x1785"
+            ],
+            "note": "Slippage limit exceeded: the policy's fee is charged, so 510670 out is unreachable",
+            "accountDiffs": [
+              {
+                "address": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+                "label": "pool creator",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999966809520",
+                "lamportsAfter": "999966799520",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Swap without passing the pool's policy account",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Pool policy account missing or mismatched: a pool with a policy cannot be traded around it",
+          "trace": {
+            "label": "Swap without passing the pool's policy account",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6030))",
+            "feePayer": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw",
+                "program": "hooks-core",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Swap",
+                  "Program log: AnchorError thrown in programs/hooks-core/src/policy.rs:106. Error Code: PolicyMismatch. Error Number: 6030. Error Message: Pool policy account missing or mismatched."
+                ],
+                "consumed": 9293,
+                "budget": 1399850,
+                "error": "custom program error: 0x178e"
+              }
+            ],
+            "computeUnits": {
+              "total": "9443",
+              "perInstruction": [
+                null,
+                9293
+              ]
+            },
+            "tokenBalances": [
+              {
+                "account": "5jpEo6uxFdQxSFMjT6oKFUvNY9v2nFouABeBGgmav2Bu",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1401000000",
+                "after": "1401000000",
+                "delta": "0"
+              },
+              {
+                "account": "6zZeiWEeM4YnxTjTNbWZYavDw1921EXc6YEvgPUCRNrL",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "DykLV1KHXc5PcNzWBids4AmEeLS27x6bcNGYp72vSmZG",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "715960009",
+                "after": "715960009",
+                "delta": "0"
+              },
+              {
+                "account": "EW3gCWdXLsVcGHCbJUWDjS6GSQSjtNmmQubewdRsGGGe",
+                "mint": "EyzkCicoYL6b7uExya6esEXyRGzGL22pNTHFZqgCSMrw",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "599000000",
+                "after": "599000000",
+                "delta": "0"
+              },
+              {
+                "account": "GqGU3cVorh5jBm7M2LcjaoiGZpesTvbY989AhDqcbAyD",
+                "mint": "FcFF8rm9wsAfdBSoaGaNyHCHSES2jYA8a3irf85oVK2n",
+                "owner": "GxH6fz2DyScBKqekzuC4miGXfXtMC3RSSXMTrTVBGhvf",
+                "program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "before": "1284039991",
+                "after": "1284039991",
+                "delta": "0"
+              }
+            ],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw invoke [1]",
+              "Program log: Instruction: Swap",
+              "Program log: AnchorError thrown in programs/hooks-core/src/policy.rs:106. Error Code: PolicyMismatch. Error Number: 6030. Error Message: Pool policy account missing or mismatched.",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw consumed 9293 of 1399850 compute units",
+              "Program 8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw failed: custom program error: 0x178e"
+            ],
+            "note": "Pool policy account missing or mismatched: a pool with a policy cannot be traded around it",
+            "accountDiffs": [
+              {
+                "address": "BqB1HBfvqqPv8qsTobVGehaxo6TsaLutujHoKESGfXeP",
+                "label": "pool creator",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "999966799520",
+                "lamportsAfter": "999966789520",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "account",
+      "title": "Account hook: timelock + daily spending limit",
+      "enforcement": "Program: every withdrawal from the smart account's vault runs its stack. Mandatory entries can only be changed through an aged proposal.",
+      "setup": [
+        "initialize hook-registry",
+        "publish builtin spending-limit (account)",
+        "publish builtin timelock (account)",
+        "create smart account: spending limit 2 SOL/day + 1 h timelock on withdrawals (both mandatory, 1 day to change)",
+        "deposit 5 SOL"
+      ],
+      "steps": [
+        {
+          "title": "Owner withdraws 1 SOL immediately",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "hook stack rejected: callback 2 entry 1 reason 5 (operation must go through a timelocked proposal) hook_reason 0",
+          "trace": {
+            "label": "Owner withdraws 1 SOL immediately",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6004))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: hook stack rejected: callback 2 entry 1 reason 5 (operation must go through a timelocked proposal) hook_reason 0",
+                  "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIBBQAAAA==",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation."
+                ],
+                "consumed": 8336,
+                "budget": 1399850,
+                "error": "custom program error: 0x1774"
+              }
+            ],
+            "computeUnits": {
+              "total": "8486",
+              "perInstruction": [
+                null,
+                8336
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: hook stack rejected: callback 2 entry 1 reason 5 (operation must go through a timelocked proposal) hook_reason 0",
+              "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIBBQAAAA==",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 8336 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1774"
+            ],
+            "note": "hook stack rejected: callback 2 entry 1 reason 5 (operation must go through a timelocked proposal) hook_reason 0",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94978476440",
+                "lamportsAfter": "94978471440",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Propose a withdrawal of 1.0000 SOL",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "proposal recorded; the timelock counts from now",
+          "trace": {
+            "label": "Propose a withdrawal of 1.0000 SOL",
+            "status": "success",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "11111111111111111111111111111111",
+                  "program": "system",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                    "E9AR1jZrcKvUrm1KvrsxmbD6U4TTRjs2FgYHKUxk8vtu"
+                  ],
+                  "data": "AAAAAIiOFgAAAAAAowAAAAAAAABMqC3Gp+t7P1M8F7Rfh/DeGvo7ieo4LtmI8anafd66wA==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Propose",
+                  "Program data: 2CWKjYLQtJnUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrMM/OJGZNwAnNEdJRmA5frtdh0MSn8XVYsGiFtDeQwoeGbS723Y7dwzhsKPIgaa7utXsg/eCc3vKKRElC83t947ppdbkj8I+/rzx946RX3W9pkJvqRQqyh3XvZEzpQsuhw=="
+                ],
+                "consumed": 8547,
+                "budget": 1399850
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 2,
+                "result": "success",
+                "logs": []
+              }
+            ],
+            "computeUnits": {
+              "total": "8697",
+              "perInstruction": [
+                null,
+                8547
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Propose",
+              "Program 11111111111111111111111111111111 invoke [2]",
+              "Program 11111111111111111111111111111111 success",
+              "Program data: 2CWKjYLQtJnUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrMM/OJGZNwAnNEdJRmA5frtdh0MSn8XVYsGiFtDeQwoeGbS723Y7dwzhsKPIgaa7utXsg/eCc3vKKRElC83t947ppdbkj8I+/rzx946RX3W9pkJvqRQqyh3XvZEzpQsuhw==",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 8547 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw success"
+            ],
+            "note": "proposal recorded; the timelock counts from now",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94978471440",
+                "lamportsAfter": "94976988160",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "E9AR1jZrcKvUrm1KvrsxmbD6U4TTRjs2FgYHKUxk8vtu",
+                "signer": false,
+                "writable": true,
+                "created": true,
+                "closed": false,
+                "lamportsBefore": "0",
+                "lamportsAfter": "1478280",
+                "ownerBefore": null,
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 0,
+                "dataLenAfter": 163,
+                "changedRanges": []
+              },
+              {
+                "address": "FHSYpF9d3Z3RRGpTjMUaEBm4ZhQcyxUgn4wR6gEw9HVM",
+                "label": "smart account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "11582400",
+                "lamportsAfter": "11582400",
+                "ownerBefore": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 2152,
+                "dataLenAfter": 2152,
+                "changedRanges": [
+                  [
+                    384,
+                    385
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Withdraw with the proposal 59 minutes later",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "hook stack rejected: callback 2 entry 1 reason 4 (timelock not elapsed) hook_reason 0",
+          "trace": {
+            "label": "Withdraw with the proposal 59 minutes later",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6004))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: hook stack rejected: callback 2 entry 1 reason 4 (timelock not elapsed) hook_reason 0",
+                  "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIBBAAAAA==",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation."
+                ],
+                "consumed": 9114,
+                "budget": 1399850,
+                "error": "custom program error: 0x1774"
+              }
+            ],
+            "computeUnits": {
+              "total": "9264",
+              "perInstruction": [
+                null,
+                9114
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: hook stack rejected: callback 2 entry 1 reason 4 (timelock not elapsed) hook_reason 0",
+              "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIBBAAAAA==",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 9114 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1774"
+            ],
+            "note": "hook stack rejected: callback 2 entry 1 reason 4 (timelock not elapsed) hook_reason 0",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94976988160",
+                "lamportsAfter": "94976983160",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Withdraw 2 SOL with the 1 SOL proposal",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Action does not match the proposal: the proposal's hash binds amount and destination",
+          "trace": {
+            "label": "Withdraw 2 SOL with the 1 SOL proposal",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6009))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:944. Error Code: ActionMismatch. Error Number: 6009. Error Message: Action does not match the proposal."
+                ],
+                "consumed": 7281,
+                "budget": 1399850,
+                "error": "custom program error: 0x1779"
+              }
+            ],
+            "computeUnits": {
+              "total": "7431",
+              "perInstruction": [
+                null,
+                7281
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:944. Error Code: ActionMismatch. Error Number: 6009. Error Message: Action does not match the proposal.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 7281 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1779"
+            ],
+            "note": "Action does not match the proposal: the proposal's hash binds amount and destination",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94976983160",
+                "lamportsAfter": "94976978160",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Withdraw 1 SOL with the proposal after 1 hour",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "recipient holds 1.0000 SOL; vault 4.0000 SOL",
+          "trace": {
+            "label": "Withdraw 1 SOL with the proposal after 1 hour",
+            "status": "success",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "11111111111111111111111111111111",
+                  "program": "system",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "8geJgZkDt6igSSUQv1EWPzTAHzkrtERzDVnoBEAL61iM",
+                    "HsqJU2DPNNvHDVePXsV9bcpRkqXtiN3j31ScxPUMP3Dk"
+                  ],
+                  "data": "AgAAAADKmjsAAAAA",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program data: FFnfxsJ82w3UOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrBm0u9t2O3cM4bCjyIGmu7rV7IP3gnN7yikRJQvN7feOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAypo7AAAAAPrApUJbfOqbrZHZfCgSEvkQi37EwHZbTsjfsQQKMJG7"
+                ],
+                "consumed": 9577,
+                "budget": 1399850
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 2,
+                "result": "success",
+                "logs": []
+              }
+            ],
+            "computeUnits": {
+              "total": "9727",
+              "perInstruction": [
+                null,
+                9577
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program 11111111111111111111111111111111 invoke [2]",
+              "Program 11111111111111111111111111111111 success",
+              "Program data: FFnfxsJ82w3UOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrBm0u9t2O3cM4bCjyIGmu7rV7IP3gnN7yikRJQvN7feOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAypo7AAAAAPrApUJbfOqbrZHZfCgSEvkQi37EwHZbTsjfsQQKMJG7",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 9577 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw success"
+            ],
+            "note": "recipient holds 1.0000 SOL; vault 4.0000 SOL",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94976978160",
+                "lamportsAfter": "94976973160",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "8geJgZkDt6igSSUQv1EWPzTAHzkrtERzDVnoBEAL61iM",
+                "label": "vault",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "5000000000",
+                "lamportsAfter": "4000000000",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "E9AR1jZrcKvUrm1KvrsxmbD6U4TTRjs2FgYHKUxk8vtu",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "1478280",
+                "lamportsAfter": "1478280",
+                "ownerBefore": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 163,
+                "dataLenAfter": 163,
+                "changedRanges": [
+                  [
+                    129,
+                    130
+                  ]
+                ]
+              },
+              {
+                "address": "FHSYpF9d3Z3RRGpTjMUaEBm4ZhQcyxUgn4wR6gEw9HVM",
+                "label": "smart account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "11582400",
+                "lamportsAfter": "11582400",
+                "ownerBefore": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 2152,
+                "dataLenAfter": 2152,
+                "changedRanges": [
+                  [
+                    368,
+                    369
+                  ],
+                  [
+                    608,
+                    612
+                  ],
+                  [
+                    617,
+                    620
+                  ]
+                ]
+              },
+              {
+                "address": "HsqJU2DPNNvHDVePXsV9bcpRkqXtiN3j31ScxPUMP3Dk",
+                "label": "recipient",
+                "signer": false,
+                "writable": true,
+                "created": true,
+                "closed": false,
+                "lamportsBefore": "0",
+                "lamportsAfter": "1000000000",
+                "ownerBefore": null,
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Replay the same proposal",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Proposal is stale, executed, or from an older policy epoch",
+          "trace": {
+            "label": "Replay the same proposal",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6008))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:942. Error Code: StaleProposal. Error Number: 6008. Error Message: Proposal is stale, executed, or from an older policy epoch."
+                ],
+                "consumed": 7087,
+                "budget": 1399850,
+                "error": "custom program error: 0x1778"
+              }
+            ],
+            "computeUnits": {
+              "total": "7237",
+              "perInstruction": [
+                null,
+                7087
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:942. Error Code: StaleProposal. Error Number: 6008. Error Message: Proposal is stale, executed, or from an older policy epoch.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 7087 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1778"
+            ],
+            "note": "Proposal is stale, executed, or from an older policy epoch",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94976973160",
+                "lamportsAfter": "94976968160",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Propose a withdrawal of 1.5000 SOL",
+          "expect": "ok",
+          "ok": true,
+          "outcome": "proposal recorded; the timelock counts from now",
+          "trace": {
+            "label": "Propose a withdrawal of 1.5000 SOL",
+            "status": "success",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              [
+                {
+                  "programId": "11111111111111111111111111111111",
+                  "program": "system",
+                  "stackHeight": 2,
+                  "accounts": [
+                    "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                    "D3bPBiBMj9GW7cP6WtaFnjQRAEJJpVht95MmbBYhtuLN"
+                  ],
+                  "data": "AAAAAIiOFgAAAAAAowAAAAAAAABMqC3Gp+t7P1M8F7Rfh/DeGvo7ieo4LtmI8anafd66wA==",
+                  "children": []
+                }
+              ]
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "success",
+                "logs": [
+                  "Program log: Instruction: Propose",
+                  "Program data: 2CWKjYLQtJnUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrLL2R/kTSS9o8LsbbdVZOom5dubfbpMOnXPIflg9AuYLGbS723Y7dwzhsKPIgaa7utXsg/eCc3vKKRElC83t946tdXA3SjaclkkwY59BGkOAurLnc4yiDJiFIaCEyj91dg=="
+                ],
+                "consumed": 11547,
+                "budget": 1399850
+              },
+              {
+                "programId": "11111111111111111111111111111111",
+                "program": "system",
+                "depth": 2,
+                "result": "success",
+                "logs": []
+              }
+            ],
+            "computeUnits": {
+              "total": "11697",
+              "perInstruction": [
+                null,
+                11547
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Propose",
+              "Program 11111111111111111111111111111111 invoke [2]",
+              "Program 11111111111111111111111111111111 success",
+              "Program data: 2CWKjYLQtJnUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrLL2R/kTSS9o8LsbbdVZOom5dubfbpMOnXPIflg9AuYLGbS723Y7dwzhsKPIgaa7utXsg/eCc3vKKRElC83t946tdXA3SjaclkkwY59BGkOAurLnc4yiDJiFIaCEyj91dg==",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 11547 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw success"
+            ],
+            "note": "proposal recorded; the timelock counts from now",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94976968160",
+                "lamportsAfter": "94975484880",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              },
+              {
+                "address": "D3bPBiBMj9GW7cP6WtaFnjQRAEJJpVht95MmbBYhtuLN",
+                "signer": false,
+                "writable": true,
+                "created": true,
+                "closed": false,
+                "lamportsBefore": "0",
+                "lamportsAfter": "1478280",
+                "ownerBefore": null,
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 0,
+                "dataLenAfter": 163,
+                "changedRanges": []
+              },
+              {
+                "address": "FHSYpF9d3Z3RRGpTjMUaEBm4ZhQcyxUgn4wR6gEw9HVM",
+                "label": "smart account",
+                "signer": false,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "11582400",
+                "lamportsAfter": "11582400",
+                "ownerBefore": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "ownerAfter": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "dataLenBefore": 2152,
+                "dataLenAfter": 2152,
+                "changedRanges": [
+                  [
+                    384,
+                    385
+                  ]
+                ]
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "Withdraw 1.5 SOL (aged proposal; 1 SOL already spent today)",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "hook stack rejected: callback 2 entry 0 reason 3 (spending limit exceeded) hook_reason 0: 1 + 1.5 > 2 SOL per day",
+          "trace": {
+            "label": "Withdraw 1.5 SOL (aged proposal; 1 SOL already spent today)",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6004))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: hook stack rejected: callback 2 entry 0 reason 3 (spending limit exceeded) hook_reason 0",
+                  "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIAAwAAAA==",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation."
+                ],
+                "consumed": 8990,
+                "budget": 1399850,
+                "error": "custom program error: 0x1774"
+              }
+            ],
+            "computeUnits": {
+              "total": "9140",
+              "perInstruction": [
+                null,
+                8990
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: hook stack rejected: callback 2 entry 0 reason 3 (spending limit exceeded) hook_reason 0",
+              "Program data: fD6BYvbSSgzUOcw3u4cbF8NaDiD+8tEg3xIZnt9St3U6LqrZmgPkrAIAAwAAAA==",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:897. Error Code: PolicyRejected. Error Number: 6004. Error Message: Hook stack rejected the operation.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 8990 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1774"
+            ],
+            "note": "hook stack rejected: callback 2 entry 0 reason 3 (spending limit exceeded) hook_reason 0: 1 + 1.5 > 2 SOL per day",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94975484880",
+                "lamportsAfter": "94975479880",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        },
+        {
+          "title": "A stranger tries to withdraw",
+          "expect": "rejected",
+          "ok": true,
+          "outcome": "Signer is not authorized",
+          "trace": {
+            "label": "A stranger tries to withdraw",
+            "status": "failed",
+            "error": "InstructionError(1, Custom(6000))",
+            "feePayer": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+            "cpiTree": [
+              [],
+              []
+            ],
+            "invocations": [
+              {
+                "programId": "ComputeBudget111111111111111111111111111111",
+                "program": "compute-budget",
+                "depth": 1,
+                "result": "success",
+                "logs": []
+              },
+              {
+                "programId": "6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw",
+                "program": "smart-accounts",
+                "depth": 1,
+                "result": "failed",
+                "logs": [
+                  "Program log: Instruction: Withdraw",
+                  "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:967. Error Code: Unauthorized. Error Number: 6000. Error Message: Signer is not authorized."
+                ],
+                "consumed": 6379,
+                "budget": 1399850,
+                "error": "custom program error: 0x1770"
+              }
+            ],
+            "computeUnits": {
+              "total": "6529",
+              "perInstruction": [
+                null,
+                6379
+              ]
+            },
+            "tokenBalances": [],
+            "hookSteps": [],
+            "logs": [
+              "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+              "Program ComputeBudget111111111111111111111111111111 success",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw invoke [1]",
+              "Program log: Instruction: Withdraw",
+              "Program log: AnchorError thrown in programs/smart-accounts/src/lib.rs:967. Error Code: Unauthorized. Error Number: 6000. Error Message: Signer is not authorized.",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw consumed 6379 of 1399850 compute units",
+              "Program 6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw failed: custom program error: 0x1770"
+            ],
+            "note": "Signer is not authorized",
+            "accountDiffs": [
+              {
+                "address": "2jM2zYnfZswUxqt3pUgCpvQ2JH6zz2QJbbxaDdZhK1Kj",
+                "label": "owner",
+                "signer": true,
+                "writable": true,
+                "created": false,
+                "closed": false,
+                "lamportsBefore": "94975479880",
+                "lamportsAfter": "94975469880",
+                "ownerBefore": "11111111111111111111111111111111",
+                "ownerAfter": "11111111111111111111111111111111",
+                "dataLenBefore": 0,
+                "dataLenAfter": 0,
+                "changedRanges": []
+              }
+            ],
+            "provenance": {
+              "invocations": {
+                "provenance": "observed",
+                "source": "runtime program logs (invoke / consumed / success / failed)"
+              },
+              "tokenBalances": {
+                "provenance": "observed",
+                "source": "SPL Token / Token-2022 account data before and after"
+              },
+              "hookSteps": {
+                "provenance": "reconstructed",
+                "source": "installed hook stack (pre-state) + kernel in-order evaluation + rejection log; entries do not log individually"
+              },
+              "accountDiffs": {
+                "provenance": "observed",
+                "source": "account state read before and after execution"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

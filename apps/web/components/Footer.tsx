@@ -24,6 +24,7 @@ export function Footer() {
         <Link href="/docs#abi">Hook ABI</Link>
         <Link href="/docs#sdk">SDK &amp; CLI</Link>
         <Link href="/docs#security">Security model</Link>
+        <Link href="/demos">Demos</Link>
         <Link href="/playground">Playground</Link>
         <Link href="/lab">Execution lab</Link>
         <Link href="/benchmarks">Benchmarks</Link>

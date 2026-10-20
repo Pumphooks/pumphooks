@@ -13,6 +13,7 @@ const NAV = [
   { href: "/hooks", label: "Hooks" },
   { href: "/build", label: "Composer" },
   { href: "/simulate", label: "Simulate" },
+  { href: "/demos", label: "Demos" },
   { href: "/lab", label: "Lab" },
   { href: "/docs", label: "Docs" },
 ];

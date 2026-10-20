@@ -26,6 +26,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.2.0",
     "typescript": "^5.9.3",
+    "@pump-hooks/demos": "workspace:*",
     "@pump-hooks/execution-lab": "workspace:*",
     "@pump-hooks/hook-security": "workspace:*",
     "@pump-hooks/transaction-compiler": "workspace:*",

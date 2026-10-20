@@ -5,6 +5,7 @@
 import labJson from "@/data/lab.json";
 import compilerJson from "@/data/compiler.json";
 import securityJson from "@/data/security.json";
+import demosJson from "@/data/demos.json";
 import benchResults from "../../../bench/results.json";
 import benchBaseline from "../../../bench/baseline.json";
 
@@ -110,5 +111,15 @@ export interface BenchResults {
 
 export const bench = benchResults as unknown as BenchResults;
 export const baseline = benchBaseline as unknown as BenchResults;
+
+export interface DemoJson {
+  id: "token" | "router" | "pool" | "account";
+  title: string;
+  enforcement: string;
+  setup: string[];
+  steps: { title: string; expect: "ok" | "rejected"; ok: boolean; outcome: string; trace: TraceJson }[];
+}
+
+export const demos = demosJson as unknown as Provenance & { demos: DemoJson[] };
 
 export const short = (s: string, n = 4) => (s.length > 2 * n + 1 ? `${s.slice(0, n)}…${s.slice(-n)}` : s);

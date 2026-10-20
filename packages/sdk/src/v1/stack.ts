@@ -153,6 +153,9 @@ export const configs = {
   slotLimit: (maxPerSlot: number) => new W(CONFIG_LEN).u32(0, maxPerSlot).b,
   multisig: (threshold: number, memberMask: number) => new W(CONFIG_LEN).u8(0, threshold).u8(1, memberMask).b,
   priceImpact: (maxBps: number) => new W(CONFIG_LEN).u16(0, maxBps).b,
+  /** Size mode: `baseBps` for small swaps rising to `maxBps` at `pivot` input; the pool's own max fee still caps it. */
+  dynamicFee: (o: { mode?: number; baseBps: number; maxBps: number; pivot: bigint; alphaBps?: number; sensitivityBps?: number }) =>
+    new W(CONFIG_LEN).u8(0, o.mode ?? 0).u16(4, o.baseBps).u16(6, o.maxBps).u64(8, o.pivot).u16(16, o.alphaBps ?? 0).u32(20, o.sensitivityBps ?? 0).b,
 };
 
 export function encodeEntry(env: EnvironmentId, spec: EntrySpec): Uint8Array {

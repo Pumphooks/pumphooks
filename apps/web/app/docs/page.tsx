@@ -54,6 +54,16 @@ pump-hooks policy create <market> --spec policy.json
 pump-hooks simulate <market> --buy 0.1
 pump-hooks tx <signature>`;
 
+const DEV_CLI = `pumphooks init my-hook --env router          # Rust program hook (hook-sdk) with tests and hook.json
+pumphooks build && pumphooks test
+pumphooks simulate --program target/deploy/my_hook.so --env router --callback before_swap --amount 5
+pumphooks simulate --stack <hex>                  # kernel validation, conflicts, compute estimate
+pumphooks bench                                    # measured CU vs bench/baseline.json
+pumphooks security-check                           # diagnostics + stateful fuzzing (not an audit)
+pumphooks demo [token|router|pool|account]         # the four engine demos on localnet
+pumphooks deploy --cluster devnet --program <file.so> --keypair <file>      # prints; runs with --yes
+pumphooks register --cluster devnet --manifest hook.json --keypair <file>   # simulates; sends with --yes`;
+
 const HOOK = `pub trait PumpHook {
     const MODULE_ID: u16;
     fn validate_config(config: &[u8; 48]) -> Result<(), HookError>;
@@ -208,6 +218,10 @@ export default function DocsPage() {
             <h2>07 CLI</h2>
             <p>The CLI never reads your Solana CLI config; pass <code>--url</code> and <code>--keypair</code> explicitly. Write commands accept <code>--dry-run</code>.</p>
             <pre className="code">{CLI}</pre>
+            <p>
+              <code>pumphooks</code> is the ABI v1 developer CLI from the same package. <code>deploy</code> and <code>register</code> refuse mainnet.
+            </p>
+            <pre className="code">{DEV_CLI}</pre>
           </section>
 
           <section id="security">

@@ -43,6 +43,12 @@ export function i64(n: bigint): Uint8Array {
 }
 export const vecU8 = (b: Uint8Array) => concat(u32(b.length), b);
 
+/** Lexicographic byte order, the order of `Pubkey` in Rust. */
+export function compareBytes(a: Uint8Array, b: Uint8Array): number {
+  for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
+  return a.length - b.length;
+}
+
 export function concat(...parts: Uint8Array[]): Uint8Array {
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
   let o = 0;

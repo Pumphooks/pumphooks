@@ -131,7 +131,8 @@ min-out, max-in and SOL caps must bind independently of the venue, and the pool 
 | `programs/hook-state` | Producer of authenticated state records that the router, smart accounts and pools verify by owner and issuer |
 | `crates/hook-sdk` | Rust SDK for program hooks: `PolicyHook`, caller verification, test builders |
 | `examples/anti-jit-hook` | Example program hook: refuses routed round trips within N slots |
-| `packages/cli` | `pumphooks` (init, build, test, simulate, bench, security-check, deploy, register) and the v0 `pump-hooks` commands |
+| `packages/cli` | `pumphooks` (init, build, test, simulate, bench, security-check, demo, deploy, register) and the v0 `pump-hooks` commands |
+| `packages/demos` | One end-to-end demo per engine (token allowlist, routed max-size, pool dynamic fee, smart-account timelock + spending limit) |
 | `packages/*` | SDK, execution lab, benchmarks, security checks, transaction compiler, stack analyzer |
 | `programs/pump-hooks` | The original Pump-only router (v0). It predates ABI v1 and has its own policy VM. |
 | `tests/` | LiteSVM suites, plus devnet fixtures for the real Pump binaries |
@@ -149,6 +150,8 @@ scripts/dump_programs.sh                        # real pump / pump_amm / pump_fe
 cargo test --workspace                          # standard, kernel, engines (LiteSVM)
 cargo test -p pump-hooks-engine-tests --test router
 cargo test -p hooks-core-tests                  # pool engine
+pnpm -r --filter "./packages/**" build && pnpm -r test   # TypeScript packages, demos included
+pumphooks demo                                  # the four engine demos, step by step
 pnpm install && pnpm --filter @pump-hooks/web dev
 ```
 
@@ -161,7 +164,7 @@ Tooling never reads your Solana CLI config. Pass `--url` and keys explicitly.
 - Built and tested on localnet: standard, kernel, registry, router, pool manager, smart accounts,
   token hooks and token wrapper. Progress is tracked in [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
 - Built: ABI v1 TypeScript SDK (`v1`), Rust hook SDK, `pumphooks` developer CLI, cross-engine
-  state records.
+  state records, and four engine demos that run on localnet (`/demos` on the site).
 - Not done: devnet deployment of the v1 programs (needs funded devnet SOL), the visual composer,
   example pool hooks, Trident fuzzing, and an external audit.
 

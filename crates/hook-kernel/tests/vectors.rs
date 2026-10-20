@@ -52,6 +52,7 @@ fn generate() -> String {
         ("slot-limit", entry(SLOT_LIMIT, 4, false, SlotLimitConfig { max_per_slot: 3, flags: 0, _pad: [0; 3], _rest: [0; 88] })),
         ("multisig", entry(MULTISIG, 1 << 2, true, MultisigConfig { threshold: 2, member_mask: 0b111, _rest: [0; 94] })),
         ("price-impact", entry(PRICE_IMPACT, 1 << 6, false, PriceImpactConfig { max_bps: 150, _pad: [0; 6], _rest: [0; 88] })),
+        ("dynamic-fee", entry(DYNAMIC_FEE, 1 << 6, false, DynamicFeeConfig { mode: FEE_MODE_SIZE, _pad: [0; 3], base_bps: 30, max_bps: 100, pivot: 100_000_000, alpha_bps: 7, _pad2: 0, sensitivity_bps: 9, _rest: [0; 72] })),
     ];
     let stacks: Vec<String> = stack_cases(&entries)
         .iter()

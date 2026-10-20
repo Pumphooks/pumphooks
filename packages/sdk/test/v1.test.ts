@@ -33,6 +33,7 @@ describe("sdk v1 mirrors the kernel", () => {
       "slot-limit": v1.encodeEntry(v1.Environment.Router, { builtin: 14, callbacks: [2], config: v1.configs.slotLimit(3) }),
       multisig: v1.encodeEntry(v1.Environment.Account, { builtin: 4, callbacks: [2], mandatory: true, config: v1.configs.multisig(2, 0b111) }),
       "price-impact": v1.encodeEntry(v1.Environment.Pool, { builtin: 11, callbacks: [6], config: v1.configs.priceImpact(150) }),
+      "dynamic-fee": v1.encodeEntry(v1.Environment.Pool, { builtin: 10, callbacks: [6], config: v1.configs.dynamicFee({ baseBps: 30, maxBps: 100, pivot: 100_000_000n, alphaBps: 7, sensitivityBps: 9 }) }),
     };
     expect(Object.keys(built).sort()).toEqual(vectors.entries.map((e: { name: string }) => e.name).sort());
     for (const e of vectors.entries) expect(hex(built[e.name]), e.name).toBe(e.hex);

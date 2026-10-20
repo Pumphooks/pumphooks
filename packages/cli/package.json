@@ -23,7 +23,8 @@
     "@pump-hooks/hook-analyzer": "workspace:*",
     "@pump-hooks/hook-bench": "workspace:*",
     "@pump-hooks/hook-security": "workspace:*",
-    "@pump-hooks/execution-lab": "workspace:*"
+    "@pump-hooks/execution-lab": "workspace:*",
+    "@pump-hooks/demos": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

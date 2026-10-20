@@ -9,6 +9,7 @@ export default defineConfig({
       "@pump-hooks/hook-analyzer": fileURLToPath(new URL("../hook-analyzer/src/index.ts", import.meta.url)),
       "@pump-hooks/hook-bench": fileURLToPath(new URL("../hook-bench/src/index.ts", import.meta.url)),
       "@pump-hooks/hook-security": fileURLToPath(new URL("../hook-security/src/index.ts", import.meta.url)),
+      "@pump-hooks/demos": fileURLToPath(new URL("../demos/src/index.ts", import.meta.url)),
     },
   },
   test: { include: ["test/**/*.test.ts"], testTimeout: 300_000, fileParallelism: false },
