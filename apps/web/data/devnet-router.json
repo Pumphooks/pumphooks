@@ -1,0 +1,58 @@
+{
+  "cluster": "devnet",
+  "generatedAt": "2026-10-20T20:22:56.968Z",
+  "commit": "ff0896d6e9bb91ee8e8828cea80e5ddbbf5a0fed",
+  "command": "pnpm --filter @pump-hooks/demos exec tsx scripts/devnet-router-demo.mts --keypair <admin>",
+  "programs": {
+    "hook-registry": "9gKUqwnUa6ZJkCvNT4bnLY7A5czcJFuSV1dpYeosHHs4",
+    "hook-router": "2a3wWdS8z9g7vBcYWSjdETyEzo7DEjV3iYRZFsM52q4U",
+    "pumpswap": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+  },
+  "pool": "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ",
+  "policy": "DCcw4wu1XvD2uzaz8UpGTfgTucPMZF2AmU9iiFGufeGn",
+  "hookVersion": "DWALbZpPE47ACHkmNg4tRwKuVqPWM3DH9vErqP3YPY12",
+  "trader": "41L6nJ9wrsCK3RuXzvZafNcTWuSEBouvtWqanVdAKi6b",
+  "setup": [
+    {
+      "label": "publish builtin max-size (router) in hook-registry",
+      "signature": "3tBDVXUudogk2YZ6nuDvepPyrPLQC3PKtVEBTRdqGcS32Fvv5dGdUcbvcmJBmc7hUBv5o24CfsdXLtVbhA89HBqd"
+    },
+    {
+      "label": "create a shared route policy: max-size 0.050 SOL on before_swap (mandatory)",
+      "signature": "3Q63uivTS3KqupiuL9G7ZHoBSXqgAg5X3tECbBkBWARNJBx63VPh7KpzNYhmEXQArGyQvkm16uhJ55YSQo7Qh3hz"
+    },
+    {
+      "label": "trader token accounts (idempotent); wrap 0.250 SOL",
+      "signature": "3qtyBL9HDFvs1Xj1SptNR14QsJFPAqthQpBhZHwZNr6SK9U8d4rwQ7ST75NwhQ867fvX6ukgCS1ELWF55DGaMZNy"
+    }
+  ],
+  "steps": [
+    {
+      "title": "Routed buy for 0.020 SOL (cap is 0.050 SOL)",
+      "expect": "ok",
+      "ok": true,
+      "signature": "3N6jD4bsifgsfcpw4uwynkgvreneS8dpJKBCEj7HKxAM9K6o74Tx57oz5NszYJRCAB92gLrxNMufHa4gELexZDix",
+      "explorer": "https://explorer.solana.com/tx/3N6jD4bsifgsfcpw4uwynkgvreneS8dpJKBCEj7HKxAM9K6o74Tx57oz5NszYJRCAB92gLrxNMufHa4gELexZDix?cluster=devnet",
+      "computeUnits": 85202,
+      "outcome": "receipt: spent 0.020 SOL, received 1161855775 base (measured by the router, venue verified: true)"
+    },
+    {
+      "title": "Routed buy for 0.100 SOL",
+      "expect": "rejected",
+      "ok": true,
+      "signature": "66nbX2QM5DPcb87irEsgMMpVwACUayf8a2SeVe5rW1CoiTAmP59Um8a1rkz4Uzjdty68siYrHrhejhAnCuucPVGN",
+      "explorer": "https://explorer.solana.com/tx/66nbX2QM5DPcb87irEsgMMpVwACUayf8a2SeVe5rW1CoiTAmP59Um8a1rkz4Uzjdty68siYrHrhejhAnCuucPVGN?cluster=devnet",
+      "computeUnits": 23010,
+      "outcome": "hook stack rejected: callback 2 entry 0 reason 8 (amount exceeds size cap) hook_reason 0; trader base balance unchanged (true)"
+    },
+    {
+      "title": "Same 0.100 SOL buy sent to PumpSwap directly",
+      "expect": "ok",
+      "ok": true,
+      "signature": "4WpE1K3LjV7fAk1RhdTtcmi4UnJmrATuFiPEFK14nWV16UjjVoZzu3G3MMqqFcruA7tJwHHxNrotTMonTWSaZftt",
+      "explorer": "https://explorer.solana.com/tx/4WpE1K3LjV7fAk1RhdTtcmi4UnJmrATuFiPEFK14nWV16UjjVoZzu3G3MMqqFcruA7tJwHHxNrotTMonTWSaZftt?cluster=devnet",
+      "computeUnits": 58644,
+      "outcome": "executed: router hooks do not apply outside the router (received 5802421874 base)"
+    }
+  ]
+}

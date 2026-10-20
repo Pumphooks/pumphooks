@@ -10,13 +10,13 @@ const PUMP_PROGRAMS = [
   ["6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P", "pump", "pump"],
   ["pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ", "pump_fees", "pump-fees"],
 ] as const;
-const ATA_PROGRAM = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+export const ATA_PROGRAM = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
 export function routerFixturesAvailable(fixturesDir: string): boolean {
   return PUMP_PROGRAMS.every(([, f]) => existsSync(join(fixturesDir, "programs", `${f}.so`))) && existsSync(join(fixturesDir, PUMPSWAP_POOL, "manifest.json"));
 }
 
-const ata = (owner: string, program: string, mint: string) => v1.findPda([v1.bytes32(owner), v1.bytes32(program), v1.bytes32(mint)], ATA_PROGRAM)[0];
+export const ata = (owner: string, program: string, mint: string) => v1.findPda([v1.bytes32(owner), v1.bytes32(program), v1.bytes32(mint)], ATA_PROGRAM)[0];
 
 /**
  * DEMO B, TRANSACTION (router): a routed PumpSwap buy under a route policy that caps the trade

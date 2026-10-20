@@ -111,8 +111,8 @@ export async function setupRegistry(r: Runner, deployDir: string, admin: KeyPair
   await r.must([init], [admin], "initialize hook-registry");
 }
 
-/** Publishes builtin `id` for one environment and returns its `HookVersion` address. */
-export async function publishBuiltin(r: Runner, admin: KeyPairSigner, id: number, env: v1.EnvironmentId): Promise<string> {
+/** `create_hook` + `publish_version` (index 0) for builtin `id` in one environment. */
+export function publishBuiltinIxs(admin: string, id: number, env: v1.EnvironmentId): { ixs: v1.InstructionV1[]; hook: string; version: string } {
   const slug = v1.BUILTIN_SLUGS[id];
   const hook = v1.registryPda.hook(slug);
   const callbacks: [number, number, number, number] = [0, 0, 0, 0];
@@ -129,8 +129,14 @@ export async function publishBuiltin(r: Runner, admin: KeyPairSigner, id: number
     manifestUri: `builtin:${slug}`,
     artifactHash: new Uint8Array(32),
   };
-  await r.must([v1.createHook(admin.address, slug), v1.publishVersion({ publisher: admin.address, hook, index: 0, params })], [admin], `publish builtin ${slug} (${v1.ENVIRONMENT_NAMES[env]})`);
-  const version = v1.registryPda.version(hook, 0);
+  return { ixs: [v1.createHook(admin, slug), v1.publishVersion({ publisher: admin, hook, index: 0, params })], hook, version: v1.registryPda.version(hook, 0) };
+}
+
+/** Publishes builtin `id` for one environment and returns its `HookVersion` address. */
+export async function publishBuiltin(r: Runner, admin: KeyPairSigner, id: number, env: v1.EnvironmentId): Promise<string> {
+  const slug = v1.BUILTIN_SLUGS[id];
+  const { ixs, version } = publishBuiltinIxs(admin.address, id, env);
+  await r.must(ixs, [admin], `publish builtin ${slug} (${v1.ENVIRONMENT_NAMES[env]})`);
   r.lab.label(version, `${slug} v1.0.0`);
   return version;
 }

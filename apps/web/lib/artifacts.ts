@@ -6,6 +6,7 @@ import labJson from "@/data/lab.json";
 import compilerJson from "@/data/compiler.json";
 import securityJson from "@/data/security.json";
 import demosJson from "@/data/demos.json";
+import devnetRouterJson from "@/data/devnet-router.json";
 import benchResults from "../../../bench/results.json";
 import benchBaseline from "../../../bench/baseline.json";
 
@@ -121,5 +122,21 @@ export interface DemoJson {
 }
 
 export const demos = demosJson as unknown as Provenance & { demos: DemoJson[] };
+
+export interface DevnetRun {
+  cluster: "devnet";
+  generatedAt: string;
+  commit: string;
+  command: string;
+  programs: Record<string, string>;
+  pool: string;
+  policy: string;
+  hookVersion: string;
+  trader: string;
+  setup: { label: string; signature?: string; note?: string }[];
+  steps: { title: string; expect: "ok" | "rejected"; ok: boolean; signature: string; explorer: string; computeUnits: number | null; outcome: string }[];
+}
+
+export const devnetRouter = devnetRouterJson as DevnetRun;
 
 export const short = (s: string, n = 4) => (s.length > 2 * n + 1 ? `${s.slice(0, n)}…${s.slice(-n)}` : s);
