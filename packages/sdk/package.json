@@ -1,0 +1,37 @@
+{
+  "name": "@pump-hooks/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for Pump Hooks: hook existing Pump markets, route trades through the hook stack, decode execution traces.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "gen": "python3 ../../scripts/gen_sdk_errors.py",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.8.0",
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "litesvm": "0.3.3",
+    "tweetnacl": "^1.0.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

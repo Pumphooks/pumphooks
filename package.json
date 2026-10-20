@@ -1,0 +1,16 @@
+{
+  "name": "pump-hooks",
+  "private": true,
+  "packageManager": "pnpm@10.34.4",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "pnpm": {
+    "overrides": {
+      "rpc-websockets>uuid": "^11.1.0"
+    },
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
