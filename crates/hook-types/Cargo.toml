@@ -1,0 +1,9 @@
+[package]
+name = "hook-types"
+description = "Stable Pump Hooks ABI: callbacks, context, decisions, capabilities, slot and user-state layouts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bytemuck = { workspace = true }
