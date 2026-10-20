@@ -293,6 +293,25 @@ details > summary { cursor: pointer; font-family: var(--mono); font-size: 11px; 
 .add:hover { color: var(--signal); }
 .code { font-family: var(--mono); font-size: 12px; background: var(--ink); color: #e8e5db; padding: 16px; overflow: auto; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .code .hl { color: var(--signal); }
+pre.code { white-space: pre; word-break: normal; margin: 14px 0; }
+details > summary { cursor: pointer; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; padding: 9px 0; color: var(--ink-2); }
+details > .code { margin-bottom: 10px; }
+details.slot { border-bottom: 1px solid var(--rule); }
+details.slot > summary { font-size: 12.5px; padding: 12px 0; }
+.table tr.faint td { color: var(--faint); }
+
+/* ---------------------------------------------------------------- docs */
+
+.docs { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 56px; padding: 36px 0 90px; }
+.docs-toc { position: sticky; top: calc(var(--header) + 24px); align-self: start; display: grid; border-top: 1px solid var(--ink); }
+.docs-toc a { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.docs-toc a:hover { color: var(--signal); }
+.docs-body section { padding-bottom: 34px; margin-bottom: 34px; border-bottom: 1px solid var(--rule); scroll-margin-top: calc(var(--header) + 20px); }
+.docs-body h2 { font-size: 26px; letter-spacing: -0.02em; font-weight: 500; margin: 0 0 14px; }
+.docs-body p, .docs-body li { font-size: 15px; line-height: 1.65; color: var(--ink-2); }
+.docs-body ol, .docs-body ul { padding-left: 20px; display: grid; gap: 6px; }
+.docs-body code { font-family: var(--mono); font-size: 12.5px; background: var(--paper-2); padding: 1px 5px; }
+.docs-body .notice { margin: 14px 0; }
 
 /* ---------------------------------------------------------------- wallet */
 
@@ -319,7 +338,8 @@ details > summary { cursor: pointer; font-family: var(--mono); font-size: 11px; 
   .slab-inner { grid-template-columns: 1fr; }
   .boundary-list, .status-strip { grid-template-columns: 1fr; }
   .boundary-list > div, .boundary-list > div + div { border-right: 0; border-bottom: 1px solid var(--rule); padding-left: 0; }
-  .grid-main, .grid-2 { grid-template-columns: 1fr; }
+  .grid-main, .grid-2, .docs { grid-template-columns: 1fr; }
+  .docs-toc { position: relative; top: 0; }
   .col, .col + .col { padding: 20px 0; border-left: 0; }
   .footer { grid-template-columns: 1fr 1fr; }
   .field { grid-template-columns: 1fr; }

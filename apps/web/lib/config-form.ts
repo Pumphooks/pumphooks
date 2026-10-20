@@ -8,7 +8,7 @@ import {
   type ConfigField,
   type ModuleConfig,
 } from "@pump-hooks/sdk";
-import { parseSol, parseUnits, sol, units } from "./format";
+import { duration, parseSol, parseUnits, sol, units } from "./format";
 
 export type FormValues = Record<string, string>;
 
@@ -34,6 +34,31 @@ function toText(f: ConfigField, v: ModuleConfig[string] | undefined, decimals: n
   if (f.unit === "lamports") return sol(BigInt(v), 9);
   if (f.unit === "base") return units(BigInt(v), decimals, decimals);
   return v.toString();
+}
+
+/** Read-only rendering of a decoded slot config value. */
+export function formatValue(module: ModuleId, f: ConfigField, v: ModuleConfig[string] | undefined, decimals: number): string {
+  if (v === undefined) return "—";
+  if (v instanceof PublicKey) return v.equals(PublicKey.default) ? "unset" : v.toBase58();
+  const n = BigInt(v);
+  switch (f.unit) {
+    case "lamports":
+      return n === 0n ? "off" : `${sol(n)} SOL`;
+    case "base":
+      return n === 0n ? "off" : units(n, decimals);
+    case "seconds":
+      return n === 0n ? "0" : duration(n);
+    case "bps":
+      return `${(Number(n) / 100).toFixed(2)}%`;
+    case "timestamp":
+      return n === 0n ? "unset" : new Date(Number(n) * 1000).toISOString().replace("T", " ").slice(0, 16) + " UTC";
+    case "flags": {
+      const set = Object.entries(FLAG_SETS[module] ?? {}).filter(([, bit]) => (Number(n) & bit) !== 0);
+      return set.length ? set.map(([k]) => flagLabel(k)).join(", ") : "none";
+    }
+    default:
+      return n.toLocaleString();
+  }
 }
 
 export interface ParsedConfig {
