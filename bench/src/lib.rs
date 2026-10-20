@@ -115,7 +115,7 @@ pub fn builtin_cases(p: &Parties) -> Vec<(&'static str, StackEntry)> {
         ("max-size", entry(MAX_SIZE, MaxSizeConfig { asset: mint, max_amount: 1_000_000, _rest: [0; 56] })),
         ("spending-limit", entry(SPENDING_LIMIT, SpendingLimitConfig { asset: mint, limit: 1_000_000, period_secs: 86_400, _pad: 0, _rest: [0; 48] })),
         ("time-window", entry(TIME_WINDOW, TimeWindowConfig { not_before: 0, not_after: i64::MAX, daily_start: 0, daily_end: 0, _rest: [0; 72] })),
-        ("timelock", entry(TIMELOCK, TimelockConfig { delay_secs: 0, _pad: 0, not_before: -1, _rest: [0; 80] })),
+        ("timelock", entry(TIMELOCK, TimelockConfig { delay_secs: 0, _pad: 0, not_before: 1, _rest: [0; 80] })),
         ("accounting", entry(ACCOUNTING, [0u8; 96])),
         ("credential", entry(CREDENTIAL, cred)),
     ]
@@ -197,8 +197,12 @@ pub fn mollusk() -> mollusk_svm::Mollusk {
     let elf = std::fs::read(program_path("token_hooks")).expect("run scripts/build_programs.sh first");
     let mut m = mollusk_svm::Mollusk::default();
     m.add_program_with_loader_and_elf(&pk(&token_hooks::ID), &mollusk_svm::program::loader_keys::LOADER_V3, &elf);
+    m.sysvars.clock.unix_timestamp = NOW;
     m
 }
+
+/// Clock used by both runtimes, so time-based builtins see the same instant.
+pub const NOW: i64 = 1_800_000_000;
 
 /// Runs `token_hooks::execute` for a 100-unit alice -> bob transfer under `entries`.
 pub fn execute_case(m: &mollusk_svm::Mollusk, p: &Parties, name: &str, entries: &[StackEntry], estimate: Option<u64>) -> Measurement {
@@ -271,6 +275,9 @@ pub fn transaction() -> Vec<Measurement> {
     };
     let mut svm = LiteSVM::new();
     svm.add_program_from_file(addr(&token_hooks::ID), program_path("token_hooks")).unwrap();
+    let mut clock = svm.get_sysvar::<solana_clock::Clock>();
+    clock.unix_timestamp = NOW;
+    svm.set_sysvar(&clock);
     let payer = Keypair::new_from_array([20; 32]);
     svm.airdrop(&payer.pubkey(), 100_000_000_000).unwrap();
     let pay = APubkey::new_from_array(payer.pubkey().to_bytes());

@@ -1,0 +1,29 @@
+{
+  "name": "@pump-hooks/hook-analyzer",
+  "version": "0.1.0",
+  "description": "Deterministic composition diagnostics for hook stacks: the kernel's install validation (checked against Rust vectors), token-engine rules, enforcement class per callback, conflicts, dead policies, upgrade exposure and compute.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pump-hooks/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

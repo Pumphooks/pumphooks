@@ -17,12 +17,12 @@ One stack per row, evaluated on `before_transfer` for a 100-unit transfer that e
 | allowlist | 6937 | 139 | 2500 | ok |
 | denylist | 6943 | 145 | 300 | ok |
 | max-size | 6915 | 117 | 300 | ok |
-| spending-limit | 6948 | 150 | 300 | ok |
+| spending-limit | 6950 | 152 | 300 | ok |
 | time-window | 6916 | 118 | 300 | ok |
 | timelock | 6906 | 108 | 300 | ok |
 | accounting | 6930 | 132 | 300 | ok |
 | credential | 8252 | 1454 | 1500 | ok |
-| all 8 token builtins | 9077 | 2279 | 5800 | ok |
+| all 8 token builtins | 9079 | 2281 | 5800 | ok |
 
 ## Token-2022 transfers (LiteSVM)
 
@@ -32,7 +32,7 @@ Whole single-instruction transactions: Token-2022 `transfer_checked` plus, when 
 | --- | ---: | --- |
 | Token-2022, no hook | 1790 | ok |
 | token-hooks, empty policy | 19349 | ok |
-| token-hooks, 7 builtins | 20186 | ok |
+| token-hooks, 7 builtins | 20188 | ok |
 
 ## Notes
 

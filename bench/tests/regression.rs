@@ -50,11 +50,22 @@ fn each_measured_builtin_actually_evaluates() {
             MAX_SIZE => deny.config[32..40].copy_from_slice(&99u64.to_le_bytes()),
             SPENDING_LIMIT => deny.config[32..40].copy_from_slice(&99u64.to_le_bytes()),
             TIME_WINDOW => deny.config[8..16].copy_from_slice(&(-1i64).to_le_bytes()),
-            TIMELOCK => deny.config[8..16].copy_from_slice(&i64::MAX.to_le_bytes()),
+            TIMELOCK => deny.config[8..16].copy_from_slice(&(hook_bench::NOW + 1).to_le_bytes()),
             CREDENTIAL => deny.config[8..40].copy_from_slice(&[0xBB; 32]),
             id => panic!("unhandled builtin {id}"),
         }
         assert!(hook_bench::execute_case(&m, &p, name, &[e], None).ok, "{name} should pass");
         assert!(!hook_bench::execute_case(&m, &p, name, &[deny], None).ok, "{name} should deny");
     }
+}
+
+#[test]
+fn every_benchmarked_stack_is_installable() {
+    let p = hook_bench::Parties::default();
+    let cases = hook_bench::builtin_cases(&p);
+    let all: Vec<_> = cases.iter().map(|(_, e)| *e).collect();
+    for (name, e) in &cases {
+        assert_eq!(hook_kernel::validate_stack(&hook_bench::stack_of(&[*e]), 0), Ok(()), "{name}");
+    }
+    assert_eq!(hook_kernel::validate_stack(&hook_bench::stack_of(&all), 0), Ok(()));
 }

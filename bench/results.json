@@ -33,7 +33,7 @@
     },
     {
       "name": "execute: spending-limit",
-      "compute_units": 6948,
+      "compute_units": 6950,
       "ok": true,
       "kernel_estimate": 300
     },
@@ -63,7 +63,7 @@
     },
     {
       "name": "execute: all 8 token builtins",
-      "compute_units": 9077,
+      "compute_units": 9079,
       "ok": true,
       "kernel_estimate": 5800
     }
@@ -83,7 +83,7 @@
     },
     {
       "name": "transfer_checked: token-hooks, 7 builtins",
-      "compute_units": 20186,
+      "compute_units": 20188,
       "ok": true,
       "kernel_estimate": 4300
     }
