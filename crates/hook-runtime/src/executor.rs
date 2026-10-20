@@ -296,6 +296,26 @@ pub fn run_phase(
     Ok(out)
 }
 
+/// Router bookkeeping after a successful routed trade (after both phases ran). `ctx` carries the
+/// observed amounts.
+pub fn commit_trade(ctx: &HookContext, market: &mut MarketStats, user: &mut UserState) {
+    if ctx.is_buy() {
+        market.routed_buy_quote = market.routed_buy_quote.saturating_add(ctx.quote_amount);
+        user.routed_buy_quote = user.routed_buy_quote.saturating_add(ctx.quote_amount);
+        if user.first_buy_ts == 0 {
+            user.first_buy_ts = ctx.timestamp;
+        }
+    } else {
+        market.routed_sell_quote = market.routed_sell_quote.saturating_add(ctx.quote_amount);
+        user.routed_sell_quote = user.routed_sell_quote.saturating_add(ctx.quote_amount);
+    }
+    market.trade_count = market.trade_count.saturating_add(1);
+    user.trade_count = user.trade_count.saturating_add(1);
+    user.last_trade_ts = ctx.timestamp;
+    user.last_trade_slot = ctx.slot;
+    user.last_side = ctx.side;
+}
+
 fn enforce(
     slot: &HookSlot,
     decision: &HookDecision,

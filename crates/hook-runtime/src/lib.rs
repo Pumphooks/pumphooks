@@ -10,7 +10,7 @@ pub mod executor;
 pub mod modules;
 
 pub use executor::{
-    install_slot, run_phase, volatility_bps, HookError, PhaseOutcome, PolicyEvent, Trace,
+    commit_trade, install_slot, remove_slot, run_phase, validate_module_config, volatility_bps, HookError, PhaseOutcome, PolicyEvent, Trace,
     TraceEntry,
 };
 pub use modules::PumpHook;

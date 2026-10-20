@@ -62,14 +62,7 @@ impl Harness {
             c.user_base_balance = c.user_base_balance.saturating_sub(c.base_amount);
         }
         run_phase(side, false, &mut self.slots, &mut c, &self.market, &mut self.user, policies, self.disabled, &mut trace)?;
-        // Router bookkeeping (mirrors programs/pump-hooks commit step).
-        self.user.last_trade_ts = c.timestamp;
-        self.user.last_trade_slot = c.slot;
-        self.user.last_side = c.side;
-        self.user.trade_count += 1;
-        if side == Side::Buy && self.user.first_buy_ts == 0 {
-            self.user.first_buy_ts = c.timestamp;
-        }
+        commit_trade(&c, &mut self.market, &mut self.user);
         Ok((None, trace))
     }
     fn go(&mut self, c: HookContext) -> Result<(Option<TraceEntry>, Trace), HookError> {
