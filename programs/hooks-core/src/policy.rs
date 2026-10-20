@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 use hook_kernel::{reason, validate_stack, NoProgramHooks, Op, Record};
 use hook_registry::{HookVersion, STATUS_ACTIVE};
 use hook_standard::{
-    cap, state::HEADER_LEN, Environment, HookStack, IMPL_BUILTIN, IMPL_PROGRAM,
+    cap, Environment, HookStack, IMPL_BUILTIN, IMPL_PROGRAM,
 };
 use hooks_interface::perm;
 
@@ -84,9 +84,13 @@ pub struct PoolOp {
     pub amount: u64,
     pub amount_b: u64,
     pub sequence: u64,
+    /// Reserves in mint order: before the operation for `before_*`, after it for `after_*`.
+    pub reserves: [u64; 2],
+    pub zero_for_one: bool,
 }
 
-/// Evaluates the pool's policy (if any) on `callback`. `policy` must be the pool's policy account
+/// Evaluates the pool's policy (if any) on `callback`. Returns a policy swap fee in ppm, if any
+/// entry produced one. `policy` must be the pool's policy account
 /// when the pool has one; it is ignored otherwise.
 pub fn run<'info>(
     pool_key: Pubkey,
@@ -95,21 +99,14 @@ pub fn run<'info>(
     callback: u8,
     op: &PoolOp,
     remaining: &[AccountInfo<'info>],
-) -> Result<()> {
+) -> Result<Option<u32>> {
     if pool_policy == Pubkey::default() {
-        return Ok(());
+        return Ok(None);
     }
     let loader = policy.ok_or(error!(CoreError::PolicyMismatch))?;
     require_keys_eq!(loader.key(), pool_policy, CoreError::PolicyMismatch);
     let mut p = loader.load_mut()?;
-    let datas: Vec<(Pubkey, Vec<u8>)> = remaining
-        .iter()
-        .filter(|i| !i.executable)
-        .filter_map(|i| {
-            let d = i.try_borrow_data().ok()?;
-            (d.len() >= HEADER_LEN && d[..4] == hook_standard::state::MAGIC).then(|| (*i.owner, d[..HEADER_LEN].to_vec()))
-        })
-        .collect();
+    let datas = hook_kernel::collect_records(remaining);
     let records: Vec<Record> = datas.iter().map(|(o, d)| Record { owner: *o, data: d }).collect();
     let clock = Clock::get()?;
     let kernel_op = Op {
@@ -122,9 +119,11 @@ pub fn run<'info>(
         now: clock.unix_timestamp,
         sequence: op.sequence,
         records: &records,
+        reserves: op.reserves,
+        zero_for_one: op.zero_for_one,
         ..Op::default()
     };
-    hook_kernel::evaluate(&mut p.stack, callback, &kernel_op, &mut NoProgramHooks).map_err(|r| {
+    let outputs = hook_kernel::evaluate(&mut p.stack, callback, &kernel_op, &mut NoProgramHooks).map_err(|r| {
         msg!(
             "pool policy rejected: callback {} entry {} reason {} ({})",
             callback,
@@ -135,5 +134,6 @@ pub fn run<'info>(
         emit!(PolicyRejected { pool: pool_key, callback, entry: r.index, reason: r.reason });
         error!(CoreError::PolicyRejected)
     })?;
-    Ok(())
+    // The last fee output wins; the engine clamps it to the pool's fee cap.
+    Ok(outputs.iter().flatten().filter(|o| o.kind == hook_standard::output::FEE_BPS).last().map(|o| o.value.min(10_000) as u32 * 100))
 }

@@ -1,0 +1,909 @@
+{
+  "standard": "pump-hooks/v1",
+  "configLength": 96,
+  "stateLength": 32,
+  "builtins": [
+    {
+      "id": 1,
+      "slug": "allowlist",
+      "name": "Allowlist",
+      "summary": "Only listed keys (inline) or keys holding a fresh issuer-signed allowlist record may proceed.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap",
+          "before_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "target",
+          "type": "u8",
+          "offset": 0,
+          "description": "0 = actor (signer), 1 = counterparty (destination / recipient / target program)"
+        },
+        {
+          "name": "source",
+          "type": "u8",
+          "offset": 1,
+          "description": "0 inline, 1 state record"
+        },
+        {
+          "name": "max_age_slots",
+          "type": "u64",
+          "offset": 8,
+          "description": "record freshness (record source)"
+        },
+        {
+          "name": "key_a",
+          "type": "pubkey",
+          "offset": 16,
+          "description": "inline: allowed key; record: producer program"
+        },
+        {
+          "name": "key_b",
+          "type": "pubkey",
+          "offset": 48,
+          "description": "inline: second allowed key (optional); record: required issuer"
+        }
+      ],
+      "state": null,
+      "accounts": [
+        "record source: the target's allowlist state record (schema 1, namespace allowlist:v1)"
+      ],
+      "failure": "Rejects (reason 2) when the target is not listed or no valid record is supplied.",
+      "security": [
+        "Record source trusts the configured producer program and issuer.",
+        "Inline lists hold at most two keys per entry."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "READ_ACCOUNT_STATE",
+        "CONSUME_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 2500,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 2,
+      "slug": "spending-limit",
+      "name": "Spending limit",
+      "summary": "Caps the amount of one asset per rolling window.",
+      "environments": {
+        "token": [
+          "before_transfer"
+        ],
+        "router": [
+          "before_swap"
+        ],
+        "pool": [
+          "before_swap"
+        ],
+        "account": [
+          "before_withdraw",
+          "after_execute"
+        ]
+      },
+      "config": [
+        {
+          "name": "asset",
+          "type": "pubkey",
+          "offset": 0,
+          "description": "mint (zero = native SOL)"
+        },
+        {
+          "name": "limit",
+          "type": "u64",
+          "offset": 32,
+          "description": "maximum per window"
+        },
+        {
+          "name": "period_secs",
+          "type": "u32",
+          "offset": 40,
+          "description": "window length"
+        }
+      ],
+      "state": "window_start i64, spent u64",
+      "accounts": [],
+      "failure": "Rejects (reason 3) when the window total would exceed the limit.",
+      "security": [
+        "Token environment: one window shared by all holders of the mint, not per holder."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "UPDATE_OWN_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 3,
+      "slug": "timelock",
+      "name": "Timelock",
+      "summary": "Operation must come from a proposal at least delay_secs old, and not before not_before.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_unwrap"
+        ],
+        "account": [
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "delay_secs",
+          "type": "u32",
+          "offset": 0,
+          "description": "minimum proposal age"
+        },
+        {
+          "name": "not_before",
+          "type": "i64",
+          "offset": 8,
+          "description": "absolute unlock time (0 = none)"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 4/5) before the unlock time or without an aged proposal.",
+      "security": [
+        "Token environment has no proposals: use not_before only (delay_secs there always rejects)."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 4,
+      "slug": "multisig",
+      "name": "Multisig",
+      "summary": "At least threshold of the selected members approved.",
+      "environments": {
+        "account": [
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "threshold",
+          "type": "u8",
+          "offset": 0,
+          "description": "approvals required"
+        },
+        {
+          "name": "member_mask",
+          "type": "u8",
+          "offset": 1,
+          "description": "members counted"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 6) with too few approvals.",
+      "security": [
+        "Member set is the smart account's."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 5,
+      "slug": "conditional",
+      "name": "Conditional",
+      "summary": "IF every premise holds THEN every requirement must hold (amount, time, slot, approvals, counterparty, asset, dependency outputs).",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap",
+          "before_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "before_withdraw",
+          "before_execute",
+          "after_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "conditions",
+          "type": "bytes[64]",
+          "offset": 0,
+          "description": "4 × {field u8, op u8, role u8, dep_index u8, output_kind u16, pad u16, value u64}"
+        },
+        {
+          "name": "key",
+          "type": "pubkey",
+          "offset": 64,
+          "description": "key compared by counterparty/asset conditions"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 7) when premises hold and a requirement fails.",
+      "security": [
+        "Dependency outputs only from declared earlier entries."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "READ_ACCOUNT_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 800,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 6,
+      "slug": "max-size",
+      "name": "Max size",
+      "summary": "Caps a single operation's amount of one asset.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap"
+        ],
+        "account": [
+          "before_withdraw",
+          "after_execute"
+        ]
+      },
+      "config": [
+        {
+          "name": "asset",
+          "type": "pubkey",
+          "offset": 0,
+          "description": "mint"
+        },
+        {
+          "name": "max_amount",
+          "type": "u64",
+          "offset": 32,
+          "description": "cap"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 8) above the cap.",
+      "security": [
+        "Splitting into several operations is not prevented; pair with spending-limit."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 7,
+      "slug": "time-window",
+      "name": "Time window",
+      "summary": "Absolute bounds and an optional UTC daily window.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap",
+          "before_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "not_before",
+          "type": "i64",
+          "offset": 0,
+          "description": "0 = unbounded"
+        },
+        {
+          "name": "not_after",
+          "type": "i64",
+          "offset": 8,
+          "description": "0 = unbounded"
+        },
+        {
+          "name": "daily_start",
+          "type": "u32",
+          "offset": 16,
+          "description": "seconds after UTC midnight"
+        },
+        {
+          "name": "daily_end",
+          "type": "u32",
+          "offset": 20,
+          "description": "exclusive; may wrap midnight"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 9) outside the window.",
+      "security": [
+        "Uses the cluster clock (validator-reported unix_timestamp)."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 8,
+      "slug": "accounting",
+      "name": "Accounting",
+      "summary": "Counts operations and volume in entry state; never rejects.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "after_execute",
+          "before_swap",
+          "after_swap"
+        ],
+        "pool": [
+          "after_add_liquidity",
+          "after_remove_liquidity",
+          "after_swap",
+          "after_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "after_deposit",
+          "before_withdraw",
+          "after_withdraw",
+          "before_execute",
+          "after_execute",
+          "before_authority_change",
+          "after_authority_change"
+        ]
+      },
+      "config": [],
+      "state": "volume u128, count u64",
+      "accounts": [],
+      "failure": "Never rejects.",
+      "security": [
+        "Counts only operations that reach this subject."
+      ],
+      "capabilities": [
+        "UPDATE_OWN_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 9,
+      "slug": "denylist",
+      "name": "Denylist",
+      "summary": "Rejects listed keys.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap",
+          "before_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "target",
+          "type": "u8",
+          "offset": 0,
+          "description": "0 = actor (signer), 1 = counterparty (destination / recipient / target program)"
+        },
+        {
+          "name": "key_a",
+          "type": "pubkey",
+          "offset": 8,
+          "description": "denied key"
+        },
+        {
+          "name": "key_b",
+          "type": "pubkey",
+          "offset": 40,
+          "description": "second denied key (optional)"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 13) when the target is listed.",
+      "security": [
+        "Inline only: a record-based denylist could be bypassed by omitting the record.",
+        "A denied party can use another key; denylists deter, allowlists enforce."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 10,
+      "slug": "dynamic-fee",
+      "name": "Dynamic fee",
+      "summary": "Sets the pool swap fee from swap size (ramp) or from price volatility (deviation from an EMA).",
+      "environments": {
+        "pool": [
+          "before_swap"
+        ]
+      },
+      "config": [
+        {
+          "name": "mode",
+          "type": "u8",
+          "offset": 0,
+          "description": "0 size ramp, 1 volatility"
+        },
+        {
+          "name": "base_bps",
+          "type": "u16",
+          "offset": 4,
+          "description": "minimum fee"
+        },
+        {
+          "name": "max_bps",
+          "type": "u16",
+          "offset": 6,
+          "description": "maximum fee (≤ 10000)"
+        },
+        {
+          "name": "pivot",
+          "type": "u64",
+          "offset": 8,
+          "description": "size mode: amount at which max applies"
+        },
+        {
+          "name": "alpha_bps",
+          "type": "u16",
+          "offset": 16,
+          "description": "volatility: EMA weight of the new price"
+        },
+        {
+          "name": "sensitivity_bps",
+          "type": "u32",
+          "offset": 20,
+          "description": "volatility: fee bps added per 10000 bps of deviation ×10000"
+        }
+      ],
+      "state": "ema u128 (Q64.64 reserve_1/reserve_0), last_slot u64",
+      "accounts": [],
+      "failure": "Never rejects. The pool clamps the fee to its max_fee_ppm; the pool's program hook dynamic fee, if any, takes precedence.",
+      "security": [
+        "Volatility mode reads the pre-swap pool price, which earlier swaps in the same slot can move.",
+        "Size mode can be split around by smaller swaps."
+      ],
+      "capabilities": [
+        "CUSTOM_PRICING",
+        "UPDATE_OWN_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "pool": "program: every operation on Pump Hooks pools"
+      },
+      "compute": {
+        "estimate_cu": 600,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 11,
+      "slug": "price-impact",
+      "name": "Price impact",
+      "summary": "Rejects swaps whose constant-product impact amount/(reserve_in+amount) exceeds max_bps.",
+      "environments": {
+        "pool": [
+          "before_swap"
+        ]
+      },
+      "config": [
+        {
+          "name": "max_bps",
+          "type": "u16",
+          "offset": 0,
+          "description": "maximum impact"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 14) above the limit, and when no reserves are available (fails closed).",
+      "security": [
+        "Uses max_in for exact-out swaps (conservative).",
+        "Split swaps each pass individually."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "READ_ACCOUNT_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "pool": "program: every operation on Pump Hooks pools"
+      },
+      "compute": {
+        "estimate_cu": 600,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 12,
+      "slug": "price-limit",
+      "name": "Price limit / range",
+      "summary": "Realized price (output per input) and/or post-swap pool price must lie within [min, max]. Range-order and limit execution guard.",
+      "environments": {
+        "router": [
+          "after_swap"
+        ],
+        "pool": [
+          "after_swap"
+        ]
+      },
+      "config": [
+        {
+          "name": "min_num",
+          "type": "u64",
+          "offset": 0,
+          "description": "lower bound numerator"
+        },
+        {
+          "name": "min_den",
+          "type": "u64",
+          "offset": 8,
+          "description": "lower bound denominator (0 = none)"
+        },
+        {
+          "name": "max_num",
+          "type": "u64",
+          "offset": 16,
+          "description": "upper bound numerator (0 = none)"
+        },
+        {
+          "name": "max_den",
+          "type": "u64",
+          "offset": 24,
+          "description": "upper bound denominator"
+        },
+        {
+          "name": "asset",
+          "type": "pubkey",
+          "offset": 32,
+          "description": "realized mode: only when the input mint is this (zero = any)"
+        },
+        {
+          "name": "mode",
+          "type": "u8",
+          "offset": 64,
+          "description": "1 realized, 2 pool price, 3 both"
+        }
+      ],
+      "state": null,
+      "accounts": [],
+      "failure": "Rejects (reason 15); the whole swap reverts.",
+      "security": [
+        "Router: realized amounts are measured by the router from token balances, not reported by the venue.",
+        "Pool-price mode needs reserves; routes have none."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "READ_ACCOUNT_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools"
+      },
+      "compute": {
+        "estimate_cu": 600,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 13,
+      "slug": "credential",
+      "name": "Credential (Civic Pass)",
+      "summary": "The actor or counterparty must hold an active, unexpired Identity.com gateway token of the configured gatekeeper network.",
+      "environments": {
+        "token": [
+          "before_transfer",
+          "before_wrap",
+          "before_unwrap"
+        ],
+        "router": [
+          "before_execute",
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap",
+          "before_donate"
+        ],
+        "account": [
+          "before_deposit",
+          "before_withdraw",
+          "before_execute",
+          "before_authority_change"
+        ]
+      },
+      "config": [
+        {
+          "name": "target",
+          "type": "u8",
+          "offset": 0,
+          "description": "0 = actor (signer), 1 = counterparty (destination / recipient / target program)"
+        },
+        {
+          "name": "flags",
+          "type": "u8",
+          "offset": 1,
+          "description": "1 = accept tokens without expiry"
+        },
+        {
+          "name": "gatekeeper_network",
+          "type": "pubkey",
+          "offset": 8,
+          "description": "network key"
+        }
+      ],
+      "state": null,
+      "accounts": [
+        "a gateway token account (owner gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs) for the target wallet, passed with the operation"
+      ],
+      "failure": "Rejects (reason 16) without a valid token.",
+      "security": [
+        "Trusts the gatekeeper network's issuance.",
+        "Layout from solana-gateway 0.5.0 (Apache-2.0)."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "READ_ACCOUNT_STATE",
+        "CONSUME_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "token": "native (before_transfer, Token-2022 calls token-hooks) / wrapper (wrap, unwrap)",
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools",
+        "account": "program: every operation on Pump Hooks smart accounts"
+      },
+      "compute": {
+        "estimate_cu": 1500,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    },
+    {
+      "id": 14,
+      "slug": "slot-limit",
+      "name": "Slot limit (MEV)",
+      "summary": "At most N operations per slot on the subject; optionally an actor already seen this slot is refused (same-slot round trips).",
+      "environments": {
+        "router": [
+          "before_swap"
+        ],
+        "pool": [
+          "before_add_liquidity",
+          "before_swap"
+        ]
+      },
+      "config": [
+        {
+          "name": "max_per_slot",
+          "type": "u32",
+          "offset": 0,
+          "description": "operations per slot"
+        },
+        {
+          "name": "flags",
+          "type": "u8",
+          "offset": 4,
+          "description": "1 = refuse a repeat actor in the same slot"
+        }
+      ],
+      "state": "slot u64, count u32, first two actors (8-byte prefixes)",
+      "accounts": [],
+      "failure": "Rejects (reason 17).",
+      "security": [
+        "Sees only operations on this subject; trades on other venues are invisible.",
+        "An attacker can use two signers; only the first two actors of a slot are remembered."
+      ],
+      "capabilities": [
+        "VALIDATE_OPERATION",
+        "VETO_OPERATION",
+        "UPDATE_OWN_STATE"
+      ],
+      "kind": "builtin",
+      "source": "crates/hook-kernel/src/builtin.rs",
+      "audit": "unaudited",
+      "enforcement": {
+        "router": "routed: bypassable by calling the venue directly",
+        "pool": "program: every operation on Pump Hooks pools"
+      },
+      "compute": {
+        "estimate_cu": 300,
+        "measured": "see docs/benchmarks/report.md"
+      }
+    }
+  ]
+}

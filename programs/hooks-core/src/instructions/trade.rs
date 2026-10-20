@@ -153,9 +153,9 @@ pub fn swap<'info>(
     let pool_info = a.io.pool.to_account_info();
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, trader.key())?;
     let (max_in, min_out) = if exact_in { (amount, limit) } else { (limit, amount) };
-    let mut op = PoolOp { actor: trader.key(), asset: a.io.mint(i).key(), amount: max_in, amount_b: min_out, sequence: snapshot.sequence };
+    let mut op = PoolOp { actor: trader.key(), asset: a.io.mint(i).key(), amount: max_in, amount_b: min_out, sequence: snapshot.sequence, reserves: [snapshot.reserve_0, snapshot.reserve_1], zero_for_one };
     let policy = a.policy.as_ref();
-    policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeSwap as u8, &op, ctx.remaining_accounts)?;
+    let policy_fee_ppm = policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeSwap as u8, &op, ctx.remaining_accounts)?;
 
     let amount_eff = if exact_in {
         a.io.pull_in(i, &user[i], &trader, amount)?
@@ -163,7 +163,7 @@ pub fn swap<'info>(
         require!(!tok::transfer_fee_active(&a.io.mint(i))?, CoreError::ExactOutTransferFee);
         amount
     };
-    let args = SwapArgs { zero_for_one, exact_in, amount: amount_eff, limit, protocol_fee_bps: a.protocol.protocol_fee_bps };
+    let args = SwapArgs { zero_for_one, exact_in, amount: amount_eff, limit, protocol_fee_bps: a.protocol.protocol_fee_bps, policy_fee_ppm };
     let mut book = snapshot.book();
     let r = engine::swap(&mut book, &args, &mut hooks)?;
     drop(hooks);
@@ -173,7 +173,7 @@ pub fn swap<'info>(
         require!(got == r.user_in, CoreError::ExactOutTransferFee);
     }
     a.io.pay_out(o, &user[o], r.user_out)?;
-    (op.amount, op.amount_b) = (r.user_in, r.user_out);
+    (op.amount, op.amount_b, op.reserves) = (r.user_in, r.user_out, book.reserve);
     policy::run(pool_info.key(), snapshot.policy, policy, Callback::AfterSwap as u8, &op, ctx.remaining_accounts)?;
     let sequence = a.io.commit(&book)?;
     emit!(Swapped {
@@ -242,7 +242,7 @@ pub fn add_liquidity<'info>(
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, owner.key())?;
     let mut book = snapshot.book();
 
-    let mut op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: max_0, amount_b: max_1, sequence: snapshot.sequence };
+    let mut op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: max_0, amount_b: max_1, sequence: snapshot.sequence, reserves: [snapshot.reserve_0, snapshot.reserve_1], zero_for_one: false };
     let policy = a.policy.as_ref();
     policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeAddLiquidity as u8, &op, ctx.remaining_accounts)?;
     invoke(&mut hooks, Callback::BeforeAddLiquidity, &book, 0, [max_0, max_1, min_shares, 0, 0, 0, 0])?;
@@ -378,7 +378,7 @@ pub fn remove_liquidity<'info>(
     a.io.pay_out(1, &user[1], out[1])?;
     // Withdrawals never depend on the policy: accounting runs only if the LP supplies it.
     if a.policy.is_some() {
-        let op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: out[0], amount_b: out[1], sequence: snapshot.sequence };
+        let op = PoolOp { actor: owner.key(), asset: snapshot.mint_0, amount: out[0], amount_b: out[1], sequence: snapshot.sequence, reserves: [snapshot.reserve_0, snapshot.reserve_1], zero_for_one: false };
         policy::run(pool_info.key(), snapshot.policy, a.policy.as_ref(), Callback::AfterRemoveLiquidity as u8, &op, ctx.remaining_accounts)?;
     }
     let sequence = a.io.commit(&book)?;
@@ -437,7 +437,7 @@ pub fn donate<'info>(
     let mut hooks = hooks_for(&snapshot, &pool_info, &a.hooks, ctx.remaining_accounts, &hook_data, donor.key())?;
     let mut book = snapshot.book();
 
-    let mut op = PoolOp { actor: donor.key(), asset: snapshot.mint_0, amount: amount_0, amount_b: amount_1, sequence: snapshot.sequence };
+    let mut op = PoolOp { actor: donor.key(), asset: snapshot.mint_0, amount: amount_0, amount_b: amount_1, sequence: snapshot.sequence, reserves: [snapshot.reserve_0, snapshot.reserve_1], zero_for_one: false };
     let policy = a.policy.as_ref();
     policy::run(pool_info.key(), snapshot.policy, policy, Callback::BeforeDonate as u8, &op, ctx.remaining_accounts)?;
     invoke(&mut hooks, Callback::BeforeDonate, &book, 0, [amount_0, amount_1, 0, 0, 0, 0, 0])?;

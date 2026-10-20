@@ -479,3 +479,77 @@ fn sol_taken_from_the_wallet_is_measured_and_capped() {
     let rec = route_ok(&mut t, &user, &r);
     assert_eq!(rec.lamports_spent, 0);
 }
+
+/// Borsh `GatewayToken` (solana-gateway 0.5.0): version, parent None, owner, identity None,
+/// network, issuing gatekeeper, state, expiry.
+fn gateway_token(s: &mut Svm, owner: &Pk, network: &Pk, state: u8, expiry: i64) -> Pk {
+    let mut d = vec![0u8, 0];
+    d.extend_from_slice(owner.as_ref());
+    d.push(0);
+    d.extend_from_slice(network.as_ref());
+    d.extend_from_slice(Pk::new_unique().as_ref());
+    d.push(state);
+    d.push(1);
+    d.extend_from_slice(&expiry.to_le_bytes());
+    let k = Pk::new_unique();
+    let lamports = s.svm.minimum_balance_for_rent_exemption(d.len());
+    s.svm
+        .set_account(addr(&k), solana_account::Account { lamports, data: d, owner: addr(&builtin::GATEWAY_PROGRAM), executable: false, rent_epoch: 0 })
+        .unwrap();
+    k
+}
+
+#[test]
+fn credential_and_realized_price_limit_gate_routes() {
+    use hook_kernel::builtin::{CredentialConfig, PriceLimitConfig, LIMIT_REALIZED};
+    let mut t = setup();
+    let admin = t.admin.insecure_clone();
+    let r = Environment::Router;
+    let cred_v = registry::publish_builtin(&mut t.s, &admin, "credential", builtin::CREDENTIAL, r, BEFORE_SWAP);
+    let limit_v = registry::publish_builtin(&mut t.s, &admin, "price-limit", builtin::PRICE_LIMIT, r, AFTER_SWAP);
+    let user = t.venue.wallet(&mut t.s, 5 * SOL, 2 * SOL);
+    let u = kp(&user);
+    let network = Pk::new_unique();
+    let now: solana_clock::Clock = t.s.svm.get_sysvar();
+
+    // Reference price from an unrestricted buy.
+    let r0 = route_ok(&mut t, &user, &Route::buy(SOL / 10));
+    let cred = CredentialConfig { target: 0, flags: 0, _pad: [0; 6], gatekeeper_network: network.to_bytes(), _reserved: [0; 32], _rest: [0; 24] };
+    // Require ≥ half the reference price (tokens per lamport) on WSOL-in routes.
+    let floor = PriceLimitConfig { min_num: r0.received / 2, min_den: r0.spent, max_num: 0, max_den: 0, asset: pump_adapter::NATIVE_MINT.to_bytes(), mode: LIMIT_REALIZED, _pad: [0; 7], _rest: [0; 24] };
+    let entries = [entry(&cred_v, builtin::CREDENTIAL, BEFORE_SWAP, cred, false), entry(&limit_v, builtin::PRICE_LIMIT, AFTER_SWAP, floor, false)];
+    let policy = create_policy_with(&mut t, &user, 1, 0, false, &entries);
+
+    let route_with = |t: &mut T, extra: Vec<Meta>, route: &Route| {
+        let (base, quote) = t.venue.atas(&u);
+        let metas = t.venue.metas(&u);
+        let (mut i, _) = route_ix_with(t, &u, route, metas, quote, base);
+        i.accounts.extend(extra.into_iter().map(|m| solana_instruction::AccountMeta { pubkey: addr(&m.pubkey), is_signer: false, is_writable: false }));
+        i
+    };
+    let buy = Route { policy: Some(policy), ..Route::buy(SOL / 10) };
+
+    // No credential supplied → refused before the venue runs.
+    let i = route_with(&mut t, vec![], &buy);
+    assert!(t.s.send_err(&[i], &[&user]).contains("reason 16"));
+    // Expired, revoked, wrong network or wrong wallet → refused.
+    for (owner, net, state, exp) in [(u, network, 0, now.unix_timestamp - 1), (u, network, 2, i64::MAX), (u, Pk::new_unique(), 0, i64::MAX), (Pk::new_unique(), network, 0, i64::MAX)] {
+        let g = gateway_token(&mut t.s, &owner, &net, state, exp);
+        let i = route_with(&mut t, vec![Meta::new_readonly(g, false)], &buy);
+        assert!(t.s.send_err(&[i], &[&user]).contains("reason 16"));
+    }
+    // A valid pass: the buy goes through at a price above the floor.
+    let pass = gateway_token(&mut t.s, &u, &network, 0, i64::MAX);
+    let i = route_with(&mut t, vec![Meta::new_readonly(pass, false)], &buy);
+    t.s.send_ok(&[i], &[&user]);
+
+    // Raise the floor above what the venue pays: the route reverts after the venue CPI.
+    let high = PriceLimitConfig { min_num: r0.received * 2, ..floor };
+    let entries = [entry(&cred_v, builtin::CREDENTIAL, BEFORE_SWAP, cred, false), entry(&limit_v, builtin::PRICE_LIMIT, AFTER_SWAP, high, false)];
+    let strict = create_policy_with(&mut t, &user, 2, 0, false, &entries);
+    let (base, _) = t.venue.atas(&u);
+    let before = t.s.token_balance(&base);
+    let i = route_with(&mut t, vec![Meta::new_readonly(pass, false)], &Route { policy: Some(strict), ..Route::buy(SOL / 10) });
+    assert!(t.s.send_err(&[i], &[&user]).contains("reason 15"));
+    assert_eq!(t.s.token_balance(&base), before);
+}

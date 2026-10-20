@@ -29,7 +29,7 @@ use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, Tran
 use hook_kernel::{
     carry_state, cpi::CpiPolicyHooks, reason, requires_guard, validate_stack, Op, Record,
 };
-use hook_standard::{state::HEADER_LEN, Environment, HookStack};
+use hook_standard::{Environment, HookStack};
 
 pub mod state;
 use state::*;
@@ -861,15 +861,7 @@ fn commit(loader: &AccountLoader<SmartAccount>, stack: &HookStack) -> Result<()>
 /// Copies state-record headers out of the remaining accounts (copies, so no borrow is held
 /// across hook CPIs).
 fn records(remaining: &[AccountInfo]) -> Vec<(Pubkey, Vec<u8>)> {
-    remaining
-        .iter()
-        .filter(|i| !i.executable && *i.owner != system_program::ID)
-        .filter_map(|i| {
-            let d = i.try_borrow_data().ok()?;
-            (d.len() >= HEADER_LEN && d[..4] == hook_standard::state::MAGIC)
-                .then(|| (*i.owner, d[..HEADER_LEN].to_vec()))
-        })
-        .collect()
+    hook_kernel::collect_records(remaining)
 }
 
 fn run<'info>(

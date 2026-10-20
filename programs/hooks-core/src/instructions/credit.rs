@@ -97,7 +97,7 @@ pub fn credit_swap(
     let (i, o) = if zero_for_one { (0, 1) } else { (1, 0) };
     let mut book = a.io.pool.book();
     book.permissions &= perm::CUSTOM_CURVE;
-    let args = SwapArgs { zero_for_one, exact_in, amount, limit, protocol_fee_bps: a.protocol.protocol_fee_bps };
+    let args = SwapArgs { zero_for_one, exact_in, amount, limit, protocol_fee_bps: a.protocol.protocol_fee_bps, policy_fee_ppm: None };
     let r = engine::swap(&mut book, &args, &mut SelfQuote(quote))?;
     book.credit[i] = book.credit[i].checked_sub(r.user_in).ok_or(error!(CoreError::InsufficientCredit))?;
     book.credit[o] = book.credit[o].checked_add(r.user_out).ok_or(error!(CoreError::MathOverflow))?;

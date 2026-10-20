@@ -13,6 +13,8 @@ pub mod builtin;
 pub mod cpi;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_library;
 
 use hook_standard::{
     cap, Environment, HookStack, Output, PolicyContext, PolicyResult, StackEntry, ABI_VERSION,
@@ -35,6 +37,11 @@ pub mod reason {
     /// A program hook failed, returned nothing, or returned a malformed result.
     pub const HOOK_FAILED: u16 = 11;
     pub const UNSUPPORTED_CALLBACK: u16 = 12;
+    pub const DENYLISTED: u16 = 13;
+    pub const PRICE_IMPACT: u16 = 14;
+    pub const PRICE_LIMIT: u16 = 15;
+    pub const CREDENTIAL: u16 = 16;
+    pub const SLOT_LIMIT: u16 = 17;
 
     pub fn describe(code: u16) -> &'static str {
         match code {
@@ -50,6 +57,11 @@ pub mod reason {
             HOOK_REJECTED => "hook rejected",
             HOOK_FAILED => "hook failed",
             UNSUPPORTED_CALLBACK => "unsupported callback",
+            DENYLISTED => "denylisted",
+            PRICE_IMPACT => "price impact above limit",
+            PRICE_LIMIT => "price outside limit",
+            CREDENTIAL => "no valid credential",
+            SLOT_LIMIT => "slot operation limit reached",
             _ => "unknown",
         }
     }
@@ -89,6 +101,31 @@ pub struct Op<'a> {
     /// Creation time of the proposal this operation executes, if any.
     pub proposal_created_at: Option<i64>,
     pub records: &'a [Record<'a>],
+    /// Pool reserves in mint order (before the operation for `before_*`, after it for
+    /// `after_*`); zero when the environment has none.
+    pub reserves: [u64; 2],
+    /// Swap direction when `reserves` is set: input is mint 0.
+    pub zero_for_one: bool,
+}
+
+/// Accounts an environment hands to builtins as records: typed state records (header only) and
+/// gateway tokens (full data, bounded). Executable accounts are skipped.
+pub fn collect_records(accounts: &[solana_program::account_info::AccountInfo]) -> Vec<(Pubkey, Vec<u8>)> {
+    use hook_standard::state::{HEADER_LEN, MAGIC};
+    accounts
+        .iter()
+        .filter(|i| !i.executable)
+        .filter_map(|i| {
+            let d = i.try_borrow_data().ok()?;
+            if d.len() >= HEADER_LEN && d[..4] == MAGIC {
+                Some((*i.owner, d[..HEADER_LEN].to_vec()))
+            } else if *i.owner == builtin::GATEWAY_PROGRAM {
+                Some((*i.owner, d[..d.len().min(256)].to_vec()))
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

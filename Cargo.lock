@@ -1929,6 +1929,7 @@ dependencies = [
  "bytemuck",
  "hook-standard",
  "proptest",
+ "serde_json",
  "solana-program 2.3.0",
 ]
 

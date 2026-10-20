@@ -168,6 +168,14 @@ pub mod output {
     pub const CONDITION_MET: u16 = 6;
     /// Amount within a size cap (value: the cap).
     pub const WITHIN_SIZE_CAP: u16 = 7;
+    /// Swap fee the environment should charge, in basis points (pools clamp to their cap).
+    pub const FEE_BPS: u16 = 8;
+    /// Price impact of the operation, in basis points.
+    pub const PRICE_IMPACT_BPS: u16 = 9;
+    /// A credential was verified (value: its expiry, or `i64::MAX` if it has none).
+    pub const CREDENTIAL_EXPIRY: u16 = 10;
+    /// Operations on the subject in the current slot, including this one.
+    pub const SLOT_COUNT: u16 = 11;
     /// Hook-defined outputs start here.
     pub const CUSTOM_BASE: u16 = 0x8000;
 }

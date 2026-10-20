@@ -12,3 +12,4 @@ solana-program = "2"
 
 [dev-dependencies]
 proptest = "1"
+serde_json = "1"

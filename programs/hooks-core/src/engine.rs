@@ -82,6 +82,9 @@ pub struct SwapArgs {
     /// Exact-in: minimum output. Exact-out: maximum input.
     pub limit: u64,
     pub protocol_fee_bps: u16,
+    /// Fee from the pool's builtin policy (`dynamic-fee`), replacing the pool fee for this swap;
+    /// clamped to `max_fee_ppm`. The pool hook's own dynamic fee, if any, still takes precedence.
+    pub policy_fee_ppm: Option<u32>,
 }
 
 impl SwapArgs {
@@ -116,7 +119,7 @@ pub fn swap(book: &mut Book, a: &SwapArgs, hooks: &mut impl Hooks) -> Result<Swa
     let (i, o) = if a.zero_for_one { (0, 1) } else { (1, 0) };
     let flags = a.flags();
     let mut b = *book;
-    let mut fee_ppm = b.fee_ppm;
+    let mut fee_ppm = a.policy_fee_ppm.map_or(b.fee_ppm, |f| f.min(b.max_fee_ppm));
     let mut credit = [b.credit[0] as i128, b.credit[1] as i128];
 
     let (s, u1) = match invoke(hooks, Callback::BeforeSwap, &b, flags, [a.amount, a.limit, 0, 0, 0, 0, 0])? {
@@ -263,7 +266,7 @@ mod tests {
     }
 
     fn args(exact_in: bool, amount: u64, limit: u64) -> SwapArgs {
-        SwapArgs { zero_for_one: true, exact_in, amount, limit, protocol_fee_bps: 0 }
+        SwapArgs { zero_for_one: true, exact_in, amount, limit, protocol_fee_bps: 0, policy_fee_ppm: None }
     }
 
     fn total(b: &Book, i: usize) -> u64 {
@@ -390,7 +393,7 @@ mod tests {
                 (Callback::BeforeSwap, HookResult::ok().with_fee(fee).with_deltas(s, u1)),
                 (Callback::AfterSwap, HookResult::ok().with_deltas(0, u2)),
             ], vec![]);
-            let a = SwapArgs { zero_for_one: zfo, exact_in, amount, limit: if exact_in { 0 } else { u64::MAX }, protocol_fee_bps: bps };
+            let a = SwapArgs { zero_for_one: zfo, exact_in, amount, limit: if exact_in { 0 } else { u64::MAX }, protocol_fee_bps: bps, policy_fee_ppm: None };
             let (i, o) = if zfo { (0, 1) } else { (1, 0) };
             if let Ok(r) = swap(&mut b, &a, &mut h) {
                 proptest::prop_assert_eq!(total(&b, i), total(&start, i) + r.user_in);

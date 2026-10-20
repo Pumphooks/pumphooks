@@ -18,7 +18,7 @@ use anchor_lang::{
     },
 };
 use hook_kernel::{carry_state, cpi::CpiPolicyHooks, reason, requires_guard, validate_stack, Op, Record};
-use hook_standard::{loader, state::HEADER_LEN, Environment, HookStack};
+use hook_standard::{loader, Environment, HookStack};
 
 pub mod venues;
 
@@ -289,14 +289,7 @@ fn check_install<'info>(old: &HookStack, new: &mut HookStack, remaining: &'info 
 }
 
 fn records(remaining: &[AccountInfo]) -> Vec<(Pubkey, Vec<u8>)> {
-    remaining
-        .iter()
-        .filter(|i| !i.executable)
-        .filter_map(|i| {
-            let d = i.try_borrow_data().ok()?;
-            (d.len() >= HEADER_LEN && d[..4] == hook_standard::state::MAGIC).then(|| (*i.owner, d[..HEADER_LEN].to_vec()))
-        })
-        .collect()
+    hook_kernel::collect_records(remaining)
 }
 
 fn run<'info>(stack: &mut HookStack, cb: u8, op: &Op, subject: &AccountInfo<'info>, remaining: &[AccountInfo<'info>]) -> Result<()> {
