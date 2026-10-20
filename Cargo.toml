@@ -5,6 +5,7 @@ members = [
     "crates/hook-runtime",
     "crates/policy-vm",
     "crates/pump-adapter",
+    "crates/hooks-interface",
     "programs/pump-hooks",
     "tests/integration",
 ]
@@ -20,6 +21,7 @@ bytemuck = { version = "1.16", features = ["derive", "min_const_generics"] }
 hook-types = { path = "crates/hook-types" }
 hook-runtime = { path = "crates/hook-runtime" }
 policy-vm = { path = "crates/policy-vm" }
+hooks-interface = { path = "crates/hooks-interface" }
 
 [profile.release]
 overflow-checks = true

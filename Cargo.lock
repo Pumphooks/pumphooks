@@ -1867,6 +1867,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hooks-interface"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "sha2 0.10.9",
+ "solana-program 2.3.0",
+]
+
+[[package]]
 name = "hybrid-array"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
