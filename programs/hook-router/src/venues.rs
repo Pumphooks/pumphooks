@@ -2,8 +2,9 @@
 //! to, and where the user's signer and token accounts sit in each instruction.
 //!
 //! Sources: `docs/research/amm-venues.md` (program ids, discriminators, account orders).
-//! `verified` = exercised in `tests/hooks/tests/router.rs` against the venue's real binary.
-//! Unverified venues exist in this table but are refused unless the admin enables them.
+//! `verified` = every swap instruction listed for the venue is exercised through the router
+//! against the venue's real binary (`tests/hooks/tests/router.rs`, `tests/hooks/tests/venues.rs`).
+//! Every venue, verified or not, is refused until the admin enables it.
 
 use anchor_lang::prelude::*;
 
@@ -71,7 +72,7 @@ pub const VENUES: &[Venue] = &[
         min_accounts: 13,
         max_accounts: 13,
         swaps: CPMM_SWAPS,
-        verified: false,
+        verified: true,
     },
     Venue {
         id: RAYDIUM_CPMM_DEVNET,
@@ -81,7 +82,7 @@ pub const VENUES: &[Venue] = &[
         min_accounts: 13,
         max_accounts: 13,
         swaps: CPMM_SWAPS,
-        verified: false,
+        verified: true,
     },
     Venue {
         id: METEORA_DAMM_V2,
@@ -91,7 +92,7 @@ pub const VENUES: &[Venue] = &[
         min_accounts: 14,
         max_accounts: 15,
         swaps: DAMM_V2_SWAPS,
-        verified: false,
+        verified: true,
     },
 ];
 

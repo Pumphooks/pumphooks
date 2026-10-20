@@ -51,6 +51,20 @@ Surprises, in order of impact:
    0.4.1. It needs a diff check (not done here).
 6. Jupiter's docs say "CPI cannot use Address Lookup Tables". The runtime does not support that
    claim for v0 transactions; see §9.4.
+7. **Router adapters verified (2026-10-20).** `tests/hooks/tests/venues.rs` routes through
+   `hook-router` into the real binaries (`scripts/dump_programs.sh`), devnet and mainnet builds:
+   - Raydium CPMM (`CPMMoo8L…`, `DRaycpLY…`): pools created by the venue's own `initialize` on the
+     network's real AmmConfig index 0 and create-pool fee receiver; `swap_base_input` both ways and
+     `swap_base_output`.
+   - Meteora DAMM v2 (`cpamdpZC…`): funded SPL pools cloned from each cluster
+     (`scripts/fetch_venue_fixtures.py`, `tests/fixtures/venues/`); `swap2` exact-in both ways,
+     exact-out, and the legacy `swap`.
+   - Each route's receipt equals the measured balance deltas. The router's own min-out and max-in
+     bind regardless of the venue's limits, and no SOL leaves the wallet beyond rent and fees.
+   - Moving the DAMM signer index from 8 to 7 makes the router refuse with `AccountMismatch`,
+     which shows the suite detects a wrong adapter entry.
+   - Not covered: swaps inside a DAMM v2 rate-limiter window. Both cloned pools are past it. Item 1
+     still applies to those swaps.
 
 ---
 

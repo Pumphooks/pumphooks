@@ -1,0 +1,13 @@
+{
+ "program": "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+ "pool": "13FbJuYiVvUGXb4iDJJCQuW3t8Gc8yC89Ep4unzTNy7",
+ "token_a_mint": "5t4jR1knYHqL6Tn9qPGsZnKuxHqqQytXiirtaqNTgeK4",
+ "token_b_mint": "So11111111111111111111111111111111111111112",
+ "token_a_vault": "EjDiZe3gn1bQ1RnsNmPYHLWTCBH2LEbgswZ5iw74hBRY",
+ "token_b_vault": "7gzi4YPcQsnDFubEm9GcMULtpATaidEEkYZbLUNb46bT",
+ "vault_balances": [
+  229185555104533,
+  669297580
+ ],
+ "source_rpc": "https://api.devnet.solana.com"
+}

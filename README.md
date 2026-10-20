@@ -44,7 +44,7 @@ It is printed in the registry, in the SDK and in the UI.
 | | Environment | Where hooks run | Can it be bypassed? | Status |
 | --- | --- | --- | --- | --- |
 | `0x00` | **Tokens** | Token-2022 transfer hook on a wrapped asset (SPL in, Token-2022 out) | Every transfer of the wrapped mint would run it. The original SPL token is unaffected. | **not built** |
-| `0x01` | **Transactions** | `hook-router`: a route policy's stack around an allowlisted venue CPI | **Yes.** Anyone can call the venue directly. Router hooks are opt-in guardrails. | 11 tests |
+| `0x01` | **Transactions** | `hook-router`: a route policy's stack around an allowlisted venue CPI | **Yes.** Anyone can call the venue directly. Router hooks are opt-in guardrails. | 15 tests (4 against Raydium and Meteora binaries) |
 | `0x02` | **Liquidity pools** | `hooks-core` PoolManager: one registry-pinned program hook (fees, deltas, quotes) plus an optional builtin stack | No, for pools created in this program. Other AMMs are out of scope. | 25 tests |
 | `0x03` | **Smart accounts** | `smart-accounts` vault PDA, on deposit, withdraw, execute and governance | No. Funds only leave the vault through the hook stack. | 13 tests |
 
@@ -103,9 +103,14 @@ Stated plainly, everywhere:
 | Venue | Program | Status |
 | --- | --- | --- |
 | PumpSwap | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` | **verified**: tested against the real binary and a cloned devnet pool |
-| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | unverified, disabled by default |
-| Raydium CPMM (devnet) | `DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb` | unverified, disabled by default |
-| Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` | unverified, disabled by default |
+| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | **verified**: mainnet binary, pool made by its own `initialize` on the live AmmConfig, both swap instructions |
+| Raydium CPMM (devnet) | `DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb` | **verified**: devnet binary, same coverage |
+| Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` | **verified**: devnet and mainnet binaries with cloned funded pools, `swap2` (exact in and exact out) and `swap`, outside the rate-limiter window |
+
+Every venue starts disabled; the router admin enables each one. Verification lives in
+`tests/hooks/tests/venues.rs`: receipts must equal measured balance deltas, and the router's own
+min-out, max-in and SOL caps must bind independently of the venue. Fixtures come from
+`scripts/dump_programs.sh` and `scripts/fetch_venue_fixtures.py`, using public RPCs only.
 
 ## 05 &nbsp;/&nbsp; Repository
 

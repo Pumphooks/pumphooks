@@ -35,7 +35,7 @@
 | ABI v1 types | `crates/hook-standard`, `packages/hook-types` | built, 6 unit tests |
 | Composition kernel and builtin policies | `crates/hook-kernel` | built, 14 unit and property tests |
 | Hook registry | `programs/hook-registry` | built, 7 LiteSVM tests |
-| ROUTER engine | `programs/hook-router` (registry + kernel) | built, 11 LiteSVM tests against the real PumpSwap binary |
+| ROUTER engine | `programs/hook-router` (registry + kernel) | built, 15 LiteSVM tests against the real PumpSwap, Raydium CPMM and Meteora DAMM v2 binaries |
 | POOL engine (PoolManager) | `programs/hooks-core` (registry + kernel) | built, 25 LiteSVM tests + 11 engine unit and property tests |
 | ACCOUNT engine | `programs/smart-accounts` (registry + kernel) | built, 13 LiteSVM tests |
 | TOKEN engine | `programs/token-wrapper`, `programs/token-hooks` | **not built** |

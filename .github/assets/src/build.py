@@ -316,7 +316,7 @@ def system():
     EH = 236
     engines = [
         ("0x00", "TOKEN", "Tokens", ["SPL in, Token-2022 out. In the", "standard and the kernel; the", "wrapper engine is not built."], "wrapper", "not built", "warn", "\u2014"),
-        ("0x01", "ROUTER", "Transactions", ["Allowlisted venue swaps with", "measured slippage, deadline", "and replay-proof receipts."], "router", "tested", "ok", "11"),
+        ("0x01", "ROUTER", "Transactions", ["Allowlisted venue swaps with", "measured slippage, deadline", "and replay-proof receipts."], "router", "tested", "ok", "15"),
         ("0x02", "POOL", "Liquidity pools", ["Registry-pinned pool hooks for", "fees, deltas and quotes, plus", "builtin stacks on the kernel."], "program", "tested", "ok", "25"),
         ("0x03", "ACCOUNT", "Smart accounts", ["Vault PDA with limits, timelocks,", "multisig, sessions, recovery", "and an emergency lock."], "program", "tested", "ok", "13"),
     ]
