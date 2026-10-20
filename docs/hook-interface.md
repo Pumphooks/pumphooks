@@ -57,6 +57,9 @@ $12M.
 
 `hook_data` is supplied by whoever built the transaction. Treat it as untrusted input.
 
+The pool account's data is written when the core instruction ends, so during a callback it still
+shows the state before the operation. Read reserves, supply and fee from the context.
+
 ## 3. HookContext (248 bytes)
 
 | off | size | field |
@@ -70,7 +73,7 @@ $12M.
 | 40 | 32 | `caller`: the signer that initiated the operation |
 | 72 | 32 | `mint_0` |
 | 104 | 32 | `mint_1` |
-| 136 | 8 | `reserve_0` (before this operation's changes) |
+| 136 | 8 | `reserve_0` (before\* callbacks: state before the operation; after\* callbacks: after the curve / liquidity change, before the hook's own deltas) |
 | 144 | 8 | `reserve_1` |
 | 152 | 8 | `lp_supply` |
 | 160 | 8 | `sequence` (pool operation counter) |
@@ -84,7 +87,7 @@ $12M.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Before/AfterInitialize | fee_ppm | max_fee_ppm | salt | | | | |
 | BeforeSwap | amount specified (exact-in: measured received) | limit | | | | | |
-| Quote | exact-in: net curve input (after fee); exact-out: curve output | fee amount | | | | | |
+| Quote | exact-in: net curve input (after fee); exact-out: curve output | exact-in: fee amount; exact-out: 0 (the fee is added after) | | | | | |
 | AfterSwap | amount specified | limit | curve_in | curve_out | fee | before δ_specified (i64 bits) | before δ_unspecified (i64 bits) |
 | BeforeAddLiquidity | max_0 | max_1 | min_shares | | | | |
 | AfterAddLiquidity | amount_0 | amount_1 | shares | | | | |

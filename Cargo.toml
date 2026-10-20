@@ -7,7 +7,10 @@ members = [
     "crates/pump-adapter",
     "crates/hooks-interface",
     "programs/pump-hooks",
+    "programs/hooks-core",
+    "programs/test-hook",
     "tests/integration",
+    "tests/core",
 ]
 
 [workspace.package]

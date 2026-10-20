@@ -74,10 +74,14 @@ All PDAs are under `hooks-core`.
 **Vault invariant**, checked at the end of every state-changing instruction:
 
 ```
-vault_i.amount == reserve_i + credit_i + protocol_fee_i      (i = 0, 1)
+vault_i.amount >= reserve_i + credit_i + protocol_fee_i      (i = 0, 1)
 ```
 
+It is `>=` because anyone can transfer tokens straight into a vault. An equality check would let a
+1-token transfer brick the pool. Unsolicited tokens are ignored.
+
 Token-2022 transfer fees are handled by measuring vault balance deltas, never by trusting inputs.
+Exact-out swaps whose input mint currently charges a transfer fee are rejected.
 
 ## 3. Hook permissions
 
@@ -241,8 +245,8 @@ The indexer decodes these. Explorers render a swap as the ordered callback trace
 
 | Accepted | Rejected in V1 |
 | --- | --- |
-| SPL Token | Token-2022 `TransferHook`, `PermanentDelegate`, `NonTransferable`, `DefaultAccountState(Frozen)`, `ConfidentialTransferMint`, `Pausable`, and any extension not in the accepted list |
-| Token-2022 with `TransferFeeConfig`, `MetadataPointer`, `TokenMetadata`, `InterestBearingConfig`, `ScaledUiAmount`, `MintCloseAuthority`, `GroupPointer`, `GroupMemberPointer`, `TokenGroupMember` | |
+| SPL Token | Token-2022 `TransferHook`, `PermanentDelegate`, `NonTransferable`, `DefaultAccountState`, `ConfidentialTransferMint`, `ConfidentialMintBurn`, and any extension not in the accepted list |
+| Token-2022 with `TransferFeeConfig`, `MetadataPointer`, `TokenMetadata`, `InterestBearingConfig`, `MintCloseAuthority`, `GroupPointer`, `TokenGroup`, `GroupMemberPointer`, `TokenGroupMember` | Extensions newer than the core's Token-2022 parser (v6), including `ScaledUiAmount` and `Pausable`: these fail to parse and are rejected (fail closed) |
 
 ## 8. Security properties
 

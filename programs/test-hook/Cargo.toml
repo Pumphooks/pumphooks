@@ -1,0 +1,21 @@
+[package]
+name = "test-hook"
+version = "0.1.0"
+edition = "2021"
+description = "TEST ONLY. A scriptable hook used by the core's integration tests, including hostile behaviors. Never deploy."
+license = "Apache-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+hooks-interface = { workspace = true }
+solana-program = "2"
+bytemuck = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }
