@@ -10,6 +10,7 @@
 //!   the environment's guarded, timelocked path).
 
 pub mod builtin;
+pub mod cpi;
 #[cfg(test)]
 mod tests;
 

@@ -1,6 +1,7 @@
 //! PUMP HOOKS ABI v1 (`docs/STANDARD.md`). Ids, bits and layouts are frozen; later versions only
 //! append.
 
+pub mod loader;
 pub mod state;
 
 use bytemuck::{Pod, Zeroable};

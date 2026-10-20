@@ -11,8 +11,10 @@ members = [
     "programs/pump-hooks",
     "programs/hooks-core",
     "programs/test-hook",
+    "programs/hook-registry",
     "tests/integration",
     "tests/core",
+    "tests/hooks",
 ]
 
 [workspace.package]

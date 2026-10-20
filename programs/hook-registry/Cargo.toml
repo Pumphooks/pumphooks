@@ -1,0 +1,30 @@
+[package]
+name = "hook-registry"
+version = "0.1.0"
+edition = "2021"
+description = "PUMP HOOKS registry: hooks, append-only versions, named reviewers and reviews."
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "hook_registry"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+anchor-lang = "0.31.1"
+bytemuck = { workspace = true }
+hook-standard = { workspace = true }
+hook-kernel = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }

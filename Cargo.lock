@@ -1933,6 +1933,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hook-registry"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "bytemuck",
+ "hook-kernel",
+ "hook-standard",
+]
+
+[[package]]
 name = "hook-runtime"
 version = "0.1.0"
 dependencies = [
@@ -2775,6 +2785,26 @@ dependencies = [
  "hook-types",
  "policy-vm",
  "pump-adapter",
+]
+
+[[package]]
+name = "pump-hooks-engine-tests"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.31.2",
+ "anchor-spl 0.31.2",
+ "bytemuck",
+ "hook-kernel",
+ "hook-registry",
+ "hook-standard",
+ "litesvm",
+ "solana-account 4.3.2",
+ "solana-address 2.6.1",
+ "solana-clock 3.1.1",
+ "solana-instruction 3.4.1",
+ "solana-keypair",
+ "solana-signer 3.0.1",
+ "solana-transaction",
 ]
 
 [[package]]
