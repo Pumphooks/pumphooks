@@ -1,6 +1,5 @@
 import type { Provenance as P } from "@/lib/artifacts";
-
-const REPO = "https://github.com/Pumphooks/pumphooks";
+import { REPO } from "@/lib/repo";
 
 export function Provenance({ p, title = "Provenance" }: { p: P; title?: string }) {
   return (

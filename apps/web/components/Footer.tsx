@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "./Logo";
+import { REPO } from "@/lib/repo";
 
 export function Footer() {
   return (
@@ -31,6 +32,9 @@ export function Footer() {
         <Link href="/security-lab">Security lab</Link>
         <Link href="/compiler">Compiler</Link>
         <Link href="/integrations">Integrations</Link>
+        <a href={REPO} target="_blank" rel="noopener noreferrer">
+          GitHub ↗
+        </a>
       </div>
       <div>
         <h4>Status</h4>

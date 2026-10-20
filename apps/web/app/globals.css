@@ -73,6 +73,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
 }
 .cluster:hover { border-color: var(--ink); }
+.cluster.gh { width: 32px; padding: 0; justify-content: center; color: var(--ink-2); }
+.cluster.gh:hover { color: var(--ink); }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); display: inline-block; flex: none; }
 .dot.live { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent); }
 .dot.off { background: var(--deny); }
