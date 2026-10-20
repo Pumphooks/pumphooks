@@ -123,12 +123,16 @@ fn versions_of(entries: &[StackEntry]) -> Vec<Meta> {
 }
 
 fn create_policy(t: &mut T, authority: &Keypair, seed: u64, delay: i64, entries: &[StackEntry]) -> Pk {
+    create_policy_with(t, authority, seed, delay, true, entries)
+}
+
+fn create_policy_with(t: &mut T, authority: &Keypair, seed: u64, delay: i64, shared: bool, entries: &[StackEntry]) -> Pk {
     let p = policy_pda(&kp(authority), seed);
     let i = ix(
         ID,
         A::CreatePolicy { authority: kp(authority), policy: p, system_program: SYS },
         versions_of(entries),
-        I::CreatePolicy { seed, delay, stack: stack(entries) },
+        I::CreatePolicy { seed, delay, shared, stack: stack(entries) },
     );
     t.s.send_ok(&[i], &[authority]);
     p
@@ -145,6 +149,7 @@ struct Route {
     data: Vec<u8>,
     max_in: u64,
     min_out: u64,
+    max_lamports: u64,
     deadline: i64,
     policy: Option<Pk>,
     buy: bool,
@@ -152,10 +157,10 @@ struct Route {
 
 impl Route {
     fn buy(quote_in: u64) -> Self {
-        Route { data: PumpSwap::data(Mode::ExactQuoteIn, quote_in, 1), max_in: quote_in, min_out: 1, deadline: i64::MAX, policy: None, buy: true }
+        Route { data: PumpSwap::data(Mode::ExactQuoteIn, quote_in, 1), max_in: quote_in, min_out: 1, max_lamports: SOL / 100, deadline: i64::MAX, policy: None, buy: true }
     }
     fn sell(base_in: u64) -> Self {
-        Route { data: PumpSwap::data(Mode::ExactBaseIn, base_in, 1), max_in: base_in, min_out: 1, deadline: i64::MAX, policy: None, buy: false }
+        Route { data: PumpSwap::data(Mode::ExactBaseIn, base_in, 1), max_in: base_in, min_out: 1, max_lamports: SOL / 100, deadline: i64::MAX, policy: None, buy: false }
     }
 }
 
@@ -177,7 +182,7 @@ fn route_ix_with(t: &mut T, user: &Pk, r: &Route, metas: Vec<Meta>, input: Pk, o
             system_program: SYS,
         },
         extra,
-        I::Route { p: RouteParams { venue_accounts: n, max_in: r.max_in, min_out: r.min_out, deadline: r.deadline, nonce: t.nonce, data: r.data.clone() } },
+        I::Route { p: RouteParams { venue_accounts: n, max_in: r.max_in, min_out: r.min_out, max_lamports: r.max_lamports, deadline: r.deadline, nonce: t.nonce, data: r.data.clone() } },
     );
     (i, receipt)
 }
@@ -411,7 +416,7 @@ fn stacks_must_be_router_stacks_backed_by_registry_versions() {
         ID,
         A::CreatePolicy { authority: kp(&owner), policy: p, system_program: SYS },
         versions_of(&[e]),
-        I::CreatePolicy { seed: 9, delay: 0, stack: bytemuck::bytes_of(&bad).to_vec() },
+        I::CreatePolicy { seed: 9, delay: 0, shared: false, stack: bytemuck::bytes_of(&bad).to_vec() },
     );
     assert!(t.s.send_err(&[i], &[&owner]).contains("InvalidStack"));
 
@@ -419,7 +424,7 @@ fn stacks_must_be_router_stacks_backed_by_registry_versions() {
         ID,
         A::CreatePolicy { authority: kp(&owner), policy: p, system_program: SYS },
         vec![],
-        I::CreatePolicy { seed: 9, delay: 0, stack: stack(&[e]) },
+        I::CreatePolicy { seed: 9, delay: 0, shared: false, stack: stack(&[e]) },
     );
     assert!(t.s.send_err(&[i], &[&owner]).contains("MissingVersion"));
 
@@ -430,7 +435,47 @@ fn stacks_must_be_router_stacks_backed_by_registry_versions() {
         ID,
         A::CreatePolicy { authority: kp(&owner), policy: p, system_program: SYS },
         versions_of(&[forged]),
-        I::CreatePolicy { seed: 9, delay: 0, stack: stack(&[forged]) },
+        I::CreatePolicy { seed: 9, delay: 0, shared: false, stack: stack(&[forged]) },
     );
     t.s.send_err(&[i], &[&owner]);
+}
+
+#[test]
+fn private_policies_only_apply_to_their_authority() {
+    let mut t = setup();
+    let owner = t.venue.wallet(&mut t.s, 5 * SOL, 2 * SOL);
+    let stranger = t.venue.wallet(&mut t.s, 5 * SOL, 2 * SOL);
+    let entries = [accounting(&t)];
+    let p = create_policy_with(&mut t, &owner, 11, 0, false, &entries);
+
+    let mut r = Route::buy(SOL / 10);
+    r.policy = Some(p);
+    assert!(route_err(&mut t, &stranger, &r).contains("PolicyNotShared"), "cannot spend or pollute another user's policy state");
+    route_ok(&mut t, &owner, &r);
+    let acc: AccountingState = bytemuck::pod_read_unaligned(&read_policy(&t, &p).stack.entries[0].state[..32]);
+    assert_eq!(acc.count, 1);
+}
+
+#[test]
+fn sol_taken_from_the_wallet_is_measured_and_capped() {
+    let mut t = setup();
+    let user = t.venue.wallet(&mut t.s, 5 * SOL, 2 * SOL);
+    let u = kp(&user);
+
+    // A wallet's first PumpSwap trade pays rent for its volume accumulator out of the wallet.
+    let mut r = Route::buy(SOL / 10);
+    r.max_lamports = 0;
+    assert!(route_err(&mut t, &user, &r).contains("LamportsExceeded"));
+
+    let before = t.s.lamports(&u);
+    let (i, receipt) = route_ix(&mut t, &u, &Route::buy(SOL / 10));
+    t.s.send_ok(&[i], &[&user]);
+    let rec: Receipt = t.s.get(&receipt);
+    let fee = 5_000;
+    assert!(rec.lamports_spent > 0);
+    assert_eq!(before - t.s.lamports(&u), rec.lamports_spent + t.s.lamports(&receipt) + fee, "receipt records exactly what the venue took");
+
+    // Afterwards the venue takes no SOL, so a zero cap passes.
+    let rec = route_ok(&mut t, &user, &r);
+    assert_eq!(rec.lamports_spent, 0);
 }

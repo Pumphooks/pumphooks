@@ -44,6 +44,8 @@ pub struct RouteParams {
     pub venue_accounts: u8,
     pub max_in: u64,
     pub min_out: u64,
+    /// Cap on SOL the venue may take from the user's wallet (rent for venue-side accounts).
+    pub max_lamports: u64,
     pub deadline: i64,
     pub nonce: u64,
     pub data: Vec<u8>,
@@ -78,7 +80,11 @@ pub mod hook_router {
     }
 
     /// Remaining accounts: the registry `HookVersion` of every entry.
-    pub fn create_policy<'info>(ctx: Context<'_, '_, 'info, 'info, CreatePolicy<'info>>, seed: u64, delay: i64, stack: Vec<u8>) -> Result<()> {
+    ///
+    /// A private policy (`shared = false`) only applies to routes signed by its authority. A shared
+    /// policy can be used by anyone, so its stateful hooks (spending limits, accounting) are
+    /// shared by all of its users.
+    pub fn create_policy<'info>(ctx: Context<'_, '_, 'info, 'info, CreatePolicy<'info>>, seed: u64, delay: i64, shared: bool, stack: Vec<u8>) -> Result<()> {
         require!((0..=MAX_POLICY_DELAY).contains(&delay), RouterError::InvalidParams);
         let mut s = parse_stack(&stack)?;
         let empty: Box<HookStack> = bytemuck::zeroed_box();
@@ -87,6 +93,7 @@ pub mod hook_router {
         p.authority = ctx.accounts.authority.key();
         p.seed = seed;
         p.delay = delay;
+        p.shared = shared as u8;
         p.bump = ctx.bumps.policy;
         p.stack = *s;
         emit!(PolicyUpdated { policy: ctx.accounts.policy.key(), staged: false });
@@ -153,7 +160,11 @@ pub mod hook_router {
         let (out_mint, out_before) = token_state(&ctx.accounts.user_output)?;
 
         let mut stack = match &ctx.accounts.policy {
-            Some(pl) => Some(boxed(&pl.load()?.stack)),
+            Some(pl) => {
+                let pol = pl.load()?;
+                require!(pol.shared != 0 || pol.authority == user, RouterError::PolicyNotShared);
+                Some(boxed(&pol.stack))
+            }
             None => None,
         };
         let sequence = ctx.accounts.policy.as_ref().map(|pl| pl.load().map(|x| x.sequence)).transpose()?.unwrap_or(0);
@@ -187,7 +198,10 @@ pub mod hook_router {
         let ix = Instruction { program_id: venue.program, accounts: metas, data: p.data.clone() };
         let mut infos = venue_infos.to_vec();
         infos.push(venue_program.clone());
+        let lamports_before = ctx.accounts.user.lamports();
         invoke(&ix, &infos)?;
+        let lamports_spent = lamports_before.saturating_sub(ctx.accounts.user.lamports());
+        require!(lamports_spent <= p.max_lamports, RouterError::LamportsExceeded);
 
         let (_, in_after) = token_state(&ctx.accounts.user_input)?;
         let (_, out_after) = token_state(&ctx.accounts.user_output)?;
@@ -216,6 +230,7 @@ pub mod hook_router {
         r.output_mint = out_mint;
         r.spent = spent;
         r.received = received;
+        r.lamports_spent = lamports_spent;
         r.max_in = p.max_in;
         r.min_out = p.min_out;
         r.slot = clock.slot;
@@ -328,7 +343,8 @@ pub struct RoutePolicy {
     pub delay: i64,
     pub pending_at: i64,
     pub bump: u8,
-    pub _pad: [u8; 7],
+    pub shared: u8,
+    pub _pad: [u8; 6],
     pub stack: HookStack,
 }
 
@@ -343,6 +359,7 @@ pub struct Receipt {
     pub output_mint: Pubkey,
     pub spent: u64,
     pub received: u64,
+    pub lamports_spent: u64,
     pub max_in: u64,
     pub min_out: u64,
     pub slot: u64,
@@ -485,4 +502,8 @@ pub enum RouterError {
     SlippageExceeded,
     #[msg("Hook stack rejected the route")]
     PolicyRejected,
+    #[msg("Policy is private to its authority")]
+    PolicyNotShared,
+    #[msg("Venue took more SOL from the user than max_lamports")]
+    LamportsExceeded,
 }
