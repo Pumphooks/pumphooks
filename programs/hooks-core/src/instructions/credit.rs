@@ -1,4 +1,4 @@
-//! Hook credit and hook-initiated operations (`docs/architecture.md` §4.5), and protocol fees.
+//! Hook credit and hook-initiated operations (`docs/engines/pool-manager.md` §4.5), and protocol fees.
 
 use anchor_lang::prelude::*;
 use hooks_interface::{perm, Callback, HookResult};

@@ -1,4 +1,4 @@
-//! Token movement, vault creation and the mint policy (`docs/architecture.md` §7).
+//! Token movement, vault creation and the mint policy (`docs/engines/pool-manager.md` §7).
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{program::invoke_signed, system_instruction};

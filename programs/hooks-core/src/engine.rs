@@ -1,6 +1,6 @@
 //! Settlement engine: pure accounting with hook calls behind a trait, so the delta rules are
 //! testable without a VM. The instruction handlers do token movement and invariant checks around
-//! it. See `docs/architecture.md` §4.
+//! it. See `docs/engines/pool-manager.md` §4.
 
 use anchor_lang::prelude::*;
 use hooks_interface::{math, perm, Callback, HookResult, SWAP_EXACT_IN, SWAP_ZERO_FOR_ONE};

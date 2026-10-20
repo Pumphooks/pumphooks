@@ -5,9 +5,9 @@
 The protocol is being rebuilt as a generic programmable-market core, with the Pump router as an
 optional adapter. Phase 1 is done and builds and tests locally:
 
-- research ([docs/research.md](docs/research.md));
+- research ([docs/RESEARCH.md](docs/RESEARCH.md));
 - architecture and the frozen hook interface
-  ([docs/architecture.md](docs/architecture.md), [docs/hook-interface.md](docs/hook-interface.md));
+  ([docs/engines/pool-manager.md](docs/engines/pool-manager.md), [docs/engines/pool-hook-interface.md](docs/engines/pool-hook-interface.md));
 - the core program and its tests.
 
 What is built:

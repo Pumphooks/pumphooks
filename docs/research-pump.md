@@ -178,7 +178,7 @@ means "applies to routed execution only".
    program that mutates it), and keeps CPI depth at router → Pump → Token. The Hook ABI is still
    defined as a CPI interface so external hooks can be enabled later behind the `EXTERNAL_CPI`
    capability.
-3. Registry and router are one program (`pump-hooks`). See `architecture.md` §3 for the reasoning.
+3. Registry and router are one program (`pump-hooks`). See `architecture-pump-router.md` §3 for the reasoning.
 4. The router must observe post-trade state from **token-account balances** (synthetic migration,
    kept fees and negative virtual reserves all make reserve-diffing unreliable).
 5. The primary user object is an **existing Pump market**. Token creation is a thin convenience

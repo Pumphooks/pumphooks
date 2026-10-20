@@ -130,7 +130,7 @@ credit.**
 | AfterRemoveLiquidity | token 0 withheld from LP (+) / bonus (−) | token 1 |
 | others | must be 0 | must be 0 |
 
-Settlement rules are in [architecture.md §4](architecture.md). In summary, every delta moves value
+Settlement rules are in [pool-manager.md §4](pool-manager.md). In summary, every delta moves value
 between the trader or LP and this pool's hook credit, and nowhere else. Credits must stay ≥ 0. The
 trader's or LP's limits are checked after all deltas. The exact-in or exact-out type cannot flip.
 

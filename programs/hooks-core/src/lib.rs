@@ -1,6 +1,6 @@
 //! Programmable-market core. Pools, vaults, LP shares, settlement, the hook and market
 //! registries, and hook invocation. Market behavior lives in hook programs
-//! (`docs/architecture.md`, `docs/hook-interface.md`).
+//! (`docs/engines/pool-manager.md`, `docs/engines/pool-hook-interface.md`).
 
 #![allow(unexpected_cfgs, deprecated)]
 

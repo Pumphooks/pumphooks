@@ -4,14 +4,14 @@
 
 The core program (`hooks-core`) provides pools, vaults, accounting, settlement, LP shares, hook
 invocation and permissions, and the hook and market registries. A hook is any Solana program that
-implements the hook interface ([hook-interface.md](hook-interface.md)). It supplies market behavior
+implements the hook interface ([pool-hook-interface.md](pool-hook-interface.md)). It supplies market behavior
 the core never anticipated, without changes to the core.
 
 The core has no dependency on Pump. Pump tokens are ordinary SPL / Token-2022 mints. The earlier
 Pump router is an optional adapter documented in
-[architecture-pump-router.md](architecture-pump-router.md).
+[architecture-pump-router.md](../architecture-pump-router.md).
 
-The design follows [research.md](research.md). The numbered implications there (R1–R11) are cited
+The design follows [research.md](../RESEARCH.md). The numbered implications there (R1–R11) are cited
 as `[R#]`.
 
 ---
@@ -85,7 +85,7 @@ Exact-out swaps whose input mint currently charges a transfer fee are rejected.
 
 ## 3. Hook permissions
 
-A `u32` mask. Wire values are frozen and listed in [hook-interface.md](hook-interface.md).
+A `u32` mask. Wire values are frozen and listed in [pool-hook-interface.md](pool-hook-interface.md).
 
 - Callbacks: `BEFORE_INITIALIZE`, `AFTER_INITIALIZE`, `BEFORE_ADD_LIQUIDITY`, `AFTER_ADD_LIQUIDITY`,
   `BEFORE_REMOVE_LIQUIDITY`, `AFTER_REMOVE_LIQUIDITY`, `BEFORE_SWAP`, `AFTER_SWAP`, `BEFORE_DONATE`,
@@ -208,7 +208,7 @@ caller, so this is not re-entrancy. Operations:
 
 ## 5. Calling a hook
 
-See [hook-interface.md](hook-interface.md) for exact bytes.
+See [pool-hook-interface.md](pool-hook-interface.md) for exact bytes.
 
 - **Instruction data:** an 8-byte namespaced discriminator, a fixed 248-byte `HookContext`, then
   `hook_data` (≤ 512 bytes, opaque, untrusted).

@@ -1,6 +1,6 @@
 //! Hook interface v1 for the programmable-market core.
 //!
-//! The wire format is frozen and specified in `docs/hook-interface.md`. A hook program:
+//! The wire format is frozen and specified in `docs/engines/pool-hook-interface.md`. A hook program:
 //!
 //! 1. matches the 8-byte discriminator ([`Callback::from_discriminator`]);
 //! 2. calls [`verify_core_call`] before anything else;
@@ -123,7 +123,7 @@ impl Callback {
     }
 }
 
-/// Permission bits (`docs/hook-interface.md` §1).
+/// Permission bits (`docs/engines/pool-hook-interface.md` §1).
 pub mod perm {
     use super::Callback;
 
