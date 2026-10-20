@@ -1,0 +1,24 @@
+{
+  "name": "@pump-hooks/indexer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Resumable, idempotent indexer for Pump Hooks events: routed trades, hook executions, denials, installs.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/bin.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pump-hooks/sdk": "workspace:*",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "litesvm": "0.3.3",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
