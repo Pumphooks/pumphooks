@@ -1,0 +1,31 @@
+{
+  "name": "@pump-hooks/hook-security",
+  "version": "0.1.0",
+  "description": "Security testing for Pump Hooks programs: seeded stateful fuzzing with shrinking against the compiled binaries, protocol invariants, adversarial operations, and a 15-category attack catalog mapped to executed tests. Not an audit.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pump-hooks/execution-lab": "workspace:*",
+    "@pump-hooks/sdk": "workspace:*",
+    "@solana/kit": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

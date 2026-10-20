@@ -111,6 +111,28 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@20.19.43)(terser@5.51.2)(tsx@4.23.15)
 
+  packages/hook-security:
+    dependencies:
+      '@pump-hooks/execution-lab':
+        specifier: workspace:*
+        version: link:../execution-lab
+      '@pump-hooks/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+      '@solana/kit':
+        specifier: ^8.0.0
+        version: 8.5.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@6.0.6)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@20.19.43)(terser@5.51.2)(tsx@4.23.15)
+
   packages/sdk:
     dependencies:
       '@noble/hashes':
