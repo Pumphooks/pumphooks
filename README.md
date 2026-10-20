@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Pumphooks/pumphooks/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Pumphooks/pumphooks/ci.yml?branch=main&style=flat-square&label=ci&labelColor=efede6&color=17803d"></a>
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-0e0e0c?style=flat-square&labelColor=efede6">
   <img alt="Network: devnet" src="https://img.shields.io/badge/network-devnet-a86a00?style=flat-square&labelColor=efede6">
   <img alt="Not audited" src="https://img.shields.io/badge/audit-not%20audited-c23317?style=flat-square&labelColor=efede6">
