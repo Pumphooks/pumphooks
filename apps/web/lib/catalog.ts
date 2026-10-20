@@ -50,5 +50,33 @@ export const CATALOG: CatalogEntry[] = manifests.map((m) => ({ ...m, info: modul
 
 export const catalogEntry = (slugOrId: string | number) => CATALOG.find((c) => c.slug === slugOrId || c.moduleId === slugOrId);
 
+export const CAPABILITY_INFO: Record<string, string> = {
+  READ_MARKET: "Read market config, venue reserves and the trade context",
+  VETO_ROUTED_SWAP: "Deny a routed trade in a before-callback (reverts the transaction)",
+  WRITE_HOOK_STATE: "Persist its 48-byte slot state on the market",
+  WRITE_USER_STATE: "Update the trading wallet's per-market state",
+  AWARD_POINTS: "Credit XP / points in the wallet's per-market ledger",
+  TREASURY_SIGNAL: "Emit treasury allocation intents for the strategy vault",
+  STRATEGY_EXECUTION: "Bound or request vault strategy execution (TWAP, orders)",
+  ORACLE_READ: "Read an external oracle account (reserved; not granted in V1)",
+  EXTERNAL_CPI: "Call an external hook program (reserved; no permissionless CPI hooks in V1)",
+  EMIT_SIGNAL: "Emit or consume signed strategy signals",
+};
+
+export const CALLBACK_NOTES: Record<string, string> = {
+  BeforeBuy: "Routed buy, before the Pump CPI. Can deny.",
+  AfterBuy: "Routed buy, after the Pump CPI. Sees executed amounts; can still fail the transaction.",
+  BeforeSell: "Routed sell, before the Pump CPI. Can deny.",
+  AfterSell: "Routed sell, after the Pump CPI.",
+  BeforeSwap: "Either side, before the Pump CPI. Can deny.",
+  AfterSwap: "Either side, after the Pump CPI.",
+  BeforeLiquidity: "Reserved (wire value 6).",
+  AfterLiquidity: "Reserved (wire value 7).",
+  BeforeFeeAction: "Reserved (wire value 8).",
+  AfterFeeAction: "Reserved (wire value 9).",
+  OnGraduation: "Reserved (wire value 10).",
+  OnStrategySignal: "Reserved (wire value 11).",
+};
+
 export const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL ?? "";
 export const sourceUrl = (path: string) => (REPO_URL ? `${REPO_URL.replace(/\/$/, "")}/${path}` : undefined);
