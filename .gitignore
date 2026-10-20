@@ -24,3 +24,7 @@ tests/fixtures/programs/*.so
 # next.js generated
 next-env.d.ts
 .vercel
+
+# README art review renders
+.github/assets/src/_render/
+__pycache__/

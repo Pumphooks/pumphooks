@@ -1,104 +1,138 @@
-# Pump Hooks
+<p align="center">
+  <a href="https://pumphooks.vercel.app"><img src=".github/assets/hero.svg" alt="Pump Hooks: make Solana programmable" width="100%"></a>
+</p>
 
-**The programmable layer for Pump.** Give any existing Pump market new behavior: compose
-execution, risk, rewards, treasury and autonomous logic as a hook stack that runs around every
-trade routed through Pump Hooks.
+<p align="center">
+  <a href="https://pumphooks.vercel.app"><b>Website</b></a> &nbsp;&middot;&nbsp;
+  <a href="docs/ARCHITECTURE.md">Architecture</a> &nbsp;&middot;&nbsp;
+  <a href="docs/STANDARD.md">Hook standard</a> &nbsp;&middot;&nbsp;
+  <a href="docs/research">Research</a> &nbsp;&middot;&nbsp;
+  <a href="SECURITY.md">Security</a>
+</p>
 
-```
-ANY PUMP TOKEN ──▶ HOOK STACK ──────────────────────────────▶ PUMP / PUMPSWAP
-                   Launch Shield · Volume Guard · Volatility
-                   Holder XP · Treasury · TWAP · SENTIENT · Policies
-```
+<p align="center">
+  <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-0e0e0c?style=flat-square&labelColor=efede6">
+  <img alt="Network: devnet" src="https://img.shields.io/badge/network-devnet-a86a00?style=flat-square&labelColor=efede6">
+  <img alt="Not audited" src="https://img.shields.io/badge/audit-not%20audited-c23317?style=flat-square&labelColor=efede6">
+  <img alt="Anchor 0.31" src="https://img.shields.io/badge/anchor-0.31-0e0e0c?style=flat-square&labelColor=efede6">
+</p>
 
-Pump Hooks is not a launchpad. The primary object is a **hooked market**: an existing Pump token
-(on its bonding curve or migrated to PumpSwap), plus a hook stack and policies owned by a market
-authority.
+<br>
 
-## The routing boundary
+Uniswap v4 made a single AMM programmable. **Pump Hooks makes Solana execution programmable**:
+one hook standard, one registry and one execution kernel shared by four environments, which are
+tokens, transactions, liquidity pools and smart accounts.
 
-Pump and PumpSwap do not call external programs before or after swaps. Pump Hooks therefore runs
-hooks **at its own router boundary**. In one atomic transaction:
+A hook is a small, versioned policy. It is published to an on-chain registry, installed into a
+stack, and run before or after an operation. Each hook can **veto** that operation, and none can
+override another hook's veto. A denial, an error or a missing piece of state reverts the whole
+transaction.
 
-1. The wallet calls `route_curve` (bonding curve) or `route_amm` (PumpSwap) with a buy or sell
-   mode.
-2. The before-hooks run.
-3. The router makes the CPI into Pump or PumpSwap.
-4. It measures the executed amounts.
-5. The after-hooks run.
-6. Events are emitted.
+<br>
 
-**Trades sent to Pump or PumpSwap directly bypass the hook stack.** Guards protect routed flow and
-rewards accrue to routed flow; neither can restrict the venue itself. A test pins this
-behavior.
+<img src=".github/assets/system.svg" alt="System map: SDK, CLI and composer on top; hook registry; execution kernel; token, router, pool and account engines; shared state records" width="100%">
 
-## Repository
+<br>
+
+## 01 &nbsp;/&nbsp; Four environments, one standard
+
+Each environment states exactly how far its hooks reach. That boundary is part of the standard.
+It is printed in the registry, in the SDK and in the UI.
+
+| | Environment | Where hooks run | Can it be bypassed? | Status |
+| --- | --- | --- | --- | --- |
+| `0x00` | **Tokens** | Token-2022 transfer hook on a wrapped asset (SPL in, Token-2022 out) | Every transfer of the wrapped mint runs it. The original SPL token is unaffected. | building |
+| `0x01` | **Transactions** | `hook-router`, around an allowlisted venue CPI | **Yes.** Anyone can call the venue directly. Router hooks are opt-in guardrails. | 9 tests |
+| `0x02` | **Liquidity pools** | `hooks-core` PoolManager, on swap and liquidity callbacks | No, for pools created in this program. Other AMMs are out of scope. | 21 tests |
+| `0x03` | **Smart accounts** | `smart-accounts` vault PDA, on deposit, withdraw, execute and governance | No. Funds only leave the vault through the hook stack. | 13 tests |
+
+<br>
+
+<img src=".github/assets/route.svg" alt="Two router pipelines with the same stack: a 0.20 SOL buy passes every hook and commits; a 0.50 SOL buy is denied by MAX_SIZE and the transaction reverts" width="100%">
+
+<br>
+
+## 02 &nbsp;/&nbsp; Builtin hooks
+
+Builtins run inline in the kernel, so they cost no CPI and are covered by property tests. Program
+hooks are separate programs called by CPI. They receive no signers, and they get only the accounts
+their granted capabilities allow.
+
+| Id | Hook | What it enforces | Environments |
+| --- | --- | --- | --- |
+| 1 | `ALLOWLIST` | Actor or counterparty must be on an inline list or a verified state record | token, router, account |
+| 2 | `SPENDING_LIMIT` | Amount per asset per rolling period | router, account |
+| 3 | `TIMELOCK` | Operation needs a proposal older than the delay | token, account |
+| 4 | `MULTISIG` | Threshold of approvals from a member mask | account |
+| 5 | `CONDITIONAL` | If these premises hold, these requirements must too | router, account |
+| 6 | `MAX_SIZE` | Single operation cap per asset | token, router, account |
+| 7 | `TIME_WINDOW` | Absolute bounds and a daily UTC window | token, router, account |
+| 8 | `ACCOUNTING` | Records measured count and volume; never blocks | token, router, account |
+
+Hook stacks compose **monotonically**: adding a hook can only make the stack stricter. Changing or
+removing a `mandatory` entry goes through the environment's guarded path, which is a policy delay
+on router policies and an aged proposal on smart accounts.
+
+## 03 &nbsp;/&nbsp; What hooks can and can't do
+
+Stated plainly, everywhere:
+
+- **No universal delegate.** No hook, router or registry ever holds a token delegate over user funds.
+- **No custody outside our programs.** Smart-account funds sit in a vault PDA. Nothing else holds user assets.
+- **No arbitrary CPI from config.** Builtins are fixed code. Program hooks are pinned to a registry
+  version, its upgrade authority and its deploy slot.
+- **Router hooks are bypassable.** PumpSwap, Raydium and Meteora don't call external hooks. The router
+  runs hooks around its own CPI, and it measures real balance changes instead of trusting the venue.
+- **Pool hooks govern only pools in this program.**
+- **"Audited" only means audited.** The registry distinguishes *community*, *tested* and *audited*,
+  and nothing here is audited yet.
+
+## 04 &nbsp;/&nbsp; Venues
+
+| Venue | Program | Status |
+| --- | --- | --- |
+| PumpSwap | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` | **verified**: tested against the real binary and a cloned devnet pool |
+| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | unverified, disabled by default |
+| Raydium CPMM (devnet) | `DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb` | unverified, disabled by default |
+| Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` | unverified, disabled by default |
+
+## 05 &nbsp;/&nbsp; Repository
 
 | Path | What |
 | --- | --- |
-| `crates/hook-types` | Frozen hook ABI: callbacks, context, decision, capabilities, slots, signals |
-| `crates/hook-runtime` | Phase executor and first-party modules, shared by program and simulator |
-| `crates/policy-vm` | Bounded WHEN/IF/THEN interpreter (8 conditions, 4 actions, no loops, no CPI) |
-| `crates/pump-adapter` | Pump / PumpSwap layouts, PDAs, trade builders (byte-checked against `pump-rust-client`) |
-| `programs/pump-hooks` | Anchor program: registry, markets on existing tokens, hook stack, policies, router, SENTIENT |
-| `packages/sdk` | `PumpHooksClient`: detect, hook, route, simulate, decode |
-| `packages/cli` | `pump-hooks` CLI |
-| `services/indexer` | Resumable, idempotent event indexer with a read-only HTTP API |
-| `apps/web` | Web app: `/hook`, `/hooks`, `/build`, `/market/[address]`, `/tx/[signature]`, `/simulate`, `/docs` |
-| `hooks/*/hook.json` | Marketplace manifests for every module |
-| `docs/` | Research, architecture, threat model, hooks spec, policy VM, benchmarks |
+| `crates/hook-standard` | ABI v1: environments, callbacks, capabilities, stack entries, policy calls, state records |
+| `crates/hook-kernel` | Builtins, monotone evaluation, stack validation, the CPI invoker for program hooks |
+| `programs/hook-registry` | Hooks, append-only versions, reviewers, reviews |
+| `programs/hook-router` | ROUTER engine: venue adapters, deadline, measured slippage, receipts, route policies |
+| `programs/hooks-core` | POOL engine: PoolManager with hooked swaps, liquidity and dynamic fees |
+| `programs/smart-accounts` | ACCOUNT engine: vault, proposals, sessions, recovery, lock |
+| `programs/pump-hooks` | The original Pump-only router (v0), kept as an adapter |
+| `tests/` | LiteSVM suites, plus devnet fixtures for the real Pump binaries |
+| `apps/web` | The website |
+| `docs/` | Architecture, hook standard, engine specs, research notes |
+
+## 06 &nbsp;/&nbsp; Build and test
+
+You need Rust with the Agave toolchain (`cargo build-sbf`), Node 20 and pnpm 10. Localnet is the
+default environment.
+
+```sh
+scripts/build_programs.sh                       # every program -> target/deploy
+scripts/dump_programs.sh                        # real pump / pump_amm / pump_fees binaries for tests
+cargo test --workspace                          # standard, kernel, engines (LiteSVM)
+cargo test -p pump-hooks-engine-tests --test router
+pnpm install && pnpm --filter @pump-hooks/web dev
+```
+
+Tooling never reads your Solana CLI config. Pass `--url` and keys explicitly.
 
 ## Status
 
-- Not audited.
-- Not deployed on mainnet.
-- Devnet deployment is pending funding of the deployer key.
+- **Not audited.** Don't use it with funds you can't lose.
+- Not deployed on mainnet, and it won't be without an audit.
+- Built and tested on localnet: standard, kernel, registry, router, pool manager and smart accounts.
+- In progress: the token wrapper, the ABI v1 SDK and CLI, and the visual composer.
 
-See [PROGRESS.md](PROGRESS.md) and [SECURITY.md](SECURITY.md).
+<br>
 
-## Build and test
-
-Requirements: Rust with the Solana/Agave toolchain, Node 20 and pnpm 10.
-
-```sh
-pnpm install
-scripts/build_program.sh            # builds target/deploy/pump_hooks.so
-cargo test --workspace              # ABI, runtime, policy VM, adapter, LiteSVM integration
-pnpm -r test                        # SDK, CLI, indexer (LiteSVM against real Pump binaries)
-pnpm --filter @pump-hooks/web dev   # http://localhost:3000
-```
-
-The integration suites run the real devnet `pump_amm` / `pump` binaries in LiteSVM against cloned
-state of existing devnet tokens (`tests/fixtures`).
-
-## Using it
-
-```ts
-import { Connection, PublicKey } from "@solana/web3.js";
-import { PumpHooksClient, PUMP_ALT, ModuleId, CONFIG_PRESETS } from "@pump-hooks/sdk";
-
-const client = new PumpHooksClient(new Connection("https://api.devnet.solana.com"), { lookupTables: [PUMP_ALT.devnet] });
-const token = await client.detect(new PublicKey(MINT)); // curve or PumpSwap, Token-2022, reserves
-const { market, ix } = await client.createMarket(token.mint, authority);
-const install = client.installHook({ market, authority, module: ModuleId.VolumeGuard, config: CONFIG_PRESETS[ModuleId.VolumeGuard] });
-```
-
-```sh
-pump-hooks inspect <mint> --url https://api.devnet.solana.com
-pump-hooks simulate <market> --buy 0.1
-pump-hooks tx <signature>
-```
-
-The CLI and indexer never read your Solana CLI config. Pass `--url` and `--keypair` (CLI) or
-`RPC_URL` (indexer) explicitly.
-
-### Indexer
-
-```sh
-RPC_URL=https://api.devnet.solana.com DATA_DIR=./data PORT=8787 pnpm --filter @pump-hooks/indexer start
-```
-
-Set `NEXT_PUBLIC_DEVNET_INDEXER_URL` for the web app to show per-hook execution counts.
-
-## License
-
-Apache-2.0. Pump Hooks is not affiliated with Pump.fun.
+<p align="center"><sub>Apache-2.0 &nbsp;&middot;&nbsp; Pump Hooks is not affiliated with Pump.fun, Raydium or Meteora.</sub></p>
