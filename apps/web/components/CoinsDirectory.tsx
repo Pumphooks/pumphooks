@@ -31,11 +31,8 @@ const ipfs = (u: string) => (u.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${u
 async function imageOf(uri: string): Promise<string | undefined> {
   if (!uri) return undefined;
   try {
-    const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 6000);
-    const j = (await (await fetch(ipfs(uri), { signal: ctl.signal })).json()) as { image?: unknown };
-    clearTimeout(t);
-    return typeof j.image === "string" ? ipfs(j.image) : undefined;
+    const j = (await (await fetch(`/api/coin-image?uri=${encodeURIComponent(uri)}`)).json()) as { image?: string | null };
+    return j.image ? ipfs(j.image) : undefined;
   } catch {
     return undefined;
   }
