@@ -2,11 +2,15 @@
 // cross-origin fetches, so the JSON is read here; the image itself loads directly in an <img>.
 const MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
+// ipfs.io, dweb.link and w3s.link now only serve a service-worker gateway (HTTP 429 for plain fetches).
+const IPFS_GATEWAY = "https://ipfs.filebase.io/ipfs/";
+const RETIRED_GATEWAYS = new Set(["ipfs.io", "dweb.link", "w3s.link", "cloudflare-ipfs.com"]);
 
 function allowed(raw: string | null): URL | undefined {
   if (!raw) return undefined;
   try {
-    const u = new URL(raw.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${raw.slice(7)}` : raw);
+    let u = new URL(raw.startsWith("ipfs://") ? `${IPFS_GATEWAY}${raw.slice(7)}` : raw);
+    if (RETIRED_GATEWAYS.has(u.hostname) && u.pathname.startsWith("/ipfs/")) u = new URL(`${IPFS_GATEWAY}${u.pathname.slice(6)}${u.search}`);
     if (u.protocol !== "https:" || u.port) return undefined;
     const h = u.hostname;
     if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") || /^[\d.]+$/.test(h) || h.includes(":")) return undefined;

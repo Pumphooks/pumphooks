@@ -26,13 +26,11 @@ interface Coin {
 type Load = { status: "loading" } | { status: "error"; error: string } | { status: "ok"; coins: Coin[] };
 type Filter = "all" | "launched" | "hooked";
 
-const ipfs = (u: string) => (u.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${u.slice(7)}` : u);
-
 async function imageOf(uri: string): Promise<string | undefined> {
   if (!uri) return undefined;
   try {
     const j = (await (await fetch(`/api/coin-image?uri=${encodeURIComponent(uri)}`)).json()) as { image?: string | null };
-    return j.image ? ipfs(j.image) : undefined;
+    return j.image ?? undefined;
   } catch {
     return undefined;
   }
