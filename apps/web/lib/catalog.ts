@@ -8,6 +8,9 @@ import twap from "../../../hooks/twap/hook.json";
 import conditionalOrders from "../../../hooks/conditional-orders/hook.json";
 import sentient from "../../../hooks/sentient/hook.json";
 import policy from "../../../hooks/policy/hook.json";
+import maxWallet from "../../../hooks/max-wallet/hook.json";
+import sellLimit from "../../../hooks/sell-limit/hook.json";
+import tradingHours from "../../../hooks/trading-hours/hook.json";
 
 export const CATEGORIES = ["EXECUTION", "RISK", "ORDERS", "LIQUIDITY", "TREASURY", "REWARDS", "AUTONOMOUS", "ACCESS", "EXPERIMENTAL"] as const;
 export type Category = (typeof CATEGORIES)[number];
@@ -44,7 +47,7 @@ export interface CatalogEntry extends HookManifest {
   info: ModuleInfo;
 }
 
-const manifests = [launchShield, volumeGuard, volatilityGuard, holderXp, sentient, twap, treasuryRouter, policy, conditionalOrders] as HookManifest[];
+const manifests = [launchShield, maxWallet, sellLimit, tradingHours, volumeGuard, volatilityGuard, holderXp, sentient, twap, treasuryRouter, policy, conditionalOrders] as HookManifest[];
 
 export const CATALOG: CatalogEntry[] = manifests.map((m) => ({ ...m, info: moduleInfo(m.moduleId as ModuleId) }));
 

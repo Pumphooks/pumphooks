@@ -44,7 +44,7 @@ describe.skipIf(!fixturesAvailable())("commands against an existing PumpSwap tok
     const mint = env.mint.toBase58();
 
     expect(await cli("status")).toBe(0);
-    expect(out).toMatch(/registry +8\/8 first-party modules registered/);
+    expect(out).toMatch(/registry +11\/11 first-party modules registered/);
 
     expect(await cli("inspect", mint)).toBe(0);
     expect(out).toMatch(/PumpSwap \(migrated\) pool 9Nhddo1P/);

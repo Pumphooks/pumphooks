@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use hook_standard::loader;
 use hook_types::ModuleId;
 
 use crate::{errors::PumpHooksError as E, events::KillSwitchSet, state::*};
@@ -10,9 +11,17 @@ pub struct Initialize<'info> {
     #[account(init, payer = authority, space = 8 + GlobalConfig::INIT_SPACE, seeds = [GLOBAL_SEED], bump)]
     pub global: Account<'info, GlobalConfig>,
     pub system_program: Program<'info, System>,
+    /// CHECK: this program; its ProgramData proves who may initialize.
+    #[account(address = crate::ID)]
+    pub program: UncheckedAccount<'info>,
+    /// CHECK: validated by `loader::read_program`.
+    pub program_data: UncheckedAccount<'info>,
 }
 
+/// Only the upgrade authority may initialize, so deployment can't be front-run.
 pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    let info = loader::read_program(&ctx.accounts.program, Some(&ctx.accounts.program_data))?;
+    require!(info.upgrade_authority == Some(ctx.accounts.authority.key()), E::Unauthorized);
     let g = &mut ctx.accounts.global;
     g.authority = ctx.accounts.authority.key();
     g.pending_authority = Pubkey::default();

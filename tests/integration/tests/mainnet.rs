@@ -21,6 +21,21 @@ fn guarded(mut env: Env) -> (Env, Pk) {
 }
 
 #[test]
+fn only_the_upgrade_authority_can_initialize() {
+    let mut env = Env::curve(MAINNET_CURVE);
+    let admin = kp_pk(&env.admin);
+    env.set_upgrade_authority(&pump_hooks::ID, admin);
+    let squatter = Keypair::new();
+    env.svm.airdrop(&addr(&kp_pk(&squatter)), SOL).unwrap();
+    let ix = env.initialize_ix(kp_pk(&squatter));
+    let err = env.send(&[ix], &[&squatter]).unwrap_err();
+    assert!(custom_error_name(&err).contains("Error Code: Unauthorized"), "{}", custom_error_name(&err));
+    let ix = env.initialize_ix(admin);
+    let a = env.admin.insecure_clone();
+    env.send_ok(&[ix], &[&a]);
+}
+
+#[test]
 fn mainnet_curve_routed_buy_sell_and_guard() {
     let (mut env, market) = guarded(Env::curve(MAINNET_CURVE));
     let m = env.read_market(&market);

@@ -1,0 +1,30 @@
+{
+  "slug": "sell-limit",
+  "moduleId": 11,
+  "name": "Sell Limit",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["RISK"],
+  "summary": "Anti-dump: a routed sell may move at most a share of the wallet's balance, at most once per cooldown.",
+  "behavior": [
+    "A routed sell larger than the set share of the wallet's balance is denied.",
+    "A wallet's routed sells must be at least the cooldown apart; buys do not reset it.",
+    "Wallets holding at or below the exemption may always sell everything.",
+    "Optional window: from market activation or a fixed time, for a set duration (or always)."
+  ],
+  "callbacks": ["BeforeSell"],
+  "defaultCallbacks": ["BeforeSell"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP"],
+  "priority": { "min": 1000, "max": 1999, "default": 1300 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/sell_limit.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "Applies to trades routed through Pump Hooks only. A holder can always sell directly on Pump.",
+    "Limits are per wallet: tokens moved to another wallet start a fresh limit."
+  ]
+}

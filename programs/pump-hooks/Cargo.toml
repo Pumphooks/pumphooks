@@ -23,6 +23,7 @@ custom-panic = []
 [dependencies]
 anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
 bytemuck = { workspace = true }
+hook-standard = { workspace = true }
 hook-types = { workspace = true }
 hook-runtime = { workspace = true }
 policy-vm = { workspace = true }

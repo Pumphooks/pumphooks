@@ -29,6 +29,9 @@ pub fn addr(p: &Pk) -> Address {
 pub fn pk(a: &Address) -> Pk {
     Pk::new_from_array(a.to_bytes())
 }
+pub fn programdata(program: &Pk) -> Pk {
+    Pk::find_program_address(&[program.as_ref()], &anchor_lang::solana_program::bpf_loader_upgradeable::ID).0
+}
 pub fn kp_pk(k: &Keypair) -> Pk {
     pk(&k.pubkey())
 }
@@ -254,14 +257,33 @@ impl Env {
         Pk::find_program_address(&[b"policy", market.as_ref(), &[index]], &pump_hooks::ID).0
     }
 
-    /// initialize + register every available first-party module.
-    pub fn bootstrap_protocol(&mut self) {
-        let admin = kp_pk(&self.admin);
-        let ix = hooks_ix(
-            pump_hooks::accounts::Initialize { authority: admin, global: self.global(), system_program: pump_adapter::SYSTEM_PROGRAM_ID },
+    pub fn initialize_ix(&self, authority: Pk) -> Instruction {
+        hooks_ix(
+            pump_hooks::accounts::Initialize {
+                authority,
+                global: self.global(),
+                system_program: pump_adapter::SYSTEM_PROGRAM_ID,
+                program: pump_hooks::ID,
+                program_data: programdata(&pump_hooks::ID),
+            },
             vec![],
             pump_hooks::instruction::Initialize {},
-        );
+        )
+    }
+
+    pub fn set_upgrade_authority(&mut self, program: &Pk, authority: Pk) {
+        let key = addr(&programdata(program));
+        let mut a = self.svm.get_account(&key).expect("program is not upgradeable");
+        a.data[12] = 1;
+        a.data[13..45].copy_from_slice(authority.as_ref());
+        self.svm.set_account(key, a).unwrap();
+    }
+
+    /// initialize (admin as upgrade authority) + register every available first-party module.
+    pub fn bootstrap_protocol(&mut self) {
+        let admin = kp_pk(&self.admin);
+        self.set_upgrade_authority(&pump_hooks::ID, admin);
+        let ix = self.initialize_ix(admin);
         let a = self.admin.insecure_clone();
         self.send_ok(&[ix], &[&a]);
         for m in [1u16, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12] {

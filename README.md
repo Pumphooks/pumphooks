@@ -160,7 +160,9 @@ Tooling never reads your Solana CLI config. Pass `--url` and keys explicitly.
 ## Status
 
 - **Not audited.** Don't use it with funds you can't lose.
-- Not deployed on mainnet, and it won't be without an audit.
+- Mainnet: only the `pump-hooks` program (rules on the pump.fun curve and PumpSwap), unaudited.
+  Runbook and measured cost in [MAINNET_LAUNCH.md](docs/MAINNET_LAUNCH.md). The other programs stay
+  off mainnet until audited.
 - Built and tested on localnet: standard, kernel, registry, router, pool manager, smart accounts,
   token hooks and token wrapper. Progress is tracked in [IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
 - Built: ABI v1 TypeScript SDK (`v1`), Rust hook SDK, `pumphooks` developer CLI, cross-engine

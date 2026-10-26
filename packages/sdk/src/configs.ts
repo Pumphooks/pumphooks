@@ -6,8 +6,8 @@ import { PublicKey } from "@solana/web3.js";
 import { Reader, Writer } from "./codec.js";
 import { ModuleId, SLOT_CONFIG_LEN } from "./constants.js";
 
-export type FieldType = "u16" | "u32" | "u64" | "i64" | "pubkey";
-export type Unit = "lamports" | "seconds" | "bps" | "count" | "xp" | "base" | "timestamp" | "flags" | "key";
+export type FieldType = "u8" | "u16" | "i16" | "u32" | "u64" | "i64" | "pubkey";
+export type Unit = "lamports" | "seconds" | "bps" | "count" | "xp" | "base" | "timestamp" | "flags" | "key" | "minutes";
 
 export interface ConfigField {
   name: string;
@@ -22,13 +22,13 @@ export const CONFIG_SCHEMAS: Partial<Record<ModuleId, readonly ConfigField[]>> =
     { name: "startTs", type: "i64", offset: 0, unit: "timestamp", description: "Protection start (0 = market activation)" },
     { name: "durationSecs", type: "u32", offset: 8, unit: "seconds", description: "Length of the protected phase" },
     { name: "cooldownSecs", type: "u32", offset: 12, unit: "seconds", description: "Per-wallet cooldown between routed buys" },
-    { name: "maxBuyQuote", type: "u64", offset: 16, unit: "lamports", description: "Max routed buy size (0 = none)" },
+    { name: "maxBuyQuote", type: "u64", offset: 16, unit: "lamports", description: "Max routed buy size, SOL spent including Pump fees (0 = none)" },
     { name: "maxSellQuote", type: "u64", offset: 24, unit: "lamports", description: "Max routed sell size (0 = none)" },
     { name: "maxBuysPerSlot", type: "u16", offset: 32, unit: "count", description: "Routed buys per slot (0 = none)" },
     { name: "flags", type: "u16", offset: 34, unit: "flags", description: "bit0 deny same-slot round trips, bit1 cooldown applies to sells" },
   ],
   [ModuleId.VolumeGuard]: [
-    { name: "maxBuyQuote", type: "u64", offset: 0, unit: "lamports", description: "Max routed buy size (0 = none)" },
+    { name: "maxBuyQuote", type: "u64", offset: 0, unit: "lamports", description: "Max routed buy size, SOL spent including Pump fees (0 = none)" },
     { name: "maxSellQuote", type: "u64", offset: 8, unit: "lamports", description: "Max routed sell size (0 = none)" },
     { name: "windowSecs", type: "u32", offset: 16, unit: "seconds", description: "Rolling window length (0 = none)" },
     { name: "windowMaxQuote", type: "u64", offset: 24, unit: "lamports", description: "Market routed volume per window" },
@@ -70,13 +70,39 @@ export const CONFIG_SCHEMAS: Partial<Record<ModuleId, readonly ConfigField[]>> =
     { name: "flags", type: "u32", offset: 44, unit: "flags", description: "bit0 apply to buys, bit1 apply to sells (default both)" },
   ],
   [ModuleId.Policy]: [],
+  [ModuleId.MaxWallet]: [
+    { name: "maxBase", type: "u64", offset: 0, unit: "base", description: "Largest balance a routed buy may leave the wallet with" },
+    { name: "startTs", type: "i64", offset: 8, unit: "timestamp", description: "Start (0 = market activation)" },
+    { name: "durationSecs", type: "u32", offset: 16, unit: "seconds", description: "How long the cap applies (0 = always)" },
+  ],
+  [ModuleId.SellLimit]: [
+    { name: "maxSellBps", type: "u16", offset: 0, unit: "bps", description: "Largest share of the wallet's balance one routed sell may move (0 = no share limit)" },
+    { name: "cooldownSecs", type: "u32", offset: 4, unit: "seconds", description: "Minimum time between a wallet's routed sells (0 = none)" },
+    { name: "exemptBelow", type: "u64", offset: 8, unit: "base", description: "Balances at or below this may sell in full" },
+    { name: "startTs", type: "i64", offset: 16, unit: "timestamp", description: "Start (0 = market activation)" },
+    { name: "durationSecs", type: "u32", offset: 24, unit: "seconds", description: "How long the limit applies (0 = always)" },
+  ],
+  [ModuleId.TradingHours]: [
+    { name: "weekdays", type: "u8", offset: 0, unit: "flags", description: "Days trading is open; none = every day (bit0 Mon … bit6 Sun)" },
+    { name: "dst", type: "u8", offset: 1, unit: "flags", description: "Daylight-saving rule for the time zone (0 none, 1 US, 2 EU)" },
+    { name: "tzOffsetMin", type: "i16", offset: 2, unit: "minutes", description: "Time zone: standard-time offset from UTC, in minutes" },
+    { name: "openMin", type: "u16", offset: 4, unit: "minutes", description: "Opening time, local (minutes after midnight)" },
+    { name: "closeMin", type: "u16", offset: 6, unit: "minutes", description: "Closing time, local; earlier than opening = overnight session" },
+    { name: "sides", type: "u8", offset: 8, unit: "flags", description: "Trades the hours apply to; none = both (bit0 buys, bit1 sells)" },
+  ],
 };
 
 export const MODULE_FLAGS = {
   launchShield: { DENY_SAME_SLOT_ROUND_TRIP: 1 << 0, COOLDOWN_SELLS: 1 << 1 },
   volatilityGuard: { CHECK_BUYS: 1 << 0, CHECK_SELLS: 1 << 1 },
   sentient: { APPLY_BUYS: 1 << 0, APPLY_SELLS: 1 << 1 },
+  tradingHours: { BUYS: 1 << 0, SELLS: 1 << 1, WEEKDAYS: 0b001_1111, DST_NONE: 0, DST_US: 1, DST_EU: 2 },
 } as const;
+
+/** pump.fun mints 1,000,000,000 tokens with 6 decimals. Max Wallet and Sell Limit take base units. */
+export const PUMP_TOKEN_SUPPLY = 1_000_000_000_000_000n;
+/** Base units for a share of `supply` in bps (e.g. 100 = 1% of supply). */
+export const shareOfSupply = (bps: number, supply: bigint = PUMP_TOKEN_SUPPLY) => (supply * BigInt(bps)) / 10_000n;
 
 /** Values used when a field is omitted. Guards default to covering both sides; 0 would disable them. */
 export const CONFIG_DEFAULTS: Partial<Record<ModuleId, Record<string, number>>> = {
@@ -102,6 +128,12 @@ export const CONFIG_PRESETS: Partial<Record<ModuleId, ModuleConfig>> = {
   [ModuleId.TreasuryRouter]: { reserveBps: 4_000, strategyBps: 3_000, rewardsBps: 2_000, operationsBps: 1_000 },
   [ModuleId.Twap]: { maxTotalQuote: 10n * SOL, maxSliceQuote: SOL, minIntervalSecs: 60, maxDurationSecs: DAY, maxSlippageBps: 100 },
   [ModuleId.Sentient]: { defensiveMaxQuote: SOL / 2n, maxSignalTtl: 3_600, flags: 3 },
+  // 2% of supply per wallet for the first 24 hours.
+  [ModuleId.MaxWallet]: { maxBase: shareOfSupply(200), durationSecs: DAY },
+  // At most half the bag per sell, one sell a minute; wallets with ≤ 0.1% of supply sell freely.
+  [ModuleId.SellLimit]: { maxSellBps: 5_000, cooldownSecs: 60, exemptBelow: shareOfSupply(10) },
+  // US stock-market hours: 09:30–16:00 New York, Monday to Friday.
+  [ModuleId.TradingHours]: { weekdays: 0b001_1111, dst: 1, tzOffsetMin: -300, openMin: 570, closeMin: 960, sides: 0 },
 };
 
 const n = (v: ConfigValue | undefined): bigint => (v === undefined || v instanceof PublicKey ? 0n : BigInt(v));
@@ -159,6 +191,26 @@ export function validateConfig(module: ModuleId, values: ModuleConfig = {}): str
       need((g("flags") & ~3n) === 0n, "unknown flag bits");
       break;
     }
+    case ModuleId.MaxWallet:
+      need(g("maxBase") > 0n, "maxBase must be > 0");
+      need(g("startTs") >= 0n, "startTs must be ≥ 0");
+      need(g("durationSecs") <= 365n * 86_400n, "durationSecs must be ≤ 365 days");
+      break;
+    case ModuleId.SellLimit:
+      need(g("maxSellBps") > 0n || g("cooldownSecs") > 0n, "set a sell share or a cooldown");
+      need(g("maxSellBps") < 10_000n, "maxSellBps must be below 10,000 (100% is no limit)");
+      need(g("cooldownSecs") <= 7n * 86_400n, "cooldownSecs must be ≤ 7 days");
+      need(g("startTs") >= 0n, "startTs must be ≥ 0");
+      need(g("durationSecs") <= 365n * 86_400n, "durationSecs must be ≤ 365 days");
+      break;
+    case ModuleId.TradingHours:
+      need((g("weekdays") & ~0x7fn) === 0n, "weekdays uses bits 0..6");
+      need(g("dst") <= 2n, "dst must be 0 (none), 1 (US) or 2 (EU)");
+      need(g("tzOffsetMin") >= -720n && g("tzOffsetMin") <= 840n, "tzOffsetMin must be -720..840");
+      need(g("openMin") < 1440n && g("closeMin") < 1440n, "times must be within the day (0..1439)");
+      need(g("openMin") !== g("closeMin"), "opening and closing times must differ");
+      need((g("sides") & ~3n) === 0n, "sides uses bits 0..1");
+      break;
   }
   return out;
 }
@@ -175,7 +227,9 @@ export function encodeConfig(module: ModuleId, values: ModuleConfig = {}): Uint8
     if (v === undefined) continue;
     const w = new Writer();
     switch (f.type) {
+      case "u8": w.u8(Number(v)); break;
       case "u16": w.u16(Number(v)); break;
+      case "i16": w.u16(Number(v) & 0xffff); break;
       case "u32": w.u32(Number(v)); break;
       case "u64": w.u64(BigInt(v as bigint)); break;
       case "i64": w.i64(BigInt(v as bigint)); break;
@@ -192,7 +246,9 @@ export function decodeConfig(module: ModuleId, data: Uint8Array): ModuleConfig {
   for (const f of schema) {
     const r = new Reader(data, f.offset);
     switch (f.type) {
+      case "u8": out[f.name] = r.u8(); break;
       case "u16": out[f.name] = r.u16(); break;
+      case "i16": { const x = r.u16(); out[f.name] = x >= 0x8000 ? x - 0x10000 : x; break; }
       case "u32": out[f.name] = r.u32(); break;
       case "u64": out[f.name] = r.u64(); break;
       case "i64": out[f.name] = r.i64(); break;

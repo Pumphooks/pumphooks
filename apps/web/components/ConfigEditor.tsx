@@ -1,7 +1,7 @@
 "use client";
 
 import { CONFIG_SCHEMAS, type ModuleId } from "@pump-hooks/sdk";
-import { FLAG_SETS, flagLabel, type FormValues, type ParsedConfig } from "@/lib/config-form";
+import { choicesFor, flagLabel, flagsFor, utcOffset, type FormValues, type ParsedConfig } from "@/lib/config-form";
 import { duration } from "@/lib/format";
 
 const UNIT_LABEL: Record<string, string> = {
@@ -12,6 +12,7 @@ const UNIT_LABEL: Record<string, string> = {
   xp: "XP",
   base: "tokens",
   timestamp: "unix",
+  minutes: "min",
 };
 
 export function ConfigEditor({
@@ -34,8 +35,26 @@ export function ConfigEditor({
     <div>
       {schema.map((f) => {
         const err = parsed.fieldErrors[f.name];
+        const choices = choicesFor(module, f.name);
+        if (choices) {
+          return (
+            <div className="field" key={f.name}>
+              <label htmlFor={`${module}-${f.name}`}>
+                {f.name}
+                <small>{f.description}</small>
+              </label>
+              <select id={`${module}-${f.name}`} className="input" value={values[f.name] || "0"} onChange={(e) => set(f.name, e.target.value)}>
+                {Object.entries(choices).map(([label, x]) => (
+                  <option key={label} value={String(x)}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        }
         if (f.unit === "flags") {
-          const flags = FLAG_SETS[module] ?? {};
+          const flags = flagsFor(module, f.name);
           const cur = Number(values[f.name] || 0);
           return (
             <div className="field" key={f.name}>
@@ -60,7 +79,10 @@ export function ConfigEditor({
             ? duration(Number(v))
             : f.unit === "bps" && /^\d+$/.test(v)
               ? `${(Number(v) / 100).toFixed(2)}%`
-              : undefined;
+              : f.type === "i16" && f.unit === "minutes" && /^-?\d+$/.test(v)
+                ? utcOffset(Number(v))
+                : undefined;
+        const clock = f.unit === "minutes" && f.type === "u16";
         return (
           <div className="field" key={f.name}>
             <label htmlFor={`${module}-${f.name}`}>
@@ -76,12 +98,12 @@ export function ConfigEditor({
                 className={`input${err ? " bad" : ""}`}
                 value={v}
                 spellCheck={false}
-                placeholder={f.unit === "key" ? "engine public key" : "0"}
+                placeholder={f.unit === "key" ? "engine public key" : clock ? "HH:MM" : "0"}
                 onChange={(e) => set(f.name, e.target.value)}
                 title={err}
                 style={f.unit === "key" ? { fontSize: 11 } : undefined}
               />
-              {f.unit !== "key" ? <span>{f.unit === "base" && symbol ? symbol : UNIT_LABEL[f.unit]}</span> : null}
+              {f.unit !== "key" ? <span>{f.unit === "base" && symbol ? symbol : clock ? "local" : UNIT_LABEL[f.unit]}</span> : null}
             </div>
           </div>
         );

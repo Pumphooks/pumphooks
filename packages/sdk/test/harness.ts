@@ -25,8 +25,17 @@ import {
 } from "../src/index.js";
 
 export const ROOT = join(__dirname, "../../..");
+const BPF_UPGRADEABLE = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 export const POOL_FIXTURE = "9Nhddo1PcCBms54wcLYbxoRcAJbpmSvHWMcbdMf9tdmZ";
 export const DEEP_CURVE_FIXTURE = "curve-AwHTvGo8UcR4CEyqmTWs1xEbeajBNwC5ELFdMdPyB33w";
+/** Live mainnet coin on its bonding curve; runs against pump.fun's mainnet binaries. */
+export const MAINNET_CURVE_FIXTURE = "curve-Ykfw76rQnNKoBVtTTgVXgCzYHVZopGppb1Loj67u36H";
+/** Live mainnet PumpSwap pool. */
+export const MAINNET_POOL_FIXTURE = "6DNxwecbtdNNstpB5tdnxZsfGe3HmsNgEUZhdue4b1PH";
+
+export const mainnetFixturesAvailable = () =>
+  ["pump_mainnet", "pump_amm_mainnet", "pump_fees_mainnet"].every((p) => existsSync(join(ROOT, `tests/fixtures/programs/${p}.so`))) &&
+  existsSync(join(ROOT, "target/deploy/pump_hooks.so"));
 export const SOL = 1_000_000_000n;
 
 export const fixturesAvailable = () =>
@@ -45,7 +54,7 @@ function errValue(e: ReturnType<FailedTransactionMetadata["err"]>): unknown {
 export class Env {
   svm: LiteSVM;
   admin = Keypair.generate();
-  manifest: { mint: string; pool?: string; buyback_fee_recipient: string; accounts: Record<string, string> };
+  manifest: { mint: string; pool?: string; buyback_fee_recipient: string; source_rpc?: string; accounts: Record<string, string> };
   client: PumpHooksClient;
   rpc: RpcLike;
 
@@ -55,14 +64,17 @@ export class Env {
     const c = this.svm.getClock();
     // After the devnet ALT's last extension slot, so all its addresses resolve.
     this.svm.setClock(new Clock(500_000_000n, c.epochStartTimestamp, c.epoch, c.leaderScheduleEpoch, now));
-    this.svm.addProgramFromFile(PUMP_AMM_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump_amm.so"));
-    this.svm.addProgramFromFile(PUMP_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump.so"));
-    this.svm.addProgramFromFile(PUMP_FEES_PROGRAM_ID, join(ROOT, "tests/fixtures/programs/pump_fees.so"));
-    this.svm.addProgramFromFile(PUMP_HOOKS_PROGRAM_ID, join(ROOT, "target/deploy/pump_hooks.so"));
-
     const dir = join(ROOT, "tests/fixtures", fixture);
-    const altDir = join(ROOT, "tests/fixtures/alt");
     this.manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8"));
+    // A fixture runs against the Pump binaries and lookup table of the cluster it was snapshotted from.
+    const mainnet = (this.manifest.source_rpc ?? "").includes("mainnet");
+    const so = (name: string) => join(ROOT, `tests/fixtures/programs/${name}${mainnet ? "_mainnet" : ""}.so`);
+    this.svm.addProgramFromFile(PUMP_AMM_PROGRAM_ID, so("pump_amm"));
+    this.svm.addProgramFromFile(PUMP_PROGRAM_ID, so("pump"));
+    this.svm.addProgramFromFile(PUMP_FEES_PROGRAM_ID, so("pump_fees"));
+    this.deployUpgradeable(PUMP_HOOKS_PROGRAM_ID, readFileSync(join(ROOT, "target/deploy/pump_hooks.so")));
+
+    const altDir = join(ROOT, mainnet ? "tests/fixtures/alt-mainnet" : "tests/fixtures/alt");
     const files = [
       ...readdirSync(dir).map((f) => join(dir, f)),
       ...(existsSync(altDir) ? readdirSync(altDir).map((f) => join(altDir, f)) : []),
@@ -112,7 +124,7 @@ export class Env {
         return { context: { slot: 0 }, value };
       }) as unknown as RpcLike["simulateTransaction"],
     } as RpcLike;
-    this.client = new PumpHooksClient(this.rpc, { lookupTables: [PUMP_ALT.devnet], pickBuybackRecipient: () => recipient });
+    this.client = new PumpHooksClient(this.rpc, { lookupTables: [mainnet ? PUMP_ALT.mainnet : PUMP_ALT.devnet], pickBuybackRecipient: () => recipient });
   }
 
   get mint() {
@@ -143,8 +155,33 @@ export class Env {
     return this.exec(bundle(instructions, signers[0].publicKey), signers);
   }
 
+  /** Deploys like `solana program deploy` (upgradeable loader, no authority yet); addProgram uses the immutable loader. */
+  deployUpgradeable(program: PublicKey, elf: Uint8Array) {
+    const programData = PublicKey.findProgramAddressSync([program.toBuffer()], BPF_UPGRADEABLE)[0];
+    const pd = new Uint8Array(45 + elf.length);
+    pd.set([3, 0, 0, 0]);
+    pd.set(elf, 45);
+    this.svm.setAccount(programData, { lamports: Number(this.svm.minimumBalanceForRentExemption(BigInt(pd.length))), data: pd, owner: BPF_UPGRADEABLE, executable: false, rentEpoch: 0 });
+    const p = new Uint8Array(36);
+    p.set([2, 0, 0, 0]);
+    p.set(programData.toBytes(), 4);
+    this.svm.setAccount(program, { lamports: Number(this.svm.minimumBalanceForRentExemption(36n)), data: p, owner: BPF_UPGRADEABLE, executable: true, rentEpoch: 0 });
+  }
+
+  /** Rewrites the ProgramData upgrade authority (initialize requires it to be the signer). */
+  setUpgradeAuthority(program: PublicKey, authority: PublicKey) {
+    const key = PublicKey.findProgramAddressSync([program.toBuffer()], BPF_UPGRADEABLE)[0];
+    const acc = this.svm.getAccount(key);
+    if (!acc) throw new Error(`${program.toBase58()} is not upgradeable in this LiteSVM`);
+    const data = Uint8Array.from(acc.data);
+    data[12] = 1;
+    data.set(authority.toBytes(), 13);
+    this.svm.setAccount(key, { ...acc, data });
+  }
+
   bootstrap() {
     const a = this.admin.publicKey;
+    this.setUpgradeAuthority(PUMP_HOOKS_PROGRAM_ID, a);
     const ixs = [initializeIx({ authority: a })];
     for (const m of MODULES.filter((m) => m.available)) ixs.push(registerHookIx({ authority: a, moduleId: m.id, sourceHash: new Uint8Array(32).fill(m.id) }));
     const r = this.ixs(ixs, [this.admin]);

@@ -273,6 +273,9 @@ function Loaded({ d, recent }: { d: Data; recent: Recent[] | "loading" | "error"
   );
 }
 
+/** A buy reverts if it would return less than the simulated amount minus this. */
+const SLIPPAGE_BPS = 500n;
+
 function TradePanel({ d }: { d: Data }) {
   const { client, connection, writesEnabled } = useNetwork();
   const wallet = useWallet();
@@ -301,11 +304,13 @@ function TradePanel({ d }: { d: Data }) {
     }
   };
 
+  const minBaseOut = sim.s === "done" && sim.result.swap ? (sim.result.swap.baseAmount * (10_000n - SLIPPAGE_BPS)) / 10_000n : undefined;
+
   const send = async () => {
-    if (!wallet.publicKey || !quoteIn) return;
+    if (!wallet.publicKey || !quoteIn || !minBaseOut) return;
     setSent({ s: "loading" });
     try {
-      const built = await client.buy({ market: d.market, user: wallet.publicKey, quoteIn });
+      const built = await client.buy({ market: d.market, user: wallet.publicKey, quoteIn, minBaseOut });
       const [r] = await sendBatches(connection, wallet, [built.instructions], await client.loadLookupTables());
       setSent({ s: "done", sig: r.signature, ok: r.result.ok });
       loadMe();
@@ -344,7 +349,15 @@ function TradePanel({ d }: { d: Data }) {
         </div>
       )}
       <div className="input-unit">
-        <input className="input" value={amt} onChange={(e) => setAmt(e.target.value)} inputMode="decimal" />
+        <input
+          className="input"
+          value={amt}
+          onChange={(e) => {
+            setAmt(e.target.value);
+            setSim({ s: "idle" });
+          }}
+          inputMode="decimal"
+        />
         <span>SOL</span>
       </div>
       <div className="grid-2" style={{ gap: 8, marginTop: 10 }}>
@@ -353,7 +366,7 @@ function TradePanel({ d }: { d: Data }) {
         </button>
         <button
           className="btn"
-          disabled={!wallet.publicKey || !quoteIn || paused || !writesEnabled || sim.s !== "done" || !sim.result.ok || sent.s === "loading"}
+          disabled={!wallet.publicKey || !quoteIn || paused || !writesEnabled || !minBaseOut || sim.s !== "done" || !sim.result.ok || sent.s === "loading"}
           onClick={send}
         >
           {sent.s === "loading" ? <span className="spin" /> : "Buy through hooks"}
@@ -367,7 +380,8 @@ function TradePanel({ d }: { d: Data }) {
           <TracePipeline result={sim.result} user={wallet.publicKey ?? undefined} venue={d.market.config.venue} decimals={d.decimals} symbol={d.meta?.symbol} />
           {sim.result.swap && (
             <p className="faint mono" style={{ fontSize: 11 }}>
-              simulated: {units(sim.result.swap.baseAmount, d.decimals)} {d.meta?.symbol ?? "tokens"} for {sol(sim.result.swap.quoteAmount)} SOL
+              simulated: {units(sim.result.swap.baseAmount, d.decimals)} {d.meta?.symbol ?? "tokens"} for {sol(sim.result.swap.quoteAmount)} SOL (incl. Pump fees)
+              {minBaseOut ? ` · buy reverts below ${units(minBaseOut, d.decimals)} (${Number(SLIPPAGE_BPS) / 100}% slippage)` : ""}
             </p>
           )}
         </div>

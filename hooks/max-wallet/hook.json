@@ -1,0 +1,30 @@
+{
+  "slug": "max-wallet",
+  "moduleId": 10,
+  "name": "Max Wallet",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["RISK", "ACCESS"],
+  "summary": "A routed buy may not take a wallet's balance of the coin above a cap.",
+  "behavior": [
+    "Before a routed buy: denied if the wallet's balance plus the estimated tokens exceeds the cap.",
+    "After a routed buy: the trade reverts if the observed balance exceeds the cap.",
+    "Optional window: from market activation or a fixed time, for a set duration (or always).",
+    "Sells are never affected."
+  ],
+  "callbacks": ["BeforeBuy", "AfterBuy"],
+  "defaultCallbacks": ["BeforeBuy", "AfterBuy"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP"],
+  "priority": { "min": 0, "max": 999, "default": 200 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/max_wallet.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "Applies to trades routed through Pump Hooks only. A transaction that trades on Pump directly is not affected.",
+    "The cap is per wallet token account: one person using several wallets, or receiving tokens by transfer, is not limited."
+  ]
+}

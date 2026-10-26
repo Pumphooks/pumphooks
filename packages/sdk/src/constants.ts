@@ -92,6 +92,9 @@ export enum ModuleId {
   ConditionalOrders = 7,
   Sentient = 8,
   Policy = 9,
+  MaxWallet = 10,
+  SellLimit = 11,
+  TradingHours = 12,
 }
 
 export interface ModuleInfo {
@@ -171,6 +174,25 @@ export const MODULES: readonly ModuleInfo[] = [
       C.AWARD_POINTS | C.TREASURY_SIGNAL | C.EMIT_SIGNAL,
     priorityMin: 0, priorityMax: 4999, defaultPriority: 4000, runtime: true, available: true,
   },
+  {
+    id: ModuleId.MaxWallet, slug: "max-wallet", name: "Max Wallet", version: 1,
+    callbacks: callbackMask(Callback.BeforeBuy, Callback.AfterBuy),
+    defaultCallbacks: callbackMask(Callback.BeforeBuy, Callback.AfterBuy),
+    capabilities: C.READ_MARKET | C.VETO_ROUTED_SWAP,
+    priorityMin: 0, priorityMax: 999, defaultPriority: 200, runtime: true, available: true,
+  },
+  {
+    id: ModuleId.SellLimit, slug: "sell-limit", name: "Sell Limit", version: 1,
+    callbacks: callbackMask(Callback.BeforeSell), defaultCallbacks: callbackMask(Callback.BeforeSell),
+    capabilities: C.READ_MARKET | C.VETO_ROUTED_SWAP,
+    priorityMin: 1000, priorityMax: 1999, defaultPriority: 1300, runtime: true, available: true,
+  },
+  {
+    id: ModuleId.TradingHours, slug: "trading-hours", name: "Trading Hours", version: 1,
+    callbacks: TRADE_BEFORE, defaultCallbacks: callbackMask(Callback.BeforeSwap),
+    capabilities: C.READ_MARKET | C.VETO_ROUTED_SWAP,
+    priorityMin: 0, priorityMax: 999, defaultPriority: 50, runtime: true, available: true,
+  },
 ];
 
 export function moduleInfo(id: number | string): ModuleInfo {
@@ -179,7 +201,7 @@ export function moduleInfo(id: number | string): ModuleInfo {
   return m;
 }
 
-/** Reason codes: module_id * 1000 + n; 9000+ Composer policies; 10000+ external hooks. */
+/** Reason codes: module_id * 1000 + n; 9000+ Composer policies; 40000+ external hooks. */
 export const REASONS: Record<number, string> = {
   0: "ok",
   1001: "Launch Shield: routed buy above the launch-phase limit",
@@ -195,12 +217,16 @@ export const REASONS: Record<number, string> = {
   3002: "Volatility Guard: price deviates from routed EMA (sell)",
   8001: "SENTIENT: defensive regime size cap",
   8002: "SENTIENT: circuit breaker regime",
+  10001: "Max Wallet: buy would take the wallet above the max balance",
+  11001: "Sell Limit: sell is above the allowed share of the wallet's balance",
+  11002: "Sell Limit: wallet sold too recently",
+  12001: "Trading Hours: outside trading hours",
 };
 
 export function describeReason(code: number): string {
   if (REASONS[code]) return REASONS[code];
   if (code >= 9000 && code <= 9999) return "Custom policy denied the routed trade";
-  if (code >= 10000) return "External hook denied the routed trade";
+  if (code >= 40000) return "External hook denied the routed trade";
   return "unknown";
 }
 

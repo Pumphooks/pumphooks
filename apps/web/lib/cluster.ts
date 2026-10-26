@@ -12,15 +12,21 @@ export const CLUSTERS: Record<Cluster, { label: string; rpc: string; alt: typeof
   },
   "mainnet-beta": {
     label: "Mainnet",
-    rpc: process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? "https://api.mainnet-beta.solana.com",
+    rpc: process.env.NEXT_PUBLIC_MAINNET_RPC_URL || "/api/rpc",
     alt: PUMP_ALT.mainnet,
-    // Pump Hooks is not deployed on mainnet. Detection is read-only there.
-    writes: process.env.NEXT_PUBLIC_ALLOW_MAINNET_WRITES === "1",
+    // Writes also need the program detected live and unpaused (Providers); "0" is an off switch.
+    writes: process.env.NEXT_PUBLIC_ALLOW_MAINNET_WRITES !== "0",
     indexer: process.env.NEXT_PUBLIC_MAINNET_INDEXER_URL || undefined,
   },
 };
 
-export const DEFAULT_CLUSTER: Cluster = process.env.NEXT_PUBLIC_DEFAULT_CLUSTER === "mainnet-beta" ? "mainnet-beta" : "devnet";
+export const DEFAULT_CLUSTER: Cluster = process.env.NEXT_PUBLIC_DEFAULT_CLUSTER === "devnet" ? "devnet" : "mainnet-beta";
+
+/** Absolute RPC URL for `Connection` (relative entries resolve against this site). */
+export function rpcEndpoint(cluster: Cluster) {
+  const rpc = CLUSTERS[cluster].rpc;
+  return rpc.startsWith("/") ? new URL(rpc, typeof window === "undefined" ? "http://localhost" : window.location.origin).toString() : rpc;
+}
 
 export function explorerUrl(cluster: Cluster, kind: "address" | "tx", id: string) {
   return `https://explorer.solana.com/${kind}/${id}${cluster === "devnet" ? "?cluster=devnet" : ""}`;

@@ -1,0 +1,30 @@
+{
+  "slug": "trading-hours",
+  "moduleId": 12,
+  "name": "Trading Hours",
+  "version": 1,
+  "kind": "built-in",
+  "developer": "Pump Hooks",
+  "categories": ["ACCESS"],
+  "summary": "Routed trades only inside a daily window on chosen weekdays.",
+  "behavior": [
+    "Opening and closing time in a fixed UTC offset, with optional US or EU daylight saving.",
+    "Overnight sessions (closing before opening) count toward the day they opened.",
+    "Can apply to buys, sells or both.",
+    "Market-hours preset: 09:30–16:00 New York time, Monday to Friday."
+  ],
+  "callbacks": ["BeforeBuy", "BeforeSell", "BeforeSwap"],
+  "defaultCallbacks": ["BeforeSwap"],
+  "capabilities": ["READ_MARKET", "VETO_ROUTED_SWAP"],
+  "priority": { "min": 0, "max": 999, "default": 50 },
+  "runtime": true,
+  "available": true,
+  "compatibleMarkets": ["bonding-curve", "pumpswap"],
+  "source": "crates/hook-runtime/src/modules/trading_hours.rs",
+  "audit": "unaudited",
+  "verification": "source in this repository; reproducible-build verification not yet published",
+  "limitations": [
+    "Applies to trades routed through Pump Hooks only. A transaction that trades on Pump directly is not affected.",
+    "Uses the cluster clock; public holidays are not observed."
+  ]
+}

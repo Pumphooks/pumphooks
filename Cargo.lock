@@ -3099,6 +3099,7 @@ dependencies = [
  "anchor-lang 0.31.2",
  "bytemuck",
  "hook-runtime",
+ "hook-standard",
  "hook-types",
  "policy-vm",
  "pump-adapter",

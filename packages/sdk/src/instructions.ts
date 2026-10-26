@@ -7,6 +7,8 @@ import { PUMP_HOOKS_PROGRAM_ID, SLOT_CONFIG_LEN, SYSTEM_PROGRAM_ID, TradeMode, V
 import { hooksPda } from "./pda.js";
 import { PolicyArgs } from "./policy.js";
 
+const BPF_LOADER_UPGRADEABLE = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+
 export const ixDiscriminator = (name: string) => sha256(Buffer.from(`global:${name}`)).subarray(0, 8);
 
 const meta = (pubkey: PublicKey, isWritable = false, isSigner = false): AccountMeta => ({ pubkey, isSigner, isWritable });
@@ -32,9 +34,16 @@ export interface ProgramOpt {
 
 // ---- protocol admin
 
+/** Only the program's upgrade authority can initialize (no front-running the global config). */
 export function initializeIx(p: { authority: PublicKey } & ProgramOpt) {
   const pid = p.programId ?? PUMP_HOOKS_PROGRAM_ID;
-  return ix("initialize", [meta(p.authority, true, true), meta(hooksPda.global(pid), true), meta(SYSTEM_PROGRAM_ID)], undefined, pid);
+  const programData = PublicKey.findProgramAddressSync([pid.toBuffer()], BPF_LOADER_UPGRADEABLE)[0];
+  return ix(
+    "initialize",
+    [meta(p.authority, true, true), meta(hooksPda.global(pid), true), meta(SYSTEM_PROGRAM_ID), meta(pid), meta(programData)],
+    undefined,
+    pid,
+  );
 }
 
 export function setKillSwitchIx(p: { authority: PublicKey; disabledModules: bigint; paused: boolean } & ProgramOpt) {

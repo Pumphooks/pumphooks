@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Connection, PublicKey } from "@solana/web3.js";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { decodeGlobalConfig, hooksPda, PUMP_HOOKS_PROGRAM_ID, PumpHooksClient, type GlobalConfig } from "@pump-hooks/sdk";
-import { CLUSTERS, DEFAULT_CLUSTER, type Cluster } from "@/lib/cluster";
+import { CLUSTERS, DEFAULT_CLUSTER, rpcEndpoint, type Cluster } from "@/lib/cluster";
+import { PRIORITY_MICRO_LAMPORTS } from "@/lib/tx";
 
 export interface ProgramStatus {
   state: "loading" | "not-deployed" | "uninitialized" | "live" | "error";
@@ -42,8 +43,11 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   const cfg = CLUSTERS[cluster];
-  const connection = useMemo(() => new Connection(cfg.rpc, "confirmed"), [cfg.rpc]);
-  const client = useMemo(() => new PumpHooksClient(connection, { lookupTables: [cfg.alt] }), [connection, cfg.alt]);
+  const connection = useMemo(() => new Connection(rpcEndpoint(cluster), "confirmed"), [cluster]);
+  const client = useMemo(
+    () => new PumpHooksClient(connection, { lookupTables: [cfg.alt], microLamportsPerCu: PRIORITY_MICRO_LAMPORTS }),
+    [connection, cfg.alt],
+  );
 
   const [program, setProgram] = useState<ProgramStatus>({ state: "loading" });
   const [tick, setTick] = useState(0);

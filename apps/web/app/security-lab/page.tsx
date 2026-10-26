@@ -15,7 +15,7 @@ export default function SecurityLabPage() {
       </PageHead>
 
       <div className="notice deny" style={{ marginTop: 22 }}>
-        <b>Not audited.</b> {security.disclaimer} Nothing in Pump Hooks has had an external audit, and nothing is deployed on mainnet.
+        <b>Not audited.</b> {security.disclaimer} Nothing in Pump Hooks has had an external audit. On mainnet only the pump-hooks program is launched.
       </div>
 
       <Section n="01" title="Stateful fuzzing" aside={f.target}>

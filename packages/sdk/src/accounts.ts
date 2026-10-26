@@ -169,6 +169,8 @@ export interface UserState {
   vgWindowStart: bigint;
   vgWindowVolume: bigint;
   forfeitedXp: bigint;
+  /** Last routed sell (0 = never); read by Sell Limit's cooldown. */
+  lastSellTs: bigint;
 }
 
 export interface UserMarketState {
@@ -203,6 +205,7 @@ export function decodeUserMarketState(d: Uint8Array): UserMarketState {
     vgWindowStart: r.i64(),
     vgWindowVolume: r.u64(),
     forfeitedXp: r.u64(),
+    lastSellTs: r.i64(),
   };
   return { market, user, createdAt, state: s };
 }

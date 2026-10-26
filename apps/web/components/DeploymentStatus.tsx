@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { CLUSTERS, explorerUrl, type Cluster } from "@/lib/cluster";
+import { CLUSTERS, explorerUrl, rpcEndpoint, type Cluster } from "@/lib/cluster";
 
 type State = "checking" | "deployed" | "absent" | `error:${string}`;
 
@@ -12,7 +12,7 @@ export function DeploymentStatus({ programs }: { programs: { name: string; id: s
   useEffect(() => {
     let live = true;
     for (const cluster of Object.keys(CLUSTERS) as Cluster[]) {
-      const conn = new Connection(CLUSTERS[cluster].rpc, "confirmed");
+      const conn = new Connection(rpcEndpoint(cluster), "confirmed");
       conn
         .getMultipleAccountsInfo(programs.map((p) => new PublicKey(p.id)))
         .then((infos) => {

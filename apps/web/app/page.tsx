@@ -5,6 +5,7 @@ import { CaBox, LiveStatus } from "@/components/HomeClient";
 
 const STACK = [
   ["Launch Shield", "risk"],
+  ["Anti-dump", "max wallet · sell limit · hours"],
   ["Dynamic Execution", "volume · volatility"],
   ["Holder XP", "rewards"],
   ["Treasury", "allocation"],
