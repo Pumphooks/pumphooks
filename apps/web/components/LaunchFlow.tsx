@@ -341,6 +341,9 @@ function Done({ d }: { d: Launched }) {
         <Link className="btn" href={`/market/${d.market.toBase58()}`}>
           Open market <span className="chev">›</span>
         </Link>
+        <Link className="btn" href="/coins">
+          All coins
+        </Link>
         <a className="btn" href={`https://pump.fun/coin/${mint}`} target="_blank" rel="noreferrer">
           View on pump.fun
         </a>

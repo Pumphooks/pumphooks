@@ -253,6 +253,13 @@ export class PumpHooksClient {
     return res.map(({ pubkey, account }) => ({ address: pubkey, config: decodeMarketConfig(account.data) }));
   }
 
+  /** Every hooked market on the program. Requires `getProgramAccounts`. */
+  async allMarkets(): Promise<HookedMarket[]> {
+    const gpa = must(this.rpc.getProgramAccounts, "RPC does not expose getProgramAccounts").bind(this.rpc);
+    const res = (await gpa(this.programId, { filters: [{ dataSize: MARKET_CONFIG_SIZE }] })) as GetProgramAccountsResponse;
+    return res.map(({ pubkey, account }) => ({ address: pubkey, config: decodeMarketConfig(account.data) }));
+  }
+
   async getUserState(market: PublicKey, user: PublicKey): Promise<UserMarketState | undefined> {
     const ai = await this.rpc.getAccountInfo(hooksPda.userState(market, user, this.programId));
     return ai ? decodeUserMarketState(ai.data) : undefined;
