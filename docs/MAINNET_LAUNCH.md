@@ -9,7 +9,21 @@ Only the `pump-hooks` program goes to mainnet. It hooks coins on the real pump.f
 | Deployer / upgrade authority | `5xiBZPdRatPFgvGYY55vTsC1efwwkf1PzyktpVRwsJ77` (`.keys/mainnet-deployer.json`, git-ignored) |
 | Binary | `target/deploy/pump_hooks.so`, 528,696 bytes (`bash scripts/build_program.sh`) |
 
-## Cost (measured with `solana rent`)
+## Deployed (2026-10-26)
+
+| Step | Transaction |
+| --- | --- |
+| Deploy (slot 461684222), ProgramData `6TPEShQtpLey3TSGS4kf448RgEakRPM1Cdge9hvKERk4` | [`4EpEWseG…Gn21eD`](https://solscan.io/tx/4EpEWseGks6WwdfceibThQUHS7ivPwZv9Ypr8A3m8jCVLyueBCXF5MrREpWvZ5dXWcAhNWSCpxpuxYoSN4Gn21eD) |
+| Initialize (upgrade authority only) | [`59bskkPb…msS1R9`](https://solscan.io/tx/59bskkPbEB6DpSRgXB1HnXHmzaM2dve2YRRpBuHRjs1PqUpcCNZLgVD5yxMgYFZvkcdDt2AZB11gwKFNe3msS1R9) |
+| Register launch-shield, volume-guard, volatility-guard, holder-xp | [`21wmgp4s…AjfnyuG7`](https://solscan.io/tx/21wmgp4scmSPizuZYRSFL4L5BUgzEW3PeQU7qF1e6ceutfD2geSjfYwV4jS8hhqHsWgbvs6ECrfkoLEYAjfnyuG7) |
+| Register treasury-router, twap, sentient, policy | [`3YM2Ngba…GxYU67bh`](https://solscan.io/tx/3YM2NgbaYQSSHq4tkz3MM9nRTxAfdhkjvp11Ltnq5sPzWNP3auTEhpyAQADaGxYU67bhZzmRi6XiwaB7CUjXmLYM) |
+| Register max-wallet, sell-limit, trading-hours | [`2jXW57Cc…C9zma3th`](https://solscan.io/tx/2jXW57CcufAQQ9E4qSwH46BXNWxymzXtCqHKSJBPK5h5LbSkLNJnBkoQjNA6BXgkcM8d2Ue8hCY72vpYC9zma3th) |
+
+Binary sha256 `5118e979de833832310fa817ac07964d99764ab9f40d5092df3b937380a814c6`, rebuilt from commit
+`fca58bd` with `bash scripts/build_program.sh`. Mainnet rent came out lower than the local estimate
+below: the deploy cost 2.69 SOL in total.
+
+## Cost (measured with `solana rent` on a local validator)
 
 | Item | SOL | |
 | --- | --- | --- |
@@ -45,7 +59,7 @@ pnpm --filter @pump-hooks/cli exec tsx scripts/bootstrap-pump-hooks.ts \
 
 # 3. Check
 solana program show 91kRNewiEDrKVtUXpahsDXYiURuKQKwhCt2hnaKNfkgD --url "$RPC"
-pnpm --filter @pump-hooks/cli exec pump-hooks status --url "$RPC"
+node packages/cli/dist/bin.js status --url "$RPC"
 ```
 
 4. In Vercel project settings set `MAINNET_RPC_URL` to the Helius URL (server-only; no
