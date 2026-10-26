@@ -39,7 +39,7 @@ export function Footer() {
       <div>
         <h4>Status</h4>
         <span style={{ display: "block", color: "#d8d5cb", margin: "5px 0" }}>Devnet: pre-release</span>
-        <span style={{ display: "block", color: "#d8d5cb", margin: "5px 0" }}>Mainnet: not deployed</span>
+        <span style={{ display: "block", color: "#d8d5cb", margin: "5px 0" }}>Mainnet: live</span>
         <span style={{ display: "block", color: "#d8d5cb", margin: "5px 0" }}>Audit: none yet</span>
       </div>
       <div className="fine">

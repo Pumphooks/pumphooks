@@ -3,8 +3,9 @@
 Running checklist for the expansion described in [INTEGRATION_PLAN.md](INTEGRATION_PLAN.md).
 Test levels: **unit** (host Rust/TS), **localnet** (compiled SBF programs in LiteSVM, with real
 third-party binaries where named), **devnet** (deployed and exercised on devnet), **mainnet
-verified** (against mainnet binaries/state, not deployed). Only `pump-hooks` is cleared for a
-mainnet launch (unaudited); see [MAINNET_LAUNCH.md](MAINNET_LAUNCH.md).
+verified** (against mainnet binaries/state, not deployed). On mainnet (unaudited):
+`pump-hooks`, `hook-registry`, `hooks-core`, `smart-accounts`, `token-hooks`, `token-wrapper`;
+see [MAINNET_LAUNCH.md](MAINNET_LAUNCH.md).
 
 | Area | Item | Status | Level | Evidence |
 | --- | --- | --- | --- | --- |

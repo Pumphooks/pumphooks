@@ -1,7 +1,24 @@
 # Mainnet launch: `pump-hooks`
 
-Only the `pump-hooks` program goes to mainnet. It hooks coins on the real pump.fun bonding curve
-(and PumpSwap after graduation). Every other program stays on localnet/devnet. **Not audited.**
+`pump-hooks` hooks coins on the real pump.fun bonding curve (and PumpSwap after graduation). The
+engines below (registry, pool engine, smart accounts, token hooks + wrapper) followed the same day.
+`hook-router` and `hook-state` stay on devnet. **Not audited.**
+
+## Engines (2026-10-26)
+
+All upgradeable, upgrade authority `5xiBZPdRatPFgvGYY55vTsC1efwwkf1PzyktpVRwsJ77`, built from commit
+`4f73878` with `bash scripts/build_programs.sh`, deployed with the keypairs in `.keys/`. Setup:
+`packages/demos/scripts/mainnet-init.mts` (only the upgrade authority can initialize either program).
+
+| Program | ID | Deploy | Setup |
+| --- | --- | --- | --- |
+| hook-registry | `9gKUqwnUa6ZJkCvNT4bnLY7A5czcJFuSV1dpYeosHHs4` | [`3tQ2Juy2…`](https://solscan.io/tx/3tQ2Juy2T6YVVAS4o1B1CXNVw5nymL3PWQ9jBMtCEqsbxfDbonoUqpdjSG7KRERYSYHxSQnxnZH35CaAkfvSqzyi) | [`3Tvwofi…`](https://solscan.io/tx/3TvwofiQNCyStE3rVjBhorFEWPmPaFF1m6UhS9X83Q4MKbzRgj7ykXdGgUW4HtHWTojko7gBbgnit7wqFa2naoMr) |
+| hooks-core (pool engine) | `8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw` | [`66QG84a4…`](https://solscan.io/tx/66QG84a4uKTs19JzqCPPgokC2e1NFLDdfk3HnRpx7B6DEVLTom1cpiy1CgyKoZvWmhYsHTHAQmYZBKb7pqXxxYBV) | [`2ZpmTmKE…`](https://solscan.io/tx/2ZpmTmKEQBCnJCHMvbn8VL2pR5qVoak648VS211C93pgckUKUEqTANTqw4XFwPVcdvdzG2oxvRqhDbdEuB6sx7NT) |
+| smart-accounts | `6AEiwvifk4TVJ8g3UoVXqhaK8AqYy43A4DzWCgMmrtQw` | [`4zCEPNiM…`](https://solscan.io/tx/4zCEPNiMiKNSjUjyBCzE6NJXaw36p36sQd7LrrY8sodpmaJC3JK3qSZyvKZyhcPJ56WATqJT2nLmQLhQVS1sMWLZ) | — |
+| token-hooks | `FZBBkQQamgfMCAoNk6PAdZi9nYZGMsGw9gDyTMNC3v54` | [`5ZajfQgk…`](https://solscan.io/tx/5ZajfQgkVaSedYLYtspeULEFAqkRP9XB27UbPU1SjDZVX5soLDwPJsKpYAFjQGUEJkg3xCXdA8SgcczESf7tEzJk) | — |
+| token-wrapper | `841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh` | [`5q9JFNXq…`](https://solscan.io/tx/5q9JFNXqbtChhfcE8CDPkGmjHGEjdgdCX1nzNk8tCikPrR3TX79KMxa369XvSFyUacjLoc9CJHLsxJUmrss2b9Kz) | — |
+
+Total rent 10.75 SOL.
 
 | | |
 | --- | --- |

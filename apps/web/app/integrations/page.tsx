@@ -31,14 +31,14 @@ const PROGRAMS = [
   { name: "token-wrapper", id: "841vHKyD8HXQKsNSp2A2pzNjDHuFDBu9JPt6xsJc7vbh" },
   { name: "hooks-core", id: "8L8VFMpzP7S3ZfSyr9vu5vDVy93jgfWVfEzY4RTadFzw" },
   { name: "hook-state", id: "AZ3DwmvABEwrLJF25r94yyA92W4zvHgAwuhxBi8QJHRW" },
-  { name: "pump-hooks (legacy)", id: "91kRNewiEDrKVtUXpahsDXYiURuKQKwhCt2hnaKNfkgD" },
+  { name: "pump-hooks", id: "91kRNewiEDrKVtUXpahsDXYiURuKQKwhCt2hnaKNfkgD" },
 ];
 
 export default function IntegrationsPage() {
   return (
     <main className="page">
       <PageHead n="10" crumb="Integrations" title="Where hooks actually run.">
-        Which venues the router can call, how each engine enforces its hooks, and whether each program is deployed, checked live against public RPC.
+        Which venues the router can call, how each engine enforces its hooks, and whether each program is deployed, checked live on chain.
       </PageHead>
 
       <Section n="01" title="Engines and enforcement">
@@ -96,12 +96,11 @@ export default function IntegrationsPage() {
       <Section n="03" title="Deployments" aside="live">
         <DeploymentStatus programs={PROGRAMS} />
         <p className="mute" style={{ fontSize: 13 }}>
-          Checked from your browser with <code>getMultipleAccountsInfo</code> against the site&apos;s configured RPC. The public mainnet endpoint refuses
-          browser requests; a deployment sets <code>NEXT_PUBLIC_MAINNET_RPC_URL</code> to a browser-capable endpoint.
+          Checked from your browser with <code>getMultipleAccountsInfo</code> through the site&apos;s RPC proxy.
         </p>
         <div className="notice warn" style={{ marginTop: 14 }}>
-          <b>Pre-release.</b> The ABI v1 programs are built and tested on localnet. They are not on mainnet and will not be without an external
-          audit. Their devnet deployment is pending.
+          <b>Not audited.</b> pump-hooks, hook-registry, hooks-core, smart-accounts, token-hooks and token-wrapper are on mainnet. hook-router
+          and hook-state are on devnet only.
         </div>
       </Section>
     </main>
