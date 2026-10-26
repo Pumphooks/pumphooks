@@ -5,9 +5,9 @@ use hook_types::{
 use policy_vm::{EvalInput, PolicyData};
 
 use crate::modules::{
-    holder_xp::HolderXp, launch_shield::LaunchShield, sentient::Sentient,
-    treasury_router::TreasuryRouter, twap::Twap, volatility_guard, volatility_guard::VolatilityGuard,
-    volume_guard::VolumeGuard, HookEnv, PumpHook,
+    holder_xp::HolderXp, launch_shield::LaunchShield, max_wallet::MaxWallet, sell_limit::SellLimit,
+    sentient::Sentient, trading_hours::TradingHours, treasury_router::TreasuryRouter, twap::Twap,
+    volatility_guard, volatility_guard::VolatilityGuard, volume_guard::VolumeGuard, HookEnv, PumpHook,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -104,6 +104,9 @@ pub fn validate_module_config(module: ModuleId, config: &[u8; 48]) -> Result<(),
         ModuleId::TreasuryRouter => TreasuryRouter::validate_config(config),
         ModuleId::Twap => Twap::validate_config(config),
         ModuleId::Sentient => Sentient::validate_config(config),
+        ModuleId::MaxWallet => MaxWallet::validate_config(config),
+        ModuleId::SellLimit => SellLimit::validate_config(config),
+        ModuleId::TradingHours => TradingHours::validate_config(config),
         ModuleId::Policy => {
             // config[0] = active policy mask (bits 0..MAX_POLICIES).
             if config[0] >> MAX_POLICIES != 0 || config[1..].iter().any(|&x| x != 0) {
@@ -125,6 +128,9 @@ fn dispatch(module: ModuleId, env: &mut HookEnv<'_>) -> Result<HookDecision, Hoo
         ModuleId::TreasuryRouter => TreasuryRouter::on_callback(env),
         ModuleId::Twap => Twap::on_callback(env),
         ModuleId::Sentient => Sentient::on_callback(env),
+        ModuleId::MaxWallet => MaxWallet::on_callback(env),
+        ModuleId::SellLimit => SellLimit::on_callback(env),
+        ModuleId::TradingHours => TradingHours::on_callback(env),
         ModuleId::Policy | ModuleId::ConditionalOrders => Ok(HookDecision::allow()),
     }
 }
@@ -308,6 +314,7 @@ pub fn commit_trade(ctx: &HookContext, market: &mut MarketStats, user: &mut User
     } else {
         market.routed_sell_quote = market.routed_sell_quote.saturating_add(ctx.quote_amount);
         user.routed_sell_quote = user.routed_sell_quote.saturating_add(ctx.quote_amount);
+        user.last_sell_ts = ctx.timestamp;
     }
     market.trade_count = market.trade_count.saturating_add(1);
     user.trade_count = user.trade_count.saturating_add(1);

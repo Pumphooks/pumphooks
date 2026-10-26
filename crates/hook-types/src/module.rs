@@ -14,6 +14,9 @@ pub enum ModuleId {
     ConditionalOrders = 7,
     Sentient = 8,
     Policy = 9,
+    MaxWallet = 10,
+    SellLimit = 11,
+    TradingHours = 12,
 }
 
 impl ModuleId {
@@ -28,6 +31,9 @@ impl ModuleId {
             7 => Some(ModuleId::ConditionalOrders),
             8 => Some(ModuleId::Sentient),
             9 => Some(ModuleId::Policy),
+            10 => Some(ModuleId::MaxWallet),
+            11 => Some(ModuleId::SellLimit),
+            12 => Some(ModuleId::TradingHours),
             _ => None,
         }
     }
@@ -76,7 +82,7 @@ const fn m(cbs: &[Cb]) -> u16 {
 const TRADE_BEFORE: u16 = m(&[Cb::BeforeBuy, Cb::BeforeSell, Cb::BeforeSwap]);
 const TRADE_ALL: u16 = Cb::V1_MASK;
 
-pub const MODULES: [ModuleInfo; 9] = [
+pub const MODULES: [ModuleInfo; 12] = [
     ModuleInfo {
         id: 1,
         slug: "launch-shield",
@@ -213,6 +219,48 @@ pub const MODULES: [ModuleInfo; 9] = [
         runtime: true,
         available: true,
     },
+    ModuleInfo {
+        id: 10,
+        slug: "max-wallet",
+        name: "Max Wallet",
+        version: 1,
+        callbacks: m(&[Cb::BeforeBuy, Cb::AfterBuy]),
+        default_callbacks: m(&[Cb::BeforeBuy, Cb::AfterBuy]),
+        capabilities: C::READ_MARKET | C::VETO_ROUTED_SWAP,
+        priority_min: 0,
+        priority_max: 999,
+        default_priority: 200,
+        runtime: true,
+        available: true,
+    },
+    ModuleInfo {
+        id: 11,
+        slug: "sell-limit",
+        name: "Sell Limit",
+        version: 1,
+        callbacks: m(&[Cb::BeforeSell]),
+        default_callbacks: m(&[Cb::BeforeSell]),
+        capabilities: C::READ_MARKET | C::VETO_ROUTED_SWAP,
+        priority_min: 1000,
+        priority_max: 1999,
+        default_priority: 1300,
+        runtime: true,
+        available: true,
+    },
+    ModuleInfo {
+        id: 12,
+        slug: "trading-hours",
+        name: "Trading Hours",
+        version: 1,
+        callbacks: TRADE_BEFORE,
+        default_callbacks: m(&[Cb::BeforeSwap]),
+        capabilities: C::READ_MARKET | C::VETO_ROUTED_SWAP,
+        priority_min: 0,
+        priority_max: 999,
+        default_priority: 50,
+        runtime: true,
+        available: true,
+    },
 ];
 
 #[cfg(test)]
@@ -231,6 +279,6 @@ mod tests {
             assert_eq!(info.runtime, info.callbacks != 0);
         }
         assert!(ModuleId::from_u16(0).is_none());
-        assert!(ModuleId::from_u16(10).is_none());
+        assert!(ModuleId::from_u16(MODULES.len() as u16 + 1).is_none());
     }
 }

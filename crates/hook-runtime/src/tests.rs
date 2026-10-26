@@ -121,20 +121,21 @@ fn install_orders_by_priority_regardless_of_insertion() {
 }
 
 #[test]
-fn rejects_more_than_max_runtime_hooks() {
+fn six_runtime_hooks_fit_and_a_seventh_module_does_not() {
+    use crate::modules::{max_wallet, sell_limit};
     let mut h = Harness::new();
     h.install(ModuleId::LaunchShield, shield(default_shield()));
     h.install(ModuleId::VolumeGuard, default_volume().encode());
     h.install(ModuleId::HolderXp, default_xp().encode());
     h.install(ModuleId::Policy, [0; 48]);
-    let vcfg = vg::Config { max_deviation_bps: 2_000, ema_alpha_bps: 2_000, min_observations: 3, check_min_quote: 0, flags: vg::FLAG_CHECK_BUYS };
-    assert_eq!(
-        install_slot(&mut h.slots, 3, prio(ModuleId::VolatilityGuard), 0, caps(ModuleId::VolatilityGuard), vcfg.encode()),
-        Err(HookError::TooManyRuntimeHooks)
-    );
-    // Config-only modules still fit.
+    h.install(ModuleId::MaxWallet, max_wallet::Config { max_base: 1, start_ts: 0, duration_secs: 0 }.encode());
+    h.install(ModuleId::SellLimit, sell_limit::Config { max_sell_bps: 1, cooldown_secs: 0, exempt_below: 0, start_ts: 0, duration_secs: 0 }.encode());
+    assert_eq!(h.slots.iter().filter(|s| s.is_runtime()).count(), MAX_RUNTIME_HOOKS);
     let t = treasury_router::Config { reserve_bps: 5_000, strategy_bps: 3_000, rewards_bps: 1_000, operations_bps: 1_000 };
-    assert!(install_slot(&mut h.slots, 5, prio(ModuleId::TreasuryRouter), 0, caps(ModuleId::TreasuryRouter), t.encode()).is_ok());
+    assert_eq!(
+        install_slot(&mut h.slots, 5, prio(ModuleId::TreasuryRouter), 0, caps(ModuleId::TreasuryRouter), t.encode()),
+        Err(HookError::TooManySlots)
+    );
 }
 
 #[test]
@@ -558,4 +559,182 @@ fn demo_stack_volume_guard_holder_xp_sentient_policy() {
 
 fn hook_runtime_twap() -> [u8; 48] {
     crate::modules::twap::Config { max_total_quote: 10 * SOL, max_slice_quote: SOL, min_interval_secs: 60, max_duration_secs: 86_400, max_slippage_bps: 300 }.encode()
+}
+
+// ------------------------------------------------------------------ Max Wallet, Sell Limit, Trading Hours
+
+mod pump_rules {
+    use super::*;
+    use crate::modules::{max_wallet, sell_limit, trading_hours as th};
+
+    fn buy(base: u64, balance: u64, now: i64) -> HookContext {
+        let mut c = ctx(Side::Buy, SOL / 10, now, 1);
+        c.base_amount = base;
+        c.user_base_balance = balance;
+        c
+    }
+
+    fn sell(base: u64, balance: u64, now: i64) -> HookContext {
+        let mut c = ctx(Side::Sell, SOL / 10, now, 1);
+        c.base_amount = base;
+        c.user_base_balance = balance;
+        c
+    }
+
+    fn denied(h: &mut Harness, c: HookContext) -> Option<u16> {
+        h.go(c).unwrap().0.map(|e| e.reason_code)
+    }
+
+    #[test]
+    fn max_wallet_caps_routed_buys() {
+        let mut h = Harness::new();
+        h.install(ModuleId::MaxWallet, max_wallet::Config { max_base: 1_000, start_ts: 0, duration_secs: 0 }.encode());
+        assert_eq!(denied(&mut h, buy(400, 600, T0 + 10)), None, "lands exactly on the cap");
+        assert_eq!(denied(&mut h, buy(401, 600, T0 + 10)), Some(reason::max_wallet::BALANCE_CAP));
+        assert_eq!(denied(&mut h, sell(5_000, 9_000, T0 + 10)), None, "sells are never capped");
+    }
+
+    #[test]
+    fn max_wallet_reverts_when_the_fill_overshoots_the_estimate() {
+        let mut h = Harness::new();
+        h.install(ModuleId::MaxWallet, max_wallet::Config { max_base: 1_000, start_ts: 0, duration_secs: 0 }.encode());
+        let side = Side::Buy;
+        let mut c = buy(400, 600, T0 + 10);
+        let mut t = Trace::default();
+        let out = run_phase(side, true, &mut h.slots, &mut c, &h.market, &mut h.user, &mut [None, None, None, None], 0, &mut t).unwrap();
+        assert!(out.denied.is_none());
+        c.user_base_balance = 1_001;
+        let err = run_phase(side, false, &mut h.slots, &mut c, &h.market, &mut h.user, &mut [None, None, None, None], 0, &mut t).unwrap_err();
+        assert_eq!(err, HookError::PostCondition { module: ModuleId::MaxWallet as u16, reason: reason::max_wallet::BALANCE_CAP });
+    }
+
+    #[test]
+    fn max_wallet_window_ends() {
+        let mut h = Harness::new();
+        h.install(ModuleId::MaxWallet, max_wallet::Config { max_base: 1_000, start_ts: 0, duration_secs: 600 }.encode());
+        assert_eq!(denied(&mut h, buy(5_000, 0, T0 + 599)), Some(reason::max_wallet::BALANCE_CAP));
+        assert_eq!(denied(&mut h, buy(5_000, 0, T0 + 600)), None);
+    }
+
+    #[test]
+    fn max_wallet_rejects_bad_configs() {
+        let bad = |c: max_wallet::Config| install_slot(&mut [HookSlot::zeroed(); MAX_HOOK_SLOTS], 10, 200, 0, caps(ModuleId::MaxWallet), c.encode()).is_err();
+        assert!(bad(max_wallet::Config { max_base: 0, start_ts: 0, duration_secs: 0 }));
+        assert!(bad(max_wallet::Config { max_base: 1, start_ts: -1, duration_secs: 0 }));
+        assert!(bad(max_wallet::Config { max_base: 1, start_ts: 0, duration_secs: max_wallet::MAX_DURATION_SECS + 1 }));
+    }
+
+    #[test]
+    fn sell_limit_share_exemption_and_cooldown() {
+        let mut h = Harness::new();
+        let cfg = sell_limit::Config { max_sell_bps: 2_500, cooldown_secs: 60, exempt_below: 100, start_ts: 0, duration_secs: 0 };
+        h.install(ModuleId::SellLimit, cfg.encode());
+        assert_eq!(denied(&mut h, sell(251, 1_000, T0 + 10)), Some(reason::sell_limit::SELL_TOO_LARGE));
+        assert_eq!(denied(&mut h, sell(250, 1_000, T0 + 10)), None, "25% of the bag is allowed");
+        assert_eq!(denied(&mut h, sell(10, 750, T0 + 69)), Some(reason::sell_limit::SELL_COOLDOWN));
+        assert_eq!(denied(&mut h, sell(10, 750, T0 + 70)), None, "cooldown over");
+        assert_eq!(denied(&mut h, sell(100, 100, T0 + 200)), None, "small holders exit in full");
+        assert_eq!(denied(&mut h, buy(10_000, 0, T0 + 201)), None, "buys are never limited");
+    }
+
+    #[test]
+    fn sell_limit_never_blocks_a_minimal_sell() {
+        assert_eq!(sell_limit::allowed_sell(3, 100), 1);
+        assert_eq!(sell_limit::allowed_sell(u64::MAX, 9_999), (u64::MAX as u128 * 9_999 / 10_000) as u64);
+    }
+
+    #[test]
+    fn sell_limit_rejects_bad_configs() {
+        let bad = |c: sell_limit::Config| install_slot(&mut [HookSlot::zeroed(); MAX_HOOK_SLOTS], 11, 1300, 0, caps(ModuleId::SellLimit), c.encode()).is_err();
+        let ok = sell_limit::Config { max_sell_bps: 1_000, cooldown_secs: 0, exempt_below: 0, start_ts: 0, duration_secs: 0 };
+        assert!(!bad(ok));
+        assert!(bad(sell_limit::Config { max_sell_bps: 0, ..ok }), "needs a share or a cooldown");
+        assert!(bad(sell_limit::Config { max_sell_bps: 10_000, ..ok }), "100% is no limit");
+        assert!(bad(sell_limit::Config { cooldown_secs: sell_limit::MAX_COOLDOWN_SECS + 1, ..ok }));
+    }
+
+    // 2026-10-26 13:30:00 UTC, Monday (09:30 New York, daylight time).
+    const MON_0930_NY: i64 = 1_793_021_400;
+    // 2026-10-24 14:00:00 UTC, Saturday.
+    const SAT_1000_NY: i64 = 1_792_850_400;
+
+    fn nyse() -> th::Config {
+        th::Config { weekdays: 0b001_1111, dst: th::DST_US, tz_offset_min: -300, open_min: 9 * 60 + 30, close_min: 16 * 60, sides: 0 }
+    }
+
+    #[test]
+    fn trading_hours_market_hours_preset() {
+        let mut h = Harness::new();
+        h.install(ModuleId::TradingHours, nyse().encode());
+        assert_eq!(denied(&mut h, buy(1, 0, MON_0930_NY - 1)), Some(reason::trading_hours::MARKET_CLOSED));
+        assert_eq!(denied(&mut h, buy(1, 0, MON_0930_NY)), None);
+        assert_eq!(denied(&mut h, sell(1, 10, MON_0930_NY + 6 * 3600 + 1799)), None, "15:59:59");
+        assert_eq!(denied(&mut h, sell(1, 10, MON_0930_NY + 6 * 3600 + 1800)), Some(reason::trading_hours::MARKET_CLOSED));
+        assert_eq!(denied(&mut h, buy(1, 0, SAT_1000_NY)), Some(reason::trading_hours::MARKET_CLOSED), "weekend");
+    }
+
+    #[test]
+    fn trading_hours_can_apply_to_one_side() {
+        let mut h = Harness::new();
+        h.install(ModuleId::TradingHours, th::Config { sides: th::SIDE_SELL, ..nyse() }.encode());
+        assert_eq!(denied(&mut h, buy(1, 0, SAT_1000_NY)), None, "buys always open");
+        assert_eq!(denied(&mut h, sell(1, 10, SAT_1000_NY)), Some(reason::trading_hours::MARKET_CLOSED));
+    }
+
+    #[test]
+    fn daylight_saving_boundaries() {
+        let ny = -300 * 60;
+        assert!(!th::dst_active(th::DST_US, 1_772_953_199, ny), "2026-03-08 01:59:59 EST");
+        assert!(th::dst_active(th::DST_US, 1_772_953_200, ny), "2026-03-08 03:00 EDT");
+        assert!(th::dst_active(th::DST_US, 1_793_512_799, ny), "2026-11-01 01:59:59 EDT");
+        assert!(!th::dst_active(th::DST_US, 1_793_512_800, ny), "2026-11-01 01:00 EST");
+        assert!(!th::dst_active(th::DST_EU, 1_774_745_999, 0));
+        assert!(th::dst_active(th::DST_EU, 1_774_746_000, 0), "2026-03-29 01:00 UTC");
+        assert!(th::dst_active(th::DST_EU, 1_792_889_999, 0));
+        assert!(!th::dst_active(th::DST_EU, 1_792_890_000, 0), "2026-10-25 01:00 UTC");
+        assert!(!th::dst_active(th::DST_NONE, 1_774_746_000, 0));
+    }
+
+    #[test]
+    fn overnight_window_belongs_to_the_day_it_opened() {
+        // 22:00–02:00 UTC, Monday sessions only.
+        let c = th::Config { weekdays: 0b000_0001, dst: th::DST_NONE, tz_offset_min: 0, open_min: 22 * 60, close_min: 2 * 60, sides: 0 };
+        let mon_2300 = MON_0930_NY - 13 * 3600 - 1800 + 23 * 3600; // 2026-10-26 23:00 UTC
+        assert!(th::is_open(&c, mon_2300));
+        assert!(th::is_open(&c, mon_2300 + 2 * 3600), "Tuesday 01:00 is still Monday's session");
+        assert!(!th::is_open(&c, mon_2300 + 4 * 3600), "Tuesday 03:00");
+        assert!(!th::is_open(&c, mon_2300 - 86_400), "Sunday's session");
+    }
+
+    #[test]
+    fn civil_calendar_round_trips() {
+        for (y, m, d, wd) in [(1970, 1, 1, 3), (2000, 2, 29, 1), (2026, 10, 26, 0), (2100, 3, 1, 0)] {
+            let days = th::days_from_civil(y, m, d);
+            assert_eq!(th::civil_from_days(days), (y, m));
+            assert_eq!(th::weekday(days), wd);
+        }
+    }
+
+    #[test]
+    fn trading_hours_rejects_bad_configs() {
+        let bad = |c: th::Config| install_slot(&mut [HookSlot::zeroed(); MAX_HOOK_SLOTS], 12, 50, 0, caps(ModuleId::TradingHours), c.encode()).is_err();
+        assert!(!bad(nyse()));
+        assert!(bad(th::Config { open_min: 600, close_min: 600, ..nyse() }));
+        assert!(bad(th::Config { close_min: 1440, ..nyse() }));
+        assert!(bad(th::Config { tz_offset_min: 841, ..nyse() }));
+        assert!(bad(th::Config { dst: 3, ..nyse() }));
+        assert!(bad(th::Config { weekdays: 0x80, ..nyse() }));
+        assert!(bad(th::Config { sides: 4, ..nyse() }));
+    }
+
+    #[test]
+    fn router_records_the_last_sell() {
+        let mut h = Harness::new();
+        h.install(ModuleId::SellLimit, sell_limit::Config { max_sell_bps: 0, cooldown_secs: 30, exempt_below: 0, start_ts: 0, duration_secs: 0 }.encode());
+        assert_eq!(h.user.last_sell_ts, 0);
+        assert_eq!(denied(&mut h, sell(1, 10, T0 + 5)), None);
+        assert_eq!(h.user.last_sell_ts, T0 + 5);
+        assert_eq!(denied(&mut h, buy(1, 9, T0 + 6)), None);
+        assert_eq!(denied(&mut h, sell(1, 10, T0 + 7)), Some(reason::sell_limit::SELL_COOLDOWN), "a buy does not reset the cooldown");
+    }
 }

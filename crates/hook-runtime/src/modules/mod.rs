@@ -4,7 +4,10 @@ use crate::executor::HookError;
 
 pub mod holder_xp;
 pub mod launch_shield;
+pub mod max_wallet;
+pub mod sell_limit;
 pub mod sentient;
+pub mod trading_hours;
 pub mod treasury_router;
 pub mod twap;
 pub mod volatility_guard;

@@ -30,7 +30,7 @@ pub const ABI_VERSION: u8 = 1;
 /// Inline hook slots per market (runtime + config-only modules).
 pub const MAX_HOOK_SLOTS: usize = 6;
 /// Hooks with at least one subscribed callback. Revisit with `docs/benchmarks.md`.
-pub const MAX_RUNTIME_HOOKS: usize = 4;
+pub const MAX_RUNTIME_HOOKS: usize = 6;
 /// Composer policies per market.
 pub const MAX_POLICIES: usize = 4;
 /// Trace entries recorded per routed trade (4 runtime hooks × 2 callbacks per phase × 2 phases).

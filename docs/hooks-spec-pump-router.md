@@ -84,7 +84,7 @@ error, which reverts the transaction.
 | 100–999 | router / adapter |
 | `module_id × 1000 + n` | first-party module `module_id` (e.g. Launch Shield 1001…) |
 | 9000–9999 | Composer policies (`9000 + policy-defined code`) |
-| 10000+ | external hooks (`10000 + hook-defined`) |
+| 40000+ | external hooks (`40000 + hook-defined`) |
 
 ## 5. Module IDs — `u16`
 
@@ -99,12 +99,16 @@ error, which reverts the transaction.
 | 7 | Conditional Orders | reserved | — | 3000–3999 strategies |
 | 8 | SENTIENT | yes | BeforeSwap, AfterSwap | 3000–3999 strategies |
 | 9 | Policy (Composer) | yes | from policy triggers | any (authority chooses) |
+| 10 | Max Wallet | yes | BeforeBuy, AfterBuy | 0–999 security |
+| 11 | Sell Limit | yes | BeforeSell | 1000–1999 risk |
+| 12 | Trading Hours | yes | BeforeSwap | 0–999 security |
 
 Execution order: ascending `(priority, slot_index)`. Slots are stored sorted at install time so the
 router iterates linearly. Ties are impossible because `slot_index` is unique.
 
-Runtime cap: **4 runtime hooks** per market (`MAX_RUNTIME_HOOKS`), 6 slots total
-(`MAX_HOOK_SLOTS`) so config-only modules fit. Revisit after `docs/benchmarks.md`.
+Runtime cap: **6 runtime hooks** per market (`MAX_RUNTIME_HOOKS`), equal to the 6 slots
+(`MAX_HOOK_SLOTS`). A routed trade with six runtime hooks on mainnet Pump stays well inside the
+compute limit (`tests/integration/tests/mainnet.rs`, `six_rules_fit_the_compute_budget`).
 
 ## 6. Capabilities — `u32` bitmask
 

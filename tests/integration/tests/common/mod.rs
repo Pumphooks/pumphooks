@@ -85,23 +85,35 @@ fn load_fixture_account(path: &PathBuf) -> (Pk, Account) {
     )
 }
 
-fn program_path(name: &str) -> PathBuf {
-    let devnet = root().join(format!("tests/fixtures/programs/{name}.so"));
-    if devnet.exists() {
-        return devnet;
+/// Pump binaries are dumped per cluster (`pump.so` from devnet, `pump_mainnet.so` from mainnet);
+/// a fixture runs against the binaries of the cluster it was snapshotted from.
+fn program_path(name: &str, mainnet: bool) -> PathBuf {
+    let file = if mainnet { format!("{name}_mainnet") } else { name.to_string() };
+    let path = root().join(format!("tests/fixtures/programs/{file}.so"));
+    if path.exists() {
+        return path;
     }
-    panic!("missing {} — run scripts/dump_programs.sh", devnet.display());
+    panic!("missing {} — run scripts/dump_programs.sh", path.display());
 }
 
 /// Legacy 82-byte curve with deep remaining reserves.
 pub const DEEP_CURVE: &str = "AwHTvGo8UcR4CEyqmTWs1xEbeajBNwC5ELFdMdPyB33w";
 /// 115-byte curve with ~37k tokens left: a 0.2 SOL buy completes it.
 pub const NEAR_COMPLETE_CURVE: &str = "6MyxotriXqB78HkY5Yc4Lc1jVwkKw82NJmYDPktRpjak";
+/// Live mainnet coin still on its bonding curve.
+pub const MAINNET_CURVE: &str = "Ykfw76rQnNKoBVtTTgVXgCzYHVZopGppb1Loj67u36H";
+/// Live mainnet PumpSwap pool of a graduated coin.
+pub const MAINNET_POOL: &str = "6DNxwecbtdNNstpB5tdnxZsfGe3HmsNgEUZhdue4b1PH";
 
 impl Env {
     /// Existing migrated coin: PumpSwap pool fixture.
     pub fn new() -> Self {
         Self::load(POOL)
+    }
+
+    /// Existing migrated coin from any pool fixture.
+    pub fn pool(pool: &str) -> Self {
+        Self::load(pool)
     }
 
     /// Existing un-migrated coin: bonding-curve fixture.
@@ -117,15 +129,17 @@ impl Env {
         clock.slot = 400_000_000;
         svm.set_sysvar(&clock);
 
-        svm.add_program_from_file(addr(&pump_adapter::PUMP_AMM_PROGRAM_ID), program_path("pump_amm")).unwrap();
-        svm.add_program_from_file(addr(&pump_adapter::PUMP_PROGRAM_ID), program_path("pump")).unwrap();
-        svm.add_program_from_file(addr(&pump_adapter::PUMP_FEES_PROGRAM_ID), program_path("pump_fees")).unwrap();
+        let dir = root().join(format!("tests/fixtures/{fixture}"));
+        let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("manifest.json")).unwrap()).unwrap();
+        let mainnet = manifest["source_rpc"].as_str().unwrap_or("").contains("mainnet");
+
+        svm.add_program_from_file(addr(&pump_adapter::PUMP_AMM_PROGRAM_ID), program_path("pump_amm", mainnet)).unwrap();
+        svm.add_program_from_file(addr(&pump_adapter::PUMP_PROGRAM_ID), program_path("pump", mainnet)).unwrap();
+        svm.add_program_from_file(addr(&pump_adapter::PUMP_FEES_PROGRAM_ID), program_path("pump_fees", mainnet)).unwrap();
         let so = root().join("target/deploy/pump_hooks.so");
         assert!(so.exists(), "build the program first: cargo build-sbf --manifest-path programs/pump-hooks/Cargo.toml");
         svm.add_program_from_file(addr(&pump_hooks::ID), so).unwrap();
 
-        let dir = root().join(format!("tests/fixtures/{fixture}"));
-        let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("manifest.json")).unwrap()).unwrap();
         let mut accounts = HashMap::new();
         for (label, key) in manifest["accounts"].as_object().unwrap() {
             let (k, acct) = load_fixture_account(&dir.join(format!("{}.json", key.as_str().unwrap())));
@@ -250,7 +264,7 @@ impl Env {
         );
         let a = self.admin.insecure_clone();
         self.send_ok(&[ix], &[&a]);
-        for m in [1u16, 2, 3, 4, 5, 6, 8, 9] {
+        for m in [1u16, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12] {
             let ix = hooks_ix(
                 pump_hooks::accounts::RegisterHook {
                     authority: admin,

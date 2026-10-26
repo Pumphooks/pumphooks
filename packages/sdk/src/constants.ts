@@ -22,7 +22,7 @@ export const PUMP_ALT = {
 
 export const ABI_VERSION = 1;
 export const MAX_HOOK_SLOTS = 6;
-export const MAX_RUNTIME_HOOKS = 4;
+export const MAX_RUNTIME_HOOKS = 6;
 export const MAX_POLICIES = 4;
 export const SLOT_CONFIG_LEN = 48;
 

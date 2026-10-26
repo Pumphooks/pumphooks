@@ -36,7 +36,9 @@ pub struct UserState {
     pub vg_window_volume: u64,
 
     pub forfeited_xp: u64,
-    pub _reserved: [u8; 32],
+    /// Last routed sell (0 = never). Set by the router; read by Sell Limit's cooldown.
+    pub last_sell_ts: i64,
+    pub _reserved: [u8; 24],
 }
 
 const _: () = assert!(core::mem::size_of::<UserState>() == 160);

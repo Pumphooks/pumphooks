@@ -1,5 +1,5 @@
 //! Reason codes. `0` = OK; `module_id * 1000 + n` for first-party modules; `9000 + n` for
-//! Composer policies; `10000+` for external hooks.
+//! Composer policies; `40000+` for external hooks.
 
 pub const OK: u16 = 0;
 
@@ -28,9 +28,22 @@ pub mod sentient {
     pub const CIRCUIT_BREAKER: u16 = 8002;
 }
 
+pub mod max_wallet {
+    pub const BALANCE_CAP: u16 = 10001;
+}
+
+pub mod sell_limit {
+    pub const SELL_TOO_LARGE: u16 = 11001;
+    pub const SELL_COOLDOWN: u16 = 11002;
+}
+
+pub mod trading_hours {
+    pub const MARKET_CLOSED: u16 = 12001;
+}
+
 pub const POLICY_BASE: u16 = 9000;
 pub const POLICY_MAX: u16 = 9999;
-pub const EXTERNAL_BASE: u16 = 10000;
+pub const EXTERNAL_BASE: u16 = 40000;
 
 /// Human-readable label for a reason code (SDK, explorer, CLI).
 pub fn describe(code: u16) -> &'static str {
@@ -49,6 +62,10 @@ pub fn describe(code: u16) -> &'static str {
         volatility_guard::SELL_DEVIATION => "Volatility Guard: price deviates from routed EMA (sell)",
         sentient::DEFENSIVE_SIZE_CAP => "SENTIENT: defensive regime size cap",
         sentient::CIRCUIT_BREAKER => "SENTIENT: circuit breaker regime",
+        max_wallet::BALANCE_CAP => "Max Wallet: buy would take the wallet above the max balance",
+        sell_limit::SELL_TOO_LARGE => "Sell Limit: sell is above the allowed share of the wallet's balance",
+        sell_limit::SELL_COOLDOWN => "Sell Limit: wallet sold too recently",
+        trading_hours::MARKET_CLOSED => "Trading Hours: outside trading hours",
         POLICY_BASE..=POLICY_MAX => "Custom policy denied the routed trade",
         c if c >= EXTERNAL_BASE => "External hook denied the routed trade",
         _ => "unknown",
