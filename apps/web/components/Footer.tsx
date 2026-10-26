@@ -14,6 +14,7 @@ export function Footer() {
       </div>
       <div>
         <h4>Product</h4>
+        <Link href="/launch">Launch a coin</Link>
         <Link href="/hook">Hook a token</Link>
         <Link href="/hooks">Hook registry</Link>
         <Link href="/build">Composer</Link>

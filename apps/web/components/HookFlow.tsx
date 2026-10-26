@@ -176,10 +176,10 @@ export function HookFlow() {
         </form>
         <p className="mute" style={{ fontSize: 13, marginTop: 12 }}>
           Don&apos;t have one yet?{" "}
-          <a className="link-u" href="https://pump.fun/create" target="_blank" rel="noreferrer">
-            Create one through Pump
-          </a>{" "}
-          and come back with its address.
+          <Link className="link-u" href="/launch">
+            Launch one with rules attached
+          </Link>
+          .
         </p>
       </div>
 

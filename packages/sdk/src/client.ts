@@ -54,6 +54,7 @@ import {
   isBuy,
   PoolView,
 } from "./pump.js";
+import { createCoinIx, freshCurveMarketConfig } from "./launch.js";
 import { signalVerifyIx } from "./signal.js";
 import { closeAccountIx, createAtaIdempotentIx, wrapSolIxs } from "./spl.js";
 
@@ -461,6 +462,45 @@ export class PumpHooksClient {
     const trade = await this.buildTrade({ market: { address: market, config }, user: p.authority, mode: TradeMode.ExactQuoteIn, amount: p.quoteIn, limit: 1n });
     const rest = trade.instructions.filter((i) => !i.programId.equals(ComputeBudgetProgram.programId));
     return this.built([ix, ...installs, ...rest], p.authority);
+  }
+
+  /**
+   * Launch a new Pump coin with rules attached from its first block. `create` holds Pump's
+   * `create_v2` (signed by `creator` and the fresh `mint` keypair), `create_market` and the
+   * installs, in order; `firstBuy` is an optional routed buy that goes through those rules.
+   */
+  async launch(p: {
+    mint: PublicKey;
+    creator: PublicKey;
+    name: string;
+    symbol: string;
+    uri: string;
+    hooks: StackHook[];
+    firstBuy?: { quoteIn: bigint; minBaseOut?: bigint };
+  }): Promise<{ market: PublicKey; create: TransactionInstruction[]; firstBuy?: BuiltTransaction }> {
+    const market = this.marketAddress(p.mint, p.creator);
+    const create = [
+      createCoinIx({ mint: p.mint, user: p.creator, name: p.name, symbol: p.symbol, uri: p.uri }),
+      createMarketIx({
+        authority: p.creator,
+        mint: p.mint,
+        bondingCurve: pumpPda.bondingCurve(p.mint),
+        quoteMint: NATIVE_MINT,
+        pool: SYSTEM_PROGRAM_ID,
+        programId: this.programId,
+      }),
+      ...p.hooks.map((h) => this.installHook({ ...h, market, authority: p.creator })),
+    ];
+    const firstBuy = p.firstBuy
+      ? await this.buildTrade({
+          market: { address: market, config: freshCurveMarketConfig(p.mint, p.creator) },
+          user: p.creator,
+          mode: TradeMode.ExactQuoteIn,
+          amount: p.firstBuy.quoteIn,
+          limit: p.firstBuy.minBaseOut ?? 1n,
+        })
+      : undefined;
+    return { market, create, firstBuy };
   }
 
   /** Relay a SENTIENT signal signed off-chain by the market's configured engine key. */

@@ -10,6 +10,7 @@ import { CLUSTERS } from "@/lib/cluster";
 import { REPO } from "@/lib/repo";
 
 const NAV = [
+  { href: "/launch", label: "Launch" },
   { href: "/hook", label: "Hook a token" },
   { href: "/hooks", label: "Hooks" },
   { href: "/build", label: "Composer" },

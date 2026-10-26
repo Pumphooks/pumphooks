@@ -1,4 +1,4 @@
-import { ComputeBudgetProgram, Connection, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, type AddressLookupTableAccount } from "@solana/web3.js";
+import { ComputeBudgetProgram, Connection, Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction, type AddressLookupTableAccount } from "@solana/web3.js";
 import type { WalletContextState } from "@solana/wallet-adapter-react";
 import { executionResult, type ExecutionResult } from "@pump-hooks/sdk";
 
@@ -62,6 +62,31 @@ export interface SentTx {
   result: ExecutionResult;
 }
 
+async function landed(connection: Connection, signature: string, lastValidBlockHeight: number): Promise<SentTx> {
+  const err = await confirm(connection, signature, lastValidBlockHeight);
+  const got = await connection.getTransaction(signature, { maxSupportedTransactionVersion: 0, commitment: "confirmed" });
+  return { signature, result: executionResult(got?.meta?.logMessages ?? [], err ?? got?.meta?.err, got?.meta?.computeUnitsConsumed ?? undefined) };
+}
+
+/** One transaction that also needs local keypair signatures (e.g. a fresh mint); the wallet signs first. */
+export async function sendWithSigners(
+  connection: Connection,
+  wallet: WalletContextState,
+  ixs: TransactionInstruction[],
+  signers: Keypair[],
+  alts: AddressLookupTableAccount[] = [],
+  onProgress?: (sig?: string) => void,
+): Promise<SentTx> {
+  if (!wallet.publicKey || !wallet.signTransaction) throw new Error("this wallet cannot sign transactions");
+  onProgress?.();
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+  const tx = await wallet.signTransaction(compile(ixs, wallet.publicKey, blockhash, alts));
+  tx.sign(signers);
+  const signature = await connection.sendRawTransaction(tx.serialize(), { preflightCommitment: "confirmed" });
+  onProgress?.(signature);
+  return landed(connection, signature, lastValidBlockHeight);
+}
+
 /** Sign with the connected wallet and send each batch sequentially, stopping at the first failure. */
 export async function sendBatches(
   connection: Connection,
@@ -78,11 +103,9 @@ export async function sendBatches(
     const tx = compile(ixs, wallet.publicKey, blockhash, alts);
     const signature = await wallet.sendTransaction(tx, connection, { preflightCommitment: "confirmed" });
     onProgress?.(i, signature);
-    const err = await confirm(connection, signature, lastValidBlockHeight);
-    const got = await connection.getTransaction(signature, { maxSupportedTransactionVersion: 0, commitment: "confirmed" });
-    const result = executionResult(got?.meta?.logMessages ?? [], err ?? got?.meta?.err, got?.meta?.computeUnitsConsumed ?? undefined);
-    sent.push({ signature, result });
-    if (!result.ok) break;
+    const s = await landed(connection, signature, lastValidBlockHeight);
+    sent.push(s);
+    if (!s.result.ok) break;
   }
   return sent;
 }

@@ -10,27 +10,28 @@
     "export-data": "tsx scripts/export-data.mts"
   },
   "dependencies": {
+    "@pump-hooks/hook-analyzer": "workspace:*",
+    "@pump-hooks/hook-bench": "workspace:*",
     "@pump-hooks/sdk": "workspace:*",
     "@solana/wallet-adapter-base": "^0.9.28",
     "@solana/wallet-adapter-react": "^0.15.40",
     "@solana/web3.js": "^1.98.4",
+    "@vercel/blob": "^2.8.2",
     "buffer": "^6.0.3",
     "next": "16.4.2",
     "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "@pump-hooks/hook-analyzer": "workspace:*",
-    "@pump-hooks/hook-bench": "workspace:*"
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "@types/node": "^20.19.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.2.0",
-    "typescript": "^5.9.3",
     "@pump-hooks/demos": "workspace:*",
     "@pump-hooks/execution-lab": "workspace:*",
     "@pump-hooks/hook-security": "workspace:*",
     "@pump-hooks/transaction-compiler": "workspace:*",
     "@solana/kit": "^8.0.0",
-    "tsx": "^4.20.0"
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.2.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3"
   }
 }

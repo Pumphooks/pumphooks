@@ -25,8 +25,11 @@ export default function Home() {
             Give any Pump market new behavior. Compose execution, liquidity, treasury, trading, risk and autonomous logic.
           </p>
           <div className="hero-cta">
-            <Link className="btn" href="/hook">
-              Hook a token <span className="chev">›</span>
+            <Link className="btn" href="/launch">
+              Launch a coin <span className="chev">›</span>
+            </Link>
+            <Link className="btn outline" href="/hook">
+              Hook a token
             </Link>
             <Link className="btn outline" href="/hooks">
               Explore hooks
